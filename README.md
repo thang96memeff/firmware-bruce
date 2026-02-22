@@ -26,4 +26,3 @@ By downloading, installing, or using this project, you acknowledge and agree to 
 3. **No Malicious Intent:** You agree not to use this project for any illegal, malicious, or unethical activities, including causing intentional denial of service (DoS), unauthorized access, property damage, or intercepting private communications.
 4. **No Warranty and Zero Liability:** This project is provided "AS IS", without any warranties of any kind, express or implied. The author(s), contributors, and maintainers of this repository assume **NO LIABILITY** and are **NOT RESPONSIBLE** for any misuse, physical or digital damage, data loss, or legal consequences caused directly or indirectly by the use of this software.
 
-**USE AT YOUR OWN RISK.** If you do not agree with these terms, you must immediately delete this software and cease using the hardware.
