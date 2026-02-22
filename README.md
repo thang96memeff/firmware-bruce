@@ -1,3 +1,14 @@
+link bw16 firmware for flipper mode: https://github.com/gorebrau/delfyRTL
+support vietnamese and filipino
+add tetris game in other menu
+baoduscuvaomomnhi
+
+
+
+
+
+
+
 ## ⚠️ Disclaimer and Legal Warning
 
 This firmware, software, and all associated tools (including but not limited to **Wi-Fi Deauthentication, RF Signal Cloning/Replay, and Signal Jamming** capabilities) are provided strictly for **educational purposes, ethical hacking, and authorized security auditing only**.
