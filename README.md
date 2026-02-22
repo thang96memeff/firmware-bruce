@@ -1,6 +1,12 @@
 link bw16 firmware for flipper mode: https://github.com/gorebrau/delfyRTL
+
+
 support vietnamese and filipino
+
+
 add tetris game in other menu
+
+
 baoduscuvaomomnhi
 
 
