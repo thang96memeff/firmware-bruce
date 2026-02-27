@@ -20,26 +20,24 @@
     // ==========================================
     // CẤU HÌNH DỰ ÁN CỦA BẠN 
     // ==========================================
-    const ADMIN_PASSWORD_HASH = "bb84f53ce294e2c3a185586e1414a48e76f85bd594c0879a57ae8f9af8e8a903"; 
     
-    const GITHUB_LINK = "https://github.com/thang96memeff"; // Thay link Github của bạn vào đây
-
-    // CHUỖI VIETQR ĐỂ DONATE CỦA BẠN
+    const ADMIN_PASSWORD_HASH = "bb84f53ce294e2c3a185586e1414a48e76f85bd594c0879a57ae8f9af8e8a903"; 
+    const GITHUB_LINK = "https://github.com/thang96memeff/firmware-bruce"; 
     const DONATE_QR_STRING = "00020101021138570010A000000727012700069704220113VQRQADXDU20070208QRIBFTTA53037045802VN62150107NPS6869080063042FC8";
 
-    // DÁN LINK FIRMWARE CỦA BẠN VÀO MỤC 'url' TRƯỚC KHI TẢI LÊN GITHUB
+    // ĐÃ ĐIỀN SẴN TÊN FILE TỪ REPOSITORY CỦA BẠN (Vì nằm chung thư mục nên chỉ cần tên file)
     const INITIAL_BOARDS = [
-      { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: 'Bruce-CYD-2432S028.bin' },
       { id: 'CYD-2USB', name: 'CYD-2USB', chip: 'ESP32', url: '' },
       { id: 'CYD-2432W328C', name: 'CYD-2432W328C', chip: 'ESP32', url: '' },
       { id: 'CYD-2432W328C_2', name: 'CYD-2432W328C_2', chip: 'ESP32', url: '' },
       { id: 'CYD-2432W328R-or-S024R', name: 'CYD-2432W328R-or-S024R', chip: 'ESP32', url: '' },
-      { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32-S3', url: '' },
-      { id: 'lilygo-t-embed-cc1101', name: 'Lilygo T-Embed CC1101', chip: 'ESP32-S3', url: '' },
+      { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-display-ttgo.bin' },
+      { id: 'lilygo-t-embed-cc1101', name: 'Lilygo T-Embed CC1101', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-embed-cc1101.bin' },
       { id: 'm5stack-cplus1_1', name: 'M5StickC Plus 1.1', chip: 'ESP32', url: '' },
       { id: 'm5stack-cplus2', name: 'M5StickC Plus 2', chip: 'ESP32', url: '' },
-      { id: 'xingzhi-cube-s3', name: 'Xingzhi-Cube', chip: 'ESP32-S3', url: '' },
-      { id: 'smoochiee-board', name: 'Smoochiee Board', chip: 'ESP32', url: '' },
+      { id: 'xingzhi-cube-s3', name: 'Xingzhi-Cube', chip: 'ESP32-S3', url: 'Bruce-xingzhi-cube-s3.bin' },
+      { id: 'smoochiee-board', name: 'Smoochiee Board', chip: 'ESP32', url: 'Bruce-smoochiee-board.bin' },
       { id: 'm5stack-cardputer', name: 'M5Stack Cardputer', chip: 'ESP32-S3', url: '' },
       { id: 'esp32-c5-tft', name: 'ESP32-C5', chip: 'ESP32-C5', url: '' },
     ];
@@ -58,8 +56,10 @@
         selectDevice: "Select device to flash",
         boardType: "Board Type",
         fwStatus: "Firmware Status",
-        fwReady: "Ready to flash online (Merged .bin)",
+        fwReady: "Ready to flash from Repo",
         fwNotConfigured: "Firmware Link not configured.",
+        localFileLabel: "Or flash directly from local .bin file:",
+        statusReadyLocal: "Ready to flash local file",
         btnConnect: "1. Connect USB Cable",
         btnDisconnect: "Disconnect",
         btnFlash: "2. FLASH FIRMWARE",
@@ -71,7 +71,7 @@
         adminSave: "Save Settings",
         adminTabFw: "Firmware Links (.bin)",
         adminTabUi: "UI Settings",
-        adminGuide: "Guide: Paste the direct link to the merged firmware (.bin) file.",
+        adminGuide: "Guide: You can paste a direct URL OR just the filename (e.g. firmware.bin) if it's hosted in the same GitHub Repo.",
         adminUiLogo: "Logo Configuration",
         adminUiLogoLabel: "Logo URL (Square)",
         adminUiBg: "Background Configuration",
@@ -82,14 +82,14 @@
         modalInput: "Enter password...",
         modalCancel: "Cancel",
         modalUnlock: "Unlock",
-        modalWrong: "Invalid password!",
         alertSaved: "Settings saved locally!\nNote: To apply globally, update the 'INITIAL_BOARDS' in the source code on GitHub.",
         alertWrongPass: "Wrong password!",
         browserErrTitle: "Browser not supported",
         browserErrDesc: "Please use Google Chrome or Edge on a PC to connect via USB.",
         logInit: "Initializing esptool...",
-        logDL: "Downloading Firmware from network...",
-        logDLDone: "Firmware downloaded",
+        logDL: "Downloading Firmware from Repo...",
+        logReadLocal: "Reading local file:",
+        logDLDone: "Firmware loaded",
         logSync: "Syncing with ESP device...",
         logChip: "Chip detected:",
         logErase: "Erasing Flash and starting to write...",
@@ -100,13 +100,12 @@
         logConnFail: "Connection failed:",
         logDisconn: "Disconnected.",
         logUnlock: "Admin Mode Unlocked.",
-        logMissingFw: "Error: Firmware Link not configured. Contact Admin.",
+        logMissingFw: "Error: Firmware not configured and no local file selected.",
         btnDonate: "Donate",
         donateTitle: "Support the Developer",
         donateDesc: "If you find this tool helpful, please consider buying me a coffee. Your support is greatly appreciated!",
         donateCopy: "Copy QR String",
-        donateCopied: "Copied!",
-        close: "Close"
+        donateCopied: "Copied!"
       },
       vi: {
         title: "DUSCU FLASHER",
@@ -116,8 +115,10 @@
         selectDevice: "Chọn thiết bị cần nạp",
         boardType: "Loại Bo Mạch",
         fwStatus: "Trạng thái Firmware",
-        fwReady: "Sẵn sàng nạp trực tuyến (Merged .bin)",
-        fwNotConfigured: "Chưa cấu hình Link Firmware.",
+        fwReady: "Sẵn sàng nạp từ Kho GitHub",
+        fwNotConfigured: "Chưa cấu hình File.",
+        localFileLabel: "Hoặc chọn File .bin trực tiếp từ máy tính:",
+        statusReadyLocal: "Sẵn sàng nạp file từ máy",
         btnConnect: "1. Kết nối cáp USB",
         btnDisconnect: "Ngắt kết nối",
         btnFlash: "2. NẠP FIRMWARE",
@@ -127,9 +128,9 @@
         logsEmpty: "Chưa có dữ liệu. Hãy kết nối và nạp firmware...",
         adminTitle: "Bảng Quản Trị Hệ Thống",
         adminSave: "Lưu thiết lập",
-        adminTabFw: "Link Firmware (.bin)",
+        adminTabFw: "Link / Tên File (.bin)",
         adminTabUi: "Giao diện",
-        adminGuide: "Hướng dẫn: Dán đường dẫn trực tiếp (Direct Link) tới tệp firmware (.bin) đã biên dịch gộp (Merged).",
+        adminGuide: "Hướng dẫn: Bạn có thể dán Link đầy đủ HOẶC chỉ cần điền tên file (VD: firmware.bin) nếu file đã nằm chung thư mục trên GitHub.",
         adminUiLogo: "Cấu hình Logo",
         adminUiLogoLabel: "Đường dẫn ảnh Logo (Vuông)",
         adminUiBg: "Cấu hình Hình Nền",
@@ -140,14 +141,14 @@
         modalInput: "Nhập mật khẩu...",
         modalCancel: "Hủy",
         modalUnlock: "Mở khóa",
-        modalWrong: "Sai mật khẩu!",
-        alertSaved: "Đã lưu thiết lập trên máy này!\nLưu ý: Để hiển thị cho người khác, bạn phải copy các link này vào mã nguồn (INITIAL_BOARDS) và tải lên GitHub.",
+        alertSaved: "Đã lưu thiết lập trên máy này!\nLưu ý: Để hiển thị cho người khác, bạn phải sửa biến INITIAL_BOARDS trong code và tải lên GitHub.",
         alertWrongPass: "Sai mật khẩu!",
         browserErrTitle: "Trình duyệt không hỗ trợ",
         browserErrDesc: "Vui lòng sử dụng Google Chrome hoặc Edge trên máy tính để kết nối cáp USB.",
         logInit: "Đang tải thư viện nạp esptool...",
-        logDL: "Đang tải Firmware từ mạng...",
-        logDLDone: "Đã tải xong firmware",
+        logDL: "Đang tải Firmware từ Kho lưu trữ...",
+        logReadLocal: "Đang đọc file từ ổ cứng:",
+        logDLDone: "Đã nạp xong dữ liệu file",
         logSync: "Đang đồng bộ với thiết bị ESP...",
         logChip: "Phát hiện chip:",
         logErase: "Đang xóa Flash và bắt đầu nạp...",
@@ -158,18 +159,17 @@
         logConnFail: "Kết nối thất bại:",
         logDisconn: "Đã ngắt kết nối.",
         logUnlock: "Đã mở khóa Chế độ Quản trị.",
-        logMissingFw: "Lỗi: Chưa cấu hình Link Firmware. Liên hệ Admin.",
+        logMissingFw: "Lỗi: Chưa có file nào được cấu hình hoặc chọn.",
         btnDonate: "Ủng hộ",
         donateTitle: "Ủng hộ Tác giả",
         donateDesc: "Nếu bạn thấy công cụ này hữu ích, hãy ủng hộ mình một ly cà phê qua mã QR ngân hàng nhé. Cảm ơn bạn rất nhiều!",
         donateCopy: "Copy chuỗi QR",
-        donateCopied: "Đã copy!",
-        close: "Đóng"
+        donateCopied: "Đã copy!"
       }
     };
 
     function App() {
-      const [lang, setLang] = useState('en');
+      const [lang, setLang] = useState('vi'); // Để mặc định tiếng Việt cho bạn dễ dùng
       const t = TRANSLATIONS[lang]; 
       const langRef = useRef(lang); 
 
@@ -182,6 +182,9 @@
       const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
       const selectedBoard = boards.find(b => b.id === selectedBoardId);
 
+      // FILE TỪ MÁY TÍNH
+      const [localFile, setLocalFile] = useState(null);
+
       const [bgUrl, setBgUrl] = useState("");
       const [logoUrl, setLogoUrl] = useState("");
 
@@ -191,7 +194,6 @@
       const [adminTab, setAdminTab] = useState('firmware');
       const [loginError, setLoginError] = useState(false);
 
-      // Donate Modal State
       const [showDonateModal, setShowDonateModal] = useState(false);
       const [copied, setCopied] = useState(false);
 
@@ -213,24 +215,20 @@
         const savedLang = localStorage.getItem('duscu_lang');
         if (savedLang) setLang(savedLang);
 
-        const savedConfig = localStorage.getItem('duscu_flasher_config_v4');
+        const savedConfig = localStorage.getItem('duscu_flasher_config_v6');
         if (savedConfig) {
           try {
             const parsed = JSON.parse(savedConfig);
-            if (Array.isArray(parsed)) {
-              setBoards(parsed);
-            } else {
-              if (parsed.boards) {
-                const mergedBoards = INITIAL_BOARDS.map(initB => {
-                   const savedB = parsed.boards.find(pb => pb.id === initB.id);
-                   return savedB && savedB.url ? savedB : initB;
-                });
-                setBoards(mergedBoards);
-              }
-              if (parsed.settings) {
-                setBgUrl(parsed.settings.bgUrl || "");
-                setLogoUrl(parsed.settings.logoUrl || "");
-              }
+            if (parsed.boards) {
+              const mergedBoards = INITIAL_BOARDS.map(initB => {
+                 const savedB = parsed.boards.find(pb => pb.id === initB.id);
+                 return savedB && savedB.url ? savedB : initB;
+              });
+              setBoards(mergedBoards);
+            }
+            if (parsed.settings) {
+              setBgUrl(parsed.settings.bgUrl || "");
+              setLogoUrl(parsed.settings.logoUrl || "");
             }
           } catch(e) { console.error("Config parse error", e); }
         }
@@ -301,7 +299,6 @@
       const handleAdminLogin = async (e) => {
         e.preventDefault();
         setLoginError(false);
-        
         try {
           const msgBuffer = new TextEncoder().encode(adminInput);
           const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -317,9 +314,7 @@
           } else {
             setLoginError(true);
           }
-        } catch (error) {
-          console.error("Auth error", error);
-        }
+        } catch (error) { console.error("Auth error", error); }
       };
 
       const handleUrlChange = (id, newUrl) => {
@@ -327,7 +322,7 @@
       };
 
       const saveAdminConfig = () => {
-        localStorage.setItem('duscu_flasher_config_v4', JSON.stringify({
+        localStorage.setItem('duscu_flasher_config_v6', JSON.stringify({
           boards: boards,
           settings: { bgUrl, logoUrl }
         }));
@@ -341,9 +336,12 @@
         setTimeout(() => setCopied(false), 2000);
       };
 
+      // XỬ LÝ NẠP FLASH
       const handleFlash = async () => {
         const curT = TRANSLATIONS[langRef.current];
-        if (!selectedBoard || !selectedBoard.url) {
+        
+        // Kiểm tra xem có file local hay có URL cấu hình không
+        if (!localFile && (!selectedBoard || !selectedBoard.url)) {
           addLog(curT.logMissingFw, 'error');
           return;
         }
@@ -364,19 +362,25 @@
             document.head.appendChild(script);
           });
 
-          addLog(curT.logDL, 'warning');
-          
-          let fetchUrl = selectedBoard.url;
-          if (!fetchUrl.includes('localhost') && !fetchUrl.includes('raw.githubusercontent.com')) {
-              fetchUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(selectedBoard.url)}`;
-          }
+          let firmwareData;
 
-          const response = await fetch(fetchUrl);
-          if (!response.ok) throw new Error(`HTTP Error: ${response.statusText}`);
-          
-          const buffer = await response.arrayBuffer();
-          const firmwareData = new Uint8Array(buffer);
-          addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
+          // 1. Nếu có chọn File từ máy tính -> Ưu tiên lấy file máy tính
+          if (localFile) {
+             addLog(`${curT.logReadLocal} ${localFile.name}...`, 'warning');
+             const buffer = await localFile.arrayBuffer();
+             firmwareData = new Uint8Array(buffer);
+             addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
+          } 
+          // 2. Nếu không -> Tải file từ đường dẫn URL / Tên file
+          else {
+             addLog(curT.logDL, 'warning');
+             // Vì file cùng nằm chung thư mục GitHub Pages, fetch thẳng tên file là xong!
+             const response = await fetch(selectedBoard.url);
+             if (!response.ok) throw new Error(`Không tìm thấy file ${selectedBoard.url} trên kho GitHub (${response.status})`);
+             const buffer = await response.arrayBuffer();
+             firmwareData = new Uint8Array(buffer);
+             addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
+          }
 
           const esptool = window.esptooljs;
           const transport = new esptool.Transport(port);
@@ -444,33 +448,54 @@
                 value={selectedBoardId} 
                 onChange={(e) => setSelectedBoardId(e.target.value)}
                 disabled={isConnected || isFlashing}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50 cursor-pointer"
               >
                 {boards.map(b => (
-                  <option key={b.id} value={b.id}>{b.name}</option>
+                  <option key={b.id} value={b.id}>{b.name} ({b.chip})</option>
                 ))}
               </select>
             </div>
 
-            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 flex items-center gap-3">
-              {selectedBoard?.url ? (
-                 <i className="fa-solid fa-circle-check text-emerald-500 text-2xl"></i>
-              ) : (
-                 <i className="fa-solid fa-circle-xmark text-rose-500 text-2xl"></i>
-              )}
-              <div>
-                <p className="text-sm font-medium text-slate-200">{t.fwStatus}</p>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  {selectedBoard?.url ? t.fwReady : t.fwNotConfigured}
-                </p>
+            {/* KHU VỰC CHỌN FILE VÀ TRẠNG THÁI */}
+            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                {localFile ? (
+                   <i className="fa-solid fa-file-circle-check text-purple-500 text-3xl"></i>
+                ) : selectedBoard?.url ? (
+                   <i className="fa-solid fa-cloud-arrow-down text-emerald-500 text-3xl"></i>
+                ) : (
+                   <i className="fa-solid fa-circle-xmark text-rose-500 text-3xl"></i>
+                )}
+                <div>
+                  <p className="text-sm font-bold text-slate-200">{t.fwStatus}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    {localFile 
+                      ? `${t.statusReadyLocal} (${localFile.name})` 
+                      : selectedBoard?.url 
+                        ? `${t.fwReady}: ${selectedBoard.url}` 
+                        : t.fwNotConfigured}
+                  </p>
+                </div>
+              </div>
+
+              {/* Nút Upload File Tùy Chọn */}
+              <div className="border-t border-slate-800/50 pt-3">
+                <label className="block text-xs font-medium text-slate-400 mb-2">{t.localFileLabel}</label>
+                <input 
+                  type="file" 
+                  accept=".bin" 
+                  onChange={(e) => setLocalFile(e.target.files[0])}
+                  disabled={isConnected || isFlashing}
+                  className="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-purple-500/10 file:text-purple-400 hover:file:bg-purple-500/20 cursor-pointer disabled:opacity-50"
+                />
               </div>
             </div>
 
-            <div className="pt-4 space-y-3">
+            <div className="pt-2 space-y-3">
               {!isConnected ? (
                 <button 
                   onClick={handleConnect}
-                  className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-xl transition-colors border border-slate-700 shadow-lg"
+                  className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 px-4 rounded-xl transition-colors border border-slate-700 shadow-lg"
                 >
                   <i className="fab fa-usb text-lg"></i>
                   {t.btnConnect}
@@ -498,14 +523,14 @@
 
               <button 
                 onClick={handleFlash}
-                disabled={!isConnected || isFlashing || !selectedBoard?.url}
+                disabled={!isConnected || isFlashing || (!selectedBoard?.url && !localFile)}
                 className={`w-full flex items-center justify-center gap-2 font-bold py-4 px-4 rounded-xl transition-all duration-300 relative overflow-hidden shadow-xl ${
-                  (!isConnected || !selectedBoard?.url)
+                  (!isConnected || (!selectedBoard?.url && !localFile))
                     ? 'bg-slate-800/80 text-slate-500 cursor-not-allowed border border-slate-800' 
                     : 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)] border border-blue-500'
                 }`}
               >
-                <i className={`fa-solid fa-play text-lg ${isFlashing ? 'fa-fade' : ''}`}></i>
+                <i className={`fa-solid fa-bolt text-lg ${isFlashing ? 'fa-beat-fade' : ''}`}></i>
                 {isFlashing ? `${t.btnFlashing} ${progress}%` : t.btnFlash}
                 
                 {isFlashing && (
@@ -551,10 +576,10 @@
           <div className="overflow-y-auto p-5 custom-scrollbar flex-1 bg-slate-900/50">
             {adminTab === 'firmware' && (
               <div className="space-y-4">
-                <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl mb-6">
-                  <p className="text-sm text-rose-200">
+                <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl mb-6">
+                  <p className="text-sm text-blue-200 leading-relaxed">
                     <i className="fa-solid fa-circle-info mr-1"></i>
-                    {t.alertSaved}
+                    {t.adminGuide}
                   </p>
                 </div>
                 
@@ -566,10 +591,10 @@
                         <p className="text-xs text-slate-500">Chip: {board.chip}</p>
                       </div>
                       <div className="xl:w-2/3 relative flex-1">
-                        <i className="fa-solid fa-link absolute left-3 top-3 text-slate-500"></i>
+                        <i className="fa-solid fa-link absolute left-3 top-3.5 text-slate-500"></i>
                         <input 
                           type="text"
-                          placeholder={`${t.adminEx} https://.../firmware-merged.bin`}
+                          placeholder={`${t.adminEx} Bruce-smoochiee-board.bin`}
                           value={board.url}
                           onChange={(e) => handleUrlChange(board.id, e.target.value)}
                           className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg pl-9 pr-3 py-2.5 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
@@ -667,7 +692,6 @@
                   </span>
                 </span>
                 
-                {/* NÚT DONATE NỔI BẬT */}
                 <button 
                   onClick={() => setShowDonateModal(true)}
                   className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white h-10 px-4 rounded-full font-bold shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50 hover:scale-105 transition-all"
@@ -753,7 +777,6 @@
             </div>
           </div>
 
-          {/* Modal Quản Trị */}
           {showAdminModal && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
@@ -798,7 +821,6 @@
             </div>
           )}
 
-          {/* Modal Donate */}
           {showDonateModal && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
               <div className="bg-slate-900 border border-pink-500/30 rounded-3xl p-8 w-full max-w-sm shadow-[0_0_50px_rgba(236,72,153,0.15)] flex flex-col items-center text-center relative">
@@ -817,7 +839,6 @@
                 <h3 className="text-2xl font-bold text-white mb-2">{t.donateTitle}</h3>
                 <p className="text-sm text-slate-400 mb-6">{t.donateDesc}</p>
                 
-                {/* Vẽ QR Code từ URL an toàn */}
                 <div className="bg-white p-3 rounded-2xl mb-6 shadow-xl w-64 h-64 flex items-center justify-center">
                   <img 
                     src={`https://quickchart.io/qr?size=300&text=${encodeURIComponent(DONATE_QR_STRING)}`} 
