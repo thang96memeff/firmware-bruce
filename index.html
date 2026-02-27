@@ -336,11 +336,10 @@
         setTimeout(() => setCopied(false), 2000);
       };
 
-      // XỬ LÝ NẠP FLASH
+      // XỬ LÝ NẠP FLASH ĐÃ ĐƯỢC SỬA LỖI ESPTOOL-JS BẢN QUỐC TẾ
       const handleFlash = async () => {
         const curT = TRANSLATIONS[langRef.current];
         
-        // Kiểm tra xem có file local hay có URL cấu hình không
         if (!localFile && (!selectedBoard || !selectedBoard.url)) {
           addLog(curT.logMissingFw, 'error');
           return;
@@ -353,43 +352,55 @@
 
         try {
           addLog(curT.logInit, 'info');
+          // Fix: Ép cứng phiên bản ổn định nhất của thư viện esptool-js là 0.3.2 thay vì bản mới nhất bị lỗi
           await new Promise((resolve, reject) => {
             if (window.esptooljs) return resolve();
             const script = document.createElement('script');
-            script.src = "https://unpkg.com/esptool-js/bundle.js";
+            script.src = "https://unpkg.com/esptool-js@0.3.2/bundle.js"; 
             script.onload = resolve;
-            script.onerror = () => reject(new Error("Cannot load esptool-js"));
+            script.onerror = () => reject(new Error("Cannot load esptool-js from CDN"));
             document.head.appendChild(script);
           });
 
+          const esptool = window.esptooljs;
+          if (!esptool) throw new Error("Thư viện nạp bị thiếu biến hệ thống, vui lòng tải lại trang.");
+
           let firmwareData;
 
-          // 1. Nếu có chọn File từ máy tính -> Ưu tiên lấy file máy tính
+          // 1. Nạp file từ máy tính
           if (localFile) {
              addLog(`${curT.logReadLocal} ${localFile.name}...`, 'warning');
              const buffer = await localFile.arrayBuffer();
              firmwareData = new Uint8Array(buffer);
              addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
           } 
-          // 2. Nếu không -> Tải file từ đường dẫn URL / Tên file
+          // 2. Tải từ GitHub
           else {
              addLog(curT.logDL, 'warning');
-             // Vì file cùng nằm chung thư mục GitHub Pages, fetch thẳng tên file là xong!
-             const response = await fetch(selectedBoard.url);
+             let fetchUrl = selectedBoard.url;
+             
+             // Thêm cache-buster để luôn lấy file mới nhất (không bị kẹt bản cũ khi bạn mới update Github)
+             fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
+
+             const response = await fetch(fetchUrl);
              if (!response.ok) throw new Error(`Không tìm thấy file ${selectedBoard.url} trên kho GitHub (${response.status})`);
              const buffer = await response.arrayBuffer();
              firmwareData = new Uint8Array(buffer);
              addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
           }
 
-          const esptool = window.esptooljs;
           const transport = new esptool.Transport(port);
           addLog(curT.logSync, 'warning');
           
+          // Khởi tạo ESPLoader an toàn
           const esploader = new esptool.ESPLoader({
-            transport,
+            transport: transport,
             baudrate: parseInt(baudRate),
-            terminal: { writeLine: (msg) => addLog(msg, 'device') }
+            terminal: { 
+                clean: () => {}, 
+                writeLine: (msg) => addLog(msg, 'device'),
+                write: (msg) => addLog(msg, 'device')
+            }
           });
 
           const chipName = await esploader.main();
