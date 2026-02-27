@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DUSCU FLASHER - Web Installer</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-950 m-0 p-0 overflow-x-hidden">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // ==========================================
+    // CẤU HÌNH DỰ ÁN CỦA BẠN 
+    // ==========================================
+    const ADMIN_PASSWORD_HASH = "bb84f53ce294e2c3a185586e1414a48e76f85bd594c0879a57ae8f9af8e8a903"; 
+    
+    const GITHUB_LINK = "https://github.com/thang96memeff"; // Thay link Github của bạn vào đây
+
+    // CHUỖI VIETQR ĐỂ DONATE CỦA BẠN
+    const DONATE_QR_STRING = "00020101021138570010A000000727012700069704220113VQRQADXDU20070208QRIBFTTA53037045802VN62150107NPS6869080063042FC8";
+
+    // DÁN LINK FIRMWARE CỦA BẠN VÀO MỤC 'url' TRƯỚC KHI TẢI LÊN GITHUB
+    const INITIAL_BOARDS = [
+      { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: '' },
+      { id: 'CYD-2USB', name: 'CYD-2USB', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432W328C', name: 'CYD-2432W328C', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432W328C_2', name: 'CYD-2432W328C_2', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432W328R-or-S024R', name: 'CYD-2432W328R-or-S024R', chip: 'ESP32', url: '' },
+      { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32-S3', url: '' },
+      { id: 'lilygo-t-embed-cc1101', name: 'Lilygo T-Embed CC1101', chip: 'ESP32-S3', url: '' },
+      { id: 'm5stack-cplus1_1', name: 'M5StickC Plus 1.1', chip: 'ESP32', url: '' },
+      { id: 'm5stack-cplus2', name: 'M5StickC Plus 2', chip: 'ESP32', url: '' },
+      { id: 'xingzhi-cube-s3', name: 'Xingzhi-Cube', chip: 'ESP32-S3', url: '' },
+      { id: 'smoochiee-board', name: 'Smoochiee Board', chip: 'ESP32', url: '' },
+      { id: 'm5stack-cardputer', name: 'M5Stack Cardputer', chip: 'ESP32-S3', url: '' },
+      { id: 'esp32-c5-tft', name: 'ESP32-C5', chip: 'ESP32-C5', url: '' },
+    ];
+
+    const BAUDRATES = [115200, 460800, 921600];
+
+    // ==========================================
+    // TỪ ĐIỂN ĐA NGÔN NGỮ
+    // ==========================================
+    const TRANSLATIONS = {
+      en: {
+        title: "DUSCU FLASHER",
+        subtitle: "1-Click Firmware Installer",
+        connected: "Connected",
+        disconnected: "Not Connected",
+        selectDevice: "Select device to flash",
+        boardType: "Board Type",
+        fwStatus: "Firmware Status",
+        fwReady: "Ready to flash online (Merged .bin)",
+        fwNotConfigured: "Firmware Link not configured.",
+        btnConnect: "1. Connect USB Cable",
+        btnDisconnect: "Disconnect",
+        btnFlash: "2. FLASH FIRMWARE",
+        btnFlashing: "FLASHING FIRMWARE...",
+        logsTitle: "Device Logs (Serial Monitor)",
+        logsClear: "Clear Log",
+        logsEmpty: "No data. Please connect and flash...",
+        adminTitle: "System Admin Panel",
+        adminSave: "Save Settings",
+        adminTabFw: "Firmware Links (.bin)",
+        adminTabUi: "UI Settings",
+        adminGuide: "Guide: Paste the direct link to the merged firmware (.bin) file.",
+        adminUiLogo: "Logo Configuration",
+        adminUiLogoLabel: "Logo URL (Square)",
+        adminUiBg: "Background Configuration",
+        adminUiBgLabel: "Background URL",
+        adminEx: "Example:",
+        modalTitle: "Admin Authentication",
+        modalDesc: "Please enter the admin password.",
+        modalInput: "Enter password...",
+        modalCancel: "Cancel",
+        modalUnlock: "Unlock",
+        modalWrong: "Invalid password!",
+        alertSaved: "Settings saved locally!\nNote: To apply globally, update the 'INITIAL_BOARDS' in the source code on GitHub.",
+        alertWrongPass: "Wrong password!",
+        browserErrTitle: "Browser not supported",
+        browserErrDesc: "Please use Google Chrome or Edge on a PC to connect via USB.",
+        logInit: "Initializing esptool...",
+        logDL: "Downloading Firmware from network...",
+        logDLDone: "Firmware downloaded",
+        logSync: "Syncing with ESP device...",
+        logChip: "Chip detected:",
+        logErase: "Erasing Flash and starting to write...",
+        logSuccess: "Firmware flashed SUCCESSFULLY! Rebooting...",
+        logFail: "Flashing failed:",
+        logRestore: "Restoring Serial monitor...",
+        logConnOk: "Connected successfully via Serial port",
+        logConnFail: "Connection failed:",
+        logDisconn: "Disconnected.",
+        logUnlock: "Admin Mode Unlocked.",
+        logMissingFw: "Error: Firmware Link not configured. Contact Admin.",
+        btnDonate: "Donate",
+        donateTitle: "Support the Developer",
+        donateDesc: "If you find this tool helpful, please consider buying me a coffee. Your support is greatly appreciated!",
+        donateCopy: "Copy QR String",
+        donateCopied: "Copied!",
+        close: "Close"
+      },
+      vi: {
+        title: "DUSCU FLASHER",
+        subtitle: "Trình cài đặt Firmware 1-Click",
+        connected: "Đã kết nối",
+        disconnected: "Chưa kết nối",
+        selectDevice: "Chọn thiết bị cần nạp",
+        boardType: "Loại Bo Mạch",
+        fwStatus: "Trạng thái Firmware",
+        fwReady: "Sẵn sàng nạp trực tuyến (Merged .bin)",
+        fwNotConfigured: "Chưa cấu hình Link Firmware.",
+        btnConnect: "1. Kết nối cáp USB",
+        btnDisconnect: "Ngắt kết nối",
+        btnFlash: "2. NẠP FIRMWARE",
+        btnFlashing: "ĐANG NẠP FIRMWARE...",
+        logsTitle: "Log Thiết Bị (Serial Monitor)",
+        logsClear: "Xóa Log",
+        logsEmpty: "Chưa có dữ liệu. Hãy kết nối và nạp firmware...",
+        adminTitle: "Bảng Quản Trị Hệ Thống",
+        adminSave: "Lưu thiết lập",
+        adminTabFw: "Link Firmware (.bin)",
+        adminTabUi: "Giao diện",
+        adminGuide: "Hướng dẫn: Dán đường dẫn trực tiếp (Direct Link) tới tệp firmware (.bin) đã biên dịch gộp (Merged).",
+        adminUiLogo: "Cấu hình Logo",
+        adminUiLogoLabel: "Đường dẫn ảnh Logo (Vuông)",
+        adminUiBg: "Cấu hình Hình Nền",
+        adminUiBgLabel: "Đường dẫn Hình Nền (Background)",
+        adminEx: "Ví dụ:",
+        modalTitle: "Xác thực Quản trị",
+        modalDesc: "Vui lòng nhập mật khẩu quản trị hệ thống.",
+        modalInput: "Nhập mật khẩu...",
+        modalCancel: "Hủy",
+        modalUnlock: "Mở khóa",
+        modalWrong: "Sai mật khẩu!",
+        alertSaved: "Đã lưu thiết lập trên máy này!\nLưu ý: Để hiển thị cho người khác, bạn phải copy các link này vào mã nguồn (INITIAL_BOARDS) và tải lên GitHub.",
+        alertWrongPass: "Sai mật khẩu!",
+        browserErrTitle: "Trình duyệt không hỗ trợ",
+        browserErrDesc: "Vui lòng sử dụng Google Chrome hoặc Edge trên máy tính để kết nối cáp USB.",
+        logInit: "Đang tải thư viện nạp esptool...",
+        logDL: "Đang tải Firmware từ mạng...",
+        logDLDone: "Đã tải xong firmware",
+        logSync: "Đang đồng bộ với thiết bị ESP...",
+        logChip: "Phát hiện chip:",
+        logErase: "Đang xóa Flash và bắt đầu nạp...",
+        logSuccess: "Nạp Firmware THÀNH CÔNG! Đang khởi động lại...",
+        logFail: "Nạp thất bại:",
+        logRestore: "Khôi phục trình đọc Serial...",
+        logConnOk: "Đã kết nối thành công qua cổng Serial",
+        logConnFail: "Kết nối thất bại:",
+        logDisconn: "Đã ngắt kết nối.",
+        logUnlock: "Đã mở khóa Chế độ Quản trị.",
+        logMissingFw: "Lỗi: Chưa cấu hình Link Firmware. Liên hệ Admin.",
+        btnDonate: "Ủng hộ",
+        donateTitle: "Ủng hộ Tác giả",
+        donateDesc: "Nếu bạn thấy công cụ này hữu ích, hãy ủng hộ mình một ly cà phê qua mã QR ngân hàng nhé. Cảm ơn bạn rất nhiều!",
+        donateCopy: "Copy chuỗi QR",
+        donateCopied: "Đã copy!",
+        close: "Đóng"
+      }
+    };
+
+    function App() {
+      const [lang, setLang] = useState('en');
+      const t = TRANSLATIONS[lang]; 
+      const langRef = useRef(lang); 
+
+      const [isSupported, setIsSupported] = useState(true);
+      const [port, setPort] = useState(null);
+      const [isConnected, setIsConnected] = useState(false);
+      const [baudRate, setBaudRate] = useState(115200);
+      
+      const [boards, setBoards] = useState(INITIAL_BOARDS);
+      const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
+      const selectedBoard = boards.find(b => b.id === selectedBoardId);
+
+      const [bgUrl, setBgUrl] = useState("");
+      const [logoUrl, setLogoUrl] = useState("");
+
+      const [isAdmin, setIsAdmin] = useState(false);
+      const [showAdminModal, setShowAdminModal] = useState(false);
+      const [adminInput, setAdminInput] = useState("");
+      const [adminTab, setAdminTab] = useState('firmware');
+      const [loginError, setLoginError] = useState(false);
+
+      // Donate Modal State
+      const [showDonateModal, setShowDonateModal] = useState(false);
+      const [copied, setCopied] = useState(false);
+
+      const [logs, setLogs] = useState([]);
+      const [isFlashing, setIsFlashing] = useState(false);
+      const [progress, setProgress] = useState(0);
+      
+      const terminalRef = useRef(null);
+      const readerRef = useRef(null);
+      const keepReadingRef = useRef(true);
+
+      useEffect(() => { langRef.current = lang; }, [lang]);
+
+      useEffect(() => {
+        if (!('serial' in navigator)) {
+          setIsSupported(false);
+        }
+        
+        const savedLang = localStorage.getItem('duscu_lang');
+        if (savedLang) setLang(savedLang);
+
+        const savedConfig = localStorage.getItem('duscu_flasher_config_v4');
+        if (savedConfig) {
+          try {
+            const parsed = JSON.parse(savedConfig);
+            if (Array.isArray(parsed)) {
+              setBoards(parsed);
+            } else {
+              if (parsed.boards) {
+                const mergedBoards = INITIAL_BOARDS.map(initB => {
+                   const savedB = parsed.boards.find(pb => pb.id === initB.id);
+                   return savedB && savedB.url ? savedB : initB;
+                });
+                setBoards(mergedBoards);
+              }
+              if (parsed.settings) {
+                setBgUrl(parsed.settings.bgUrl || "");
+                setLogoUrl(parsed.settings.logoUrl || "");
+              }
+            }
+          } catch(e) { console.error("Config parse error", e); }
+        }
+      }, []);
+
+      useEffect(() => {
+        if (terminalRef.current) {
+          terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+        }
+      }, [logs]);
+
+      const toggleLang = () => {
+        const newLang = lang === 'en' ? 'vi' : 'en';
+        setLang(newLang);
+        localStorage.setItem('duscu_lang', newLang);
+      };
+
+      const addLog = (msg, type = 'info') => {
+        setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg, type }]);
+      };
+
+      const readLoop = async (activePort) => {
+        keepReadingRef.current = true;
+        while (activePort.readable && keepReadingRef.current) {
+          readerRef.current = activePort.readable.getReader();
+          try {
+            while (true) {
+              const { value, done } = await readerRef.current.read();
+              if (done) break;
+              const text = new TextDecoder().decode(value);
+              const lines = text.split('\n');
+              lines.forEach(line => {
+                if (line.trim()) addLog(line.trim(), 'device');
+              });
+            }
+          } catch (error) {
+            if (keepReadingRef.current) addLog(`Serial Error: ${error.message}`, 'error');
+          } finally {
+            readerRef.current.releaseLock();
+          }
+        }
+      };
+
+      const handleConnect = async () => {
+        try {
+          const newPort = await navigator.serial.requestPort();
+          await newPort.open({ baudRate: parseInt(baudRate) });
+          setPort(newPort);
+          setIsConnected(true);
+          addLog(`${TRANSLATIONS[langRef.current].logConnOk} (${baudRate})`, 'success');
+          readLoop(newPort);
+        } catch (err) {
+          addLog(`${TRANSLATIONS[langRef.current].logConnFail} ${err.message}`, 'error');
+        }
+      };
+
+      const handleDisconnect = async () => {
+        keepReadingRef.current = false;
+        if (readerRef.current) await readerRef.current.cancel();
+        if (port) {
+          await port.close();
+          setPort(null);
+          setIsConnected(false);
+          addLog(TRANSLATIONS[langRef.current].logDisconn, 'warning');
+        }
+      };
+
+      const handleAdminLogin = async (e) => {
+        e.preventDefault();
+        setLoginError(false);
+        
+        try {
+          const msgBuffer = new TextEncoder().encode(adminInput);
+          const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+          if (hashHex === ADMIN_PASSWORD_HASH) {
+            setIsAdmin(true);
+            setShowAdminModal(false);
+            setAdminInput("");
+            setAdminTab('firmware');
+            addLog(TRANSLATIONS[langRef.current].logUnlock, "warning");
+          } else {
+            setLoginError(true);
+          }
+        } catch (error) {
+          console.error("Auth error", error);
+        }
+      };
+
+      const handleUrlChange = (id, newUrl) => {
+        setBoards(boards.map(b => b.id === id ? { ...b, url: newUrl } : b));
+      };
+
+      const saveAdminConfig = () => {
+        localStorage.setItem('duscu_flasher_config_v4', JSON.stringify({
+          boards: boards,
+          settings: { bgUrl, logoUrl }
+        }));
+        alert(t.alertSaved);
+        setIsAdmin(false);
+      };
+
+      const copyQRString = () => {
+        navigator.clipboard.writeText(DONATE_QR_STRING);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      };
+
+      const handleFlash = async () => {
+        const curT = TRANSLATIONS[langRef.current];
+        if (!selectedBoard || !selectedBoard.url) {
+          addLog(curT.logMissingFw, 'error');
+          return;
+        }
+
+        setIsFlashing(true);
+        setProgress(0);
+        keepReadingRef.current = false;
+        if (readerRef.current) await readerRef.current.cancel();
+
+        try {
+          addLog(curT.logInit, 'info');
+          await new Promise((resolve, reject) => {
+            if (window.esptooljs) return resolve();
+            const script = document.createElement('script');
+            script.src = "https://unpkg.com/esptool-js/bundle.js";
+            script.onload = resolve;
+            script.onerror = () => reject(new Error("Cannot load esptool-js"));
+            document.head.appendChild(script);
+          });
+
+          addLog(curT.logDL, 'warning');
+          
+          let fetchUrl = selectedBoard.url;
+          if (!fetchUrl.includes('localhost') && !fetchUrl.includes('raw.githubusercontent.com')) {
+              fetchUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(selectedBoard.url)}`;
+          }
+
+          const response = await fetch(fetchUrl);
+          if (!response.ok) throw new Error(`HTTP Error: ${response.statusText}`);
+          
+          const buffer = await response.arrayBuffer();
+          const firmwareData = new Uint8Array(buffer);
+          addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
+
+          const esptool = window.esptooljs;
+          const transport = new esptool.Transport(port);
+          addLog(curT.logSync, 'warning');
+          
+          const esploader = new esptool.ESPLoader({
+            transport,
+            baudrate: parseInt(baudRate),
+            terminal: { writeLine: (msg) => addLog(msg, 'device') }
+          });
+
+          const chipName = await esploader.main();
+          addLog(`${curT.logChip} ${chipName}`, 'success');
+
+          addLog(curT.logErase, 'info');
+          await esploader.writeFlash({
+            fileArray: [{ data: firmwareData, address: 0x0 }],
+            flashSize: 'keep',
+            eraseAll: false,
+            compress: true,
+            reportProgress: (fileIndex, written, total) => {
+              setProgress(Math.round((written / total) * 100));
+            }
+          });
+
+          addLog(curT.logSuccess, 'success');
+          await esploader.hardReset();
+
+        } catch (error) {
+          addLog(`${curT.logFail} ${error.message}`, 'error');
+          console.error(error);
+        } finally {
+          setIsFlashing(false);
+          setTimeout(() => {
+            addLog(curT.logRestore, 'info');
+            readLoop(port);
+            setProgress(0);
+          }, 2000);
+        }
+      };
+
+      if (!isSupported) {
+        return (
+          <div className="min-h-screen bg-slate-900 text-slate-200 flex items-center justify-center p-4">
+            <div className="bg-slate-800 p-8 rounded-2xl shadow-2xl max-w-md text-center border border-red-500/30">
+              <i className="fa-solid fa-triangle-exclamation text-6xl text-red-500 mb-4 block"></i>
+              <h2 className="text-2xl font-bold text-white mb-2">{t.browserErrTitle}</h2>
+              <p className="text-slate-400">{t.browserErrDesc}</p>
+            </div>
+          </div>
+        );
+      }
+
+      const UserView = (
+        <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl p-6 shadow-2xl">
+          <div className="flex items-center gap-2 mb-6 text-white font-semibold border-b border-slate-800 pb-4">
+            <i className="fa-solid fa-sliders text-blue-500 text-xl"></i>
+            <h2>{t.selectDevice}</h2>
+          </div>
+          
+          <div className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">{t.boardType}</label>
+              <select 
+                value={selectedBoardId} 
+                onChange={(e) => setSelectedBoardId(e.target.value)}
+                disabled={isConnected || isFlashing}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50"
+              >
+                {boards.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 flex items-center gap-3">
+              {selectedBoard?.url ? (
+                 <i className="fa-solid fa-circle-check text-emerald-500 text-2xl"></i>
+              ) : (
+                 <i className="fa-solid fa-circle-xmark text-rose-500 text-2xl"></i>
+              )}
+              <div>
+                <p className="text-sm font-medium text-slate-200">{t.fwStatus}</p>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {selectedBoard?.url ? t.fwReady : t.fwNotConfigured}
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-4 space-y-3">
+              {!isConnected ? (
+                <button 
+                  onClick={handleConnect}
+                  className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-xl transition-colors border border-slate-700 shadow-lg"
+                >
+                  <i className="fab fa-usb text-lg"></i>
+                  {t.btnConnect}
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <button 
+                    onClick={handleDisconnect}
+                    disabled={isFlashing}
+                    className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-rose-900/40 hover:border-rose-700/50 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 border border-slate-700 shadow-lg"
+                  >
+                    <i className="fa-solid fa-plug-circle-xmark text-lg"></i>
+                    {t.btnDisconnect}
+                  </button>
+                  <select 
+                    value={baudRate} 
+                    onChange={(e) => setBaudRate(e.target.value)}
+                    disabled={isFlashing}
+                    className="bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm text-slate-300 outline-none w-32 cursor-pointer shadow-lg"
+                  >
+                    {BAUDRATES.map(rate => <option key={rate} value={rate}>{rate}</option>)}
+                  </select>
+                </div>
+              )}
+
+              <button 
+                onClick={handleFlash}
+                disabled={!isConnected || isFlashing || !selectedBoard?.url}
+                className={`w-full flex items-center justify-center gap-2 font-bold py-4 px-4 rounded-xl transition-all duration-300 relative overflow-hidden shadow-xl ${
+                  (!isConnected || !selectedBoard?.url)
+                    ? 'bg-slate-800/80 text-slate-500 cursor-not-allowed border border-slate-800' 
+                    : 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)] border border-blue-500'
+                }`}
+              >
+                <i className={`fa-solid fa-play text-lg ${isFlashing ? 'fa-fade' : ''}`}></i>
+                {isFlashing ? `${t.btnFlashing} ${progress}%` : t.btnFlash}
+                
+                {isFlashing && (
+                  <div 
+                    className="absolute left-0 bottom-0 top-0 bg-white/20 transition-all duration-300 pointer-events-none"
+                    style={{ width: `${progress}%` }}
+                  />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+      const AdminView = (
+        <div className="bg-slate-900/95 backdrop-blur-md border border-purple-500/50 rounded-2xl shadow-[0_0_30px_rgba(168,85,247,0.15)] flex flex-col max-h-[700px] overflow-hidden">
+          <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-900 shrink-0">
+            <div className="flex items-center gap-2 text-purple-400 font-bold">
+              <i className="fa-solid fa-shield-halved text-lg"></i>
+              <h2>{t.adminTitle}</h2>
+            </div>
+            <button onClick={saveAdminConfig} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-purple-900/50">
+              <i className="fa-solid fa-floppy-disk"></i>
+              {t.adminSave}
+            </button>
+          </div>
+
+          <div className="flex border-b border-slate-800 shrink-0 bg-slate-950/50">
+            <button 
+              onClick={() => setAdminTab('firmware')}
+              className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${adminTab === 'firmware' ? 'bg-slate-800 text-purple-400 border-b-2 border-purple-500' : 'text-slate-400 hover:text-slate-200'}`}
+            >
+              <i className="fa-solid fa-file-code"></i> {t.adminTabFw}
+            </button>
+            <button 
+              onClick={() => setAdminTab('ui')}
+              className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${adminTab === 'ui' ? 'bg-slate-800 text-pink-400 border-b-2 border-pink-500' : 'text-slate-400 hover:text-slate-200'}`}
+            >
+              <i className="fa-solid fa-palette"></i> {t.adminTabUi}
+            </button>
+          </div>
+
+          <div className="overflow-y-auto p-5 custom-scrollbar flex-1 bg-slate-900/50">
+            {adminTab === 'firmware' && (
+              <div className="space-y-4">
+                <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl mb-6">
+                  <p className="text-sm text-rose-200">
+                    <i className="fa-solid fa-circle-info mr-1"></i>
+                    {t.alertSaved}
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  {boards.map(board => (
+                    <div key={board.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col xl:flex-row xl:items-center gap-3 hover:border-slate-600 transition-colors">
+                      <div className="xl:w-1/3">
+                        <p className="text-sm font-bold text-slate-200">{board.name}</p>
+                        <p className="text-xs text-slate-500">Chip: {board.chip}</p>
+                      </div>
+                      <div className="xl:w-2/3 relative flex-1">
+                        <i className="fa-solid fa-link absolute left-3 top-3 text-slate-500"></i>
+                        <input 
+                          type="text"
+                          placeholder={`${t.adminEx} https://.../firmware-merged.bin`}
+                          value={board.url}
+                          onChange={(e) => handleUrlChange(board.id, e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg pl-9 pr-3 py-2.5 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {adminTab === 'ui' && (
+              <div className="space-y-6">
+                <div className="bg-slate-950 p-5 rounded-xl border border-slate-800">
+                  <h3 className="text-white font-bold flex items-center gap-2 mb-4">
+                    <i className="fa-solid fa-image text-pink-500"></i> {t.adminUiLogo}
+                  </h3>
+                  <label className="block text-xs font-medium text-slate-400 mb-2">{t.adminUiLogoLabel}</label>
+                  <input 
+                    type="text"
+                    placeholder={`${t.adminEx} https://imgur.com/logo.png`}
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 focus:border-pink-500 outline-none"
+                  />
+                  {logoUrl && (
+                    <div className="mt-4 p-4 bg-slate-900 border border-slate-800 rounded-lg inline-block">
+                      <img src={logoUrl} alt="Preview Logo" className="w-16 h-16 object-contain rounded" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-slate-950 p-5 rounded-xl border border-slate-800">
+                  <h3 className="text-white font-bold flex items-center gap-2 mb-4">
+                    <i className="fa-solid fa-image text-pink-500"></i> {t.adminUiBg}
+                  </h3>
+                  <label className="block text-xs font-medium text-slate-400 mb-2">{t.adminUiBgLabel}</label>
+                  <input 
+                    type="text"
+                    placeholder={`${t.adminEx} https://imgur.com/bg.jpg`}
+                    value={bgUrl}
+                    onChange={(e) => setBgUrl(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 focus:border-pink-500 outline-none"
+                  />
+                  {bgUrl && (
+                    <div className="mt-4 w-full h-32 rounded-lg border border-slate-700 bg-cover bg-center" style={{ backgroundImage: `url(${bgUrl})` }}>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+
+      return (
+        <div 
+          className="min-h-screen bg-slate-950 text-slate-300 font-sans relative transition-all duration-500"
+          style={{
+            backgroundImage: bgUrl ? `url(${bgUrl})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed'
+          }}
+        >
+          <div className={`absolute inset-0 z-0 pointer-events-none transition-colors duration-500 ${bgUrl ? 'bg-slate-950/85 backdrop-blur-sm' : 'bg-transparent'}`}></div>
+
+          <div className="max-w-6xl mx-auto space-y-6 relative z-10 p-4 md:p-8">
+            
+            <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800/60 pb-6 gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 bg-blue-600/20 rounded-xl flex items-center justify-center text-blue-500 overflow-hidden shadow-lg border border-blue-500/20 backdrop-blur-md shrink-0">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="DUSCU Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <i className="fa-solid fa-microchip text-3xl"></i>
+                  )}
+                </div>
+                <div>
+                  <h1 className="text-3xl font-extrabold text-white tracking-tight drop-shadow-md">
+                    {t.title}
+                  </h1>
+                  <p className="text-sm text-blue-400 font-medium tracking-wide">{t.subtitle}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap justify-end">
+                <span className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-700 shadow-lg mr-2">
+                  <span className={`relative flex h-2.5 w-2.5`}>
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isConnected ? 'bg-emerald-400' : 'bg-rose-400'}`}></span>
+                    <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isConnected ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
+                  </span>
+                  <span className="text-xs font-bold hidden md:inline text-slate-200 uppercase tracking-wider whitespace-nowrap">
+                    {isConnected ? t.connected : t.disconnected}
+                  </span>
+                </span>
+                
+                {/* NÚT DONATE NỔI BẬT */}
+                <button 
+                  onClick={() => setShowDonateModal(true)}
+                  className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white h-10 px-4 rounded-full font-bold shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50 hover:scale-105 transition-all"
+                >
+                  <i className="fa-solid fa-heart fa-beat"></i>
+                  <span className="text-sm">{t.btnDonate}</span>
+                </button>
+
+                <button 
+                  onClick={toggleLang}
+                  className="px-3 h-10 flex items-center justify-center text-sm font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors bg-slate-900/80 backdrop-blur-md rounded-full border border-slate-700 shadow-lg"
+                  title="Change Language"
+                >
+                  {lang === 'en' ? '🇻🇳 VI' : '🇬🇧 EN'}
+                </button>
+
+                <a 
+                  href={GITHUB_LINK} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors bg-slate-900/80 backdrop-blur-md rounded-full border border-slate-700 shadow-lg"
+                  title="GitHub Source"
+                >
+                  <i className="fab fa-github text-lg"></i>
+                </a>
+
+                <button 
+                  onClick={() => isAdmin ? setIsAdmin(false) : setShowAdminModal(true)}
+                  className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-purple-400 hover:bg-slate-800 transition-colors bg-slate-900/80 backdrop-blur-md rounded-full border border-slate-700 shadow-lg"
+                  title="Admin Panel"
+                >
+                  <i className={`fa-solid ${isAdmin ? 'fa-lock-open' : 'fa-lock'}`}></i>
+                </button>
+              </div>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+              <div className="lg:col-span-5 space-y-6">
+                {isAdmin ? AdminView : UserView}
+              </div>
+
+              <div className="lg:col-span-7 h-[600px] flex flex-col bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
+                  <div className="flex items-center gap-2 text-slate-300 font-semibold">
+                    <i className="fa-solid fa-terminal text-emerald-500"></i>
+                    <h2>{t.logsTitle}</h2>
+                  </div>
+                  <button 
+                    onClick={() => setLogs([])}
+                    className="text-xs font-medium px-4 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-300 transition-colors border border-slate-700"
+                  >
+                    {t.logsClear}
+                  </button>
+                </div>
+                
+                <div 
+                  ref={terminalRef}
+                  className="flex-1 p-5 overflow-y-auto font-mono text-sm space-y-2 bg-[#050b14]/80 custom-scrollbar select-text"
+                  style={{ scrollBehavior: 'smooth' }}
+                >
+                  {logs.length === 0 ? (
+                    <div className="text-slate-600 flex items-center justify-center h-full italic text-center px-4">
+                      {t.logsEmpty}
+                    </div>
+                  ) : (
+                    logs.map((log, idx) => (
+                      <div key={idx} className="flex gap-3 leading-relaxed break-all">
+                        <span className="text-slate-500 shrink-0 select-none">[{log.time}]</span>
+                        <span className={`
+                          ${log.type === 'error' ? 'text-rose-400 font-semibold' : ''}
+                          ${log.type === 'success' ? 'text-emerald-400 font-medium' : ''}
+                          ${log.type === 'warning' ? 'text-amber-400' : ''}
+                          ${log.type === 'info' ? 'text-blue-300' : ''}
+                          ${log.type === 'device' ? 'text-slate-300' : ''}
+                        `}>
+                          {log.msg}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Modal Quản Trị */}
+          {showAdminModal && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+                <h3 className="text-xl font-bold text-white mb-2">{t.modalTitle}</h3>
+                <p className="text-sm text-slate-400 mb-5">{t.modalDesc}</p>
+                <form onSubmit={handleAdminLogin}>
+                  <input 
+                    type="password"
+                    autoFocus
+                    value={adminInput}
+                    onChange={e => {
+                      setAdminInput(e.target.value);
+                      setLoginError(false);
+                    }}
+                    placeholder={t.modalInput}
+                    className={`w-full bg-slate-950 border rounded-lg p-3 text-white mb-3 focus:ring-1 outline-none transition-colors ${loginError ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500' : 'border-slate-700 focus:border-purple-500 focus:ring-purple-500'}`}
+                  />
+                  {loginError && <p className="text-rose-500 text-xs mb-4"><i className="fa-solid fa-circle-exclamation mr-1"></i>{t.alertWrongPass}</p>}
+                  {!loginError && <div className="mb-4"></div>}
+                  
+                  <div className="flex gap-3">
+                    <button 
+                      type="button"
+                      onClick={() => {
+                        setShowAdminModal(false);
+                        setLoginError(false);
+                        setAdminInput("");
+                      }}
+                      className="flex-1 py-2.5 rounded-lg font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors border border-slate-700"
+                    >
+                      {t.modalCancel}
+                    </button>
+                    <button 
+                      type="submit"
+                      className="flex-1 py-2.5 rounded-lg font-medium text-white bg-purple-600 hover:bg-purple-500 transition-colors shadow-lg shadow-purple-900/50"
+                    >
+                      {t.modalUnlock}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Donate */}
+          {showDonateModal && (
+            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+              <div className="bg-slate-900 border border-pink-500/30 rounded-3xl p-8 w-full max-w-sm shadow-[0_0_50px_rgba(236,72,153,0.15)] flex flex-col items-center text-center relative">
+                
+                <button 
+                  onClick={() => setShowDonateModal(false)}
+                  className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 hover:bg-rose-500 text-slate-400 hover:text-white transition-colors"
+                >
+                  <i className="fa-solid fa-xmark"></i>
+                </button>
+
+                <div className="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center text-pink-500 text-2xl mb-4 shadow-[0_0_20px_rgba(236,72,153,0.3)]">
+                  <i className="fa-solid fa-heart fa-beat"></i>
+                </div>
+                
+                <h3 className="text-2xl font-bold text-white mb-2">{t.donateTitle}</h3>
+                <p className="text-sm text-slate-400 mb-6">{t.donateDesc}</p>
+                
+                {/* Vẽ QR Code từ URL an toàn */}
+                <div className="bg-white p-3 rounded-2xl mb-6 shadow-xl w-64 h-64 flex items-center justify-center">
+                  <img 
+                    src={`https://quickchart.io/qr?size=300&text=${encodeURIComponent(DONATE_QR_STRING)}`} 
+                    alt="Donate QR Code"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+
+                <div className="w-full flex gap-3">
+                  <button 
+                    onClick={copyQRString}
+                    className="flex-1 py-3 px-4 rounded-xl font-medium text-pink-400 bg-pink-500/10 hover:bg-pink-500/20 transition-colors border border-pink-500/30 flex items-center justify-center gap-2"
+                  >
+                    {copied ? <i className="fa-solid fa-check"></i> : <i className="fa-regular fa-copy"></i>}
+                    {copied ? t.donateCopied : t.donateCopy}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+
+  <style>
+    .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #334155; border-radius: 20px; border: 2px solid transparent; background-clip: padding-box; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #475569; }
+  </style>
+</body>
+</html>
