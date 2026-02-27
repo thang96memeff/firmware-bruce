@@ -21,7 +21,7 @@
     // CẤU HÌNH DỰ ÁN CỦA BẠN 
     // ==========================================
     
-    const ADMIN_PASSWORD_HASH = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"; 
+    const ADMIN_PASSWORD_HASH = "bb84f53ce294e2c3a185586e1414a48e76f85bd594c0879a57ae8f9af8e8a903"; 
     const GITHUB_LINK = "https://github.com/thang96memeff/firmware-bruce"; 
     const DONATE_QR_STRING = "00020101021138570010A000000727012700069704220113VQRQADXDU20070208QRIBFTTA53037045802VN62150107NPS6869080063042FC8";
 
@@ -249,12 +249,13 @@
         setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg, type }]);
       };
 
+      // Vòng lặp đọc Serial - Đã được tối ưu để dễ dàng ngắt/mở
       const readLoop = async (activePort) => {
         keepReadingRef.current = true;
         while (activePort.readable && keepReadingRef.current) {
           readerRef.current = activePort.readable.getReader();
           try {
-            while (true) {
+            while (keepReadingRef.current) {
               const { value, done } = await readerRef.current.read();
               if (done) break;
               const text = new TextDecoder().decode(value);
@@ -266,7 +267,10 @@
           } catch (error) {
             if (keepReadingRef.current) addLog(`Serial Error: ${error.message}`, 'error');
           } finally {
-            readerRef.current.releaseLock();
+            if (readerRef.current) {
+              readerRef.current.releaseLock();
+              readerRef.current = null;
+            }
           }
         }
       };
@@ -286,9 +290,14 @@
 
       const handleDisconnect = async () => {
         keepReadingRef.current = false;
-        if (readerRef.current) await readerRef.current.cancel();
+        if (readerRef.current) {
+            await readerRef.current.cancel().catch(() => {});
+        }
+        // Đợi 200ms cho luồng đọc tắt hoàn toàn
+        await new Promise(r => setTimeout(r, 200));
+        
         if (port) {
-          await port.close();
+          await port.close().catch(() => {});
           setPort(null);
           setIsConnected(false);
           addLog(TRANSLATIONS[langRef.current].logDisconn, 'warning');
@@ -335,7 +344,9 @@
         setTimeout(() => setCopied(false), 2000);
       };
 
-      // XỬ LÝ NẠP FLASH VỚI KIẾN TRÚC MỚI NHẤT
+      // ==============================================================
+      // XỬ LÝ NẠP FLASH V10 - FIX TRIỆT ĐỂ LỖI PORT CONFLICT
+      // ==============================================================
       const handleFlash = async () => {
         const curT = TRANSLATIONS[langRef.current];
         
@@ -346,22 +357,28 @@
 
         setIsFlashing(true);
         setProgress(0);
+        
+        // 1. Dừng trình đọc Serial hiện tại và ĐÓNG cổng (để nhả quyền cho esptool-js)
         keepReadingRef.current = false;
-        if (readerRef.current) await readerRef.current.cancel();
+        if (readerRef.current) {
+            await readerRef.current.cancel().catch(() => {});
+        }
+        await new Promise(r => setTimeout(r, 400)); // Đợi luồng nhả khóa
+        
+        if (port) {
+            await port.close().catch(() => {});
+        }
 
         try {
           addLog(curT.logInit, 'info');
 
-          // CỐ GẮNG TẢI THƯ VIỆN THÔNG MINH
+          // 2. Tải thư viện ESPTOOL thông minh
           let ESPLoader, Transport;
           try {
-              // 1. Dùng tính năng import động (Module) để lấy bản 0.4.4 mới nhất và xịn nhất
               const esptool = await new Function("return import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm')")();
               ESPLoader = esptool.ESPLoader;
               Transport = esptool.Transport;
           } catch (e1) {
-              console.log("ESM fallback to script:", e1);
-              // 2. Nếu trình duyệt chặn Module, lùi về bản 0.2.0 cực kỳ ổn định qua Script tag
               await new Promise((resolve, reject) => {
                   if (window.esptooljs && window.esptooljs.Transport) return resolve();
                   const script = document.createElement('script');
@@ -377,12 +394,12 @@
           }
 
           if (!ESPLoader || !Transport) {
-              throw new Error("Không thể tải thư viện nạp từ máy chủ, vui lòng kiểm tra mạng.");
+              throw new Error("Không thể tải thư viện nạp từ máy chủ, vui lòng tải lại trang.");
           }
 
           let firmwareData;
 
-          // XỬ LÝ LẤY DỮ LIỆU FILE (MÁY TÍNH HOẶC GITHUB)
+          // 3. Tải dữ liệu File
           if (localFile) {
              addLog(`${curT.logReadLocal} ${localFile.name}...`, 'warning');
              const buffer = await localFile.arrayBuffer();
@@ -392,7 +409,6 @@
           else {
              addLog(curT.logDL, 'warning');
              let fetchUrl = selectedBoard.url;
-             // Thêm cache-buster để tránh tải nhầm file cũ nếu bạn mới up đè lên Github
              fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
 
              const response = await fetch(fetchUrl);
@@ -402,9 +418,13 @@
              addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
           }
 
-          // CHUẨN BỊ NẠP VỚI KIẾN TRÚC TỰ TƯƠNG THÍCH API
+          // 4. Mở lại port thông qua Transport của esptool-js
           const transport = new Transport(port);
           addLog(curT.logSync, 'warning');
+          
+          if (typeof transport.connect === 'function') {
+              await transport.connect({ baudRate: parseInt(baudRate) });
+          }
           
           const terminalParams = { 
               clean: () => {}, 
@@ -413,12 +433,9 @@
           };
 
           let esploader;
-          // Tự động nhận diện cấu trúc hàm theo phiên bản thư viện đã tải được
           if (ESPLoader.length > 1) { 
-              // Hàm bản mới 0.4.x (Truyền các tham số rời)
               esploader = new ESPLoader(transport, parseInt(baudRate), terminalParams);
           } else { 
-              // Hàm bản cũ 0.2.x (Truyền 1 cục object)
               esploader = new ESPLoader({
                   transport: transport,
                   baudrate: parseInt(baudRate),
@@ -441,26 +458,40 @@
               }
           };
 
-          // Tự động nhận diện tên hàm nạp
           if (typeof esploader.write_flash === 'function') {
-              await esploader.write_flash(flashOptions);  // Bản mới dùng dấu gạch dưới
+              await esploader.write_flash(flashOptions);
           } else if (typeof esploader.writeFlash === 'function') {
-              await esploader.writeFlash(flashOptions);   // Bản cũ dùng chữ in hoa
+              await esploader.writeFlash(flashOptions);
           } else {
               throw new Error("Không tìm thấy hàm nạp flash trong thư viện.");
           }
 
           addLog(curT.logSuccess, 'success');
           await esploader.hardReset();
+          
+          // Sau khi hardReset, esptool sẽ tự đóng kết nối Transport
+          if (typeof transport.disconnect === 'function') {
+             await transport.disconnect().catch(() => {});
+          }
 
         } catch (error) {
           addLog(`${curT.logFail} ${error.message}`, 'error');
           console.error(error);
         } finally {
           setIsFlashing(false);
-          setTimeout(() => {
-            addLog(curT.logRestore, 'info');
-            readLoop(port);
+          
+          // 5. Mở lại Serial Monitor tự động cho người dùng
+          setTimeout(async () => {
+            try {
+               addLog(curT.logRestore, 'info');
+               if (port) {
+                   await port.open({ baudRate: parseInt(baudRate) });
+                   readLoop(port);
+               }
+            } catch (err) {
+               addLog(`Không thể mở lại Serial tự động: ${err.message}. Bạn có thể bấm Kết Nối lại.`, 'error');
+               setIsConnected(false);
+            }
             setProgress(0);
           }, 2000);
         }
