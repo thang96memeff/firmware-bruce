@@ -21,11 +21,11 @@
     // CẤU HÌNH DỰ ÁN CỦA BẠN 
     // ==========================================
     
-    const ADMIN_PASSWORD_HASH = "bb84f53ce294e2c3a185586e1414a48e76f85bd594c0879a57ae8f9af8e8a903"; 
+    const ADMIN_PASSWORD_HASH = "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918"; 
     const GITHUB_LINK = "https://github.com/thang96memeff/firmware-bruce"; 
     const DONATE_QR_STRING = "00020101021138570010A000000727012700069704220113VQRQADXDU20070208QRIBFTTA53037045802VN62150107NPS6869080063042FC8";
 
-    // ĐÃ ĐIỀN SẴN TÊN FILE TỪ REPOSITORY CỦA BẠN (Vì nằm chung thư mục nên chỉ cần tên file)
+    // ĐÃ ĐIỀN SẴN TÊN FILE TỪ REPOSITORY CỦA BẠN
     const INITIAL_BOARDS = [
       { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: 'Bruce-CYD-2432S028.bin' },
       { id: 'CYD-2USB', name: 'CYD-2USB', chip: 'ESP32', url: '' },
@@ -86,7 +86,7 @@
         alertWrongPass: "Wrong password!",
         browserErrTitle: "Browser not supported",
         browserErrDesc: "Please use Google Chrome or Edge on a PC to connect via USB.",
-        logInit: "Initializing esptool...",
+        logInit: "Initializing esptool library...",
         logDL: "Downloading Firmware from Repo...",
         logReadLocal: "Reading local file:",
         logDLDone: "Firmware loaded",
@@ -169,7 +169,7 @@
     };
 
     function App() {
-      const [lang, setLang] = useState('vi'); // Để mặc định tiếng Việt cho bạn dễ dùng
+      const [lang, setLang] = useState('vi'); 
       const t = TRANSLATIONS[lang]; 
       const langRef = useRef(lang); 
 
@@ -182,7 +182,6 @@
       const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
       const selectedBoard = boards.find(b => b.id === selectedBoardId);
 
-      // FILE TỪ MÁY TÍNH
       const [localFile, setLocalFile] = useState(null);
 
       const [bgUrl, setBgUrl] = useState("");
@@ -336,7 +335,7 @@
         setTimeout(() => setCopied(false), 2000);
       };
 
-      // XỬ LÝ NẠP FLASH ĐÃ ĐƯỢC SỬA LỖI ESPTOOL-JS BẢN QUỐC TẾ
+      // XỬ LÝ NẠP FLASH VỚI KIẾN TRÚC MỚI NHẤT
       const handleFlash = async () => {
         const curT = TRANSLATIONS[langRef.current];
         
@@ -352,34 +351,48 @@
 
         try {
           addLog(curT.logInit, 'info');
-          // Fix: Ép cứng phiên bản ổn định nhất của thư viện esptool-js là 0.3.2 thay vì bản mới nhất bị lỗi
-          await new Promise((resolve, reject) => {
-            if (window.esptooljs) return resolve();
-            const script = document.createElement('script');
-            script.src = "https://unpkg.com/esptool-js@0.3.2/bundle.js"; 
-            script.onload = resolve;
-            script.onerror = () => reject(new Error("Cannot load esptool-js from CDN"));
-            document.head.appendChild(script);
-          });
 
-          const esptool = window.esptooljs;
-          if (!esptool) throw new Error("Thư viện nạp bị thiếu biến hệ thống, vui lòng tải lại trang.");
+          // CỐ GẮNG TẢI THƯ VIỆN THÔNG MINH
+          let ESPLoader, Transport;
+          try {
+              // 1. Dùng tính năng import động (Module) để lấy bản 0.4.4 mới nhất và xịn nhất
+              const esptool = await new Function("return import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm')")();
+              ESPLoader = esptool.ESPLoader;
+              Transport = esptool.Transport;
+          } catch (e1) {
+              console.log("ESM fallback to script:", e1);
+              // 2. Nếu trình duyệt chặn Module, lùi về bản 0.2.0 cực kỳ ổn định qua Script tag
+              await new Promise((resolve, reject) => {
+                  if (window.esptooljs && window.esptooljs.Transport) return resolve();
+                  const script = document.createElement('script');
+                  script.src = "https://cdn.jsdelivr.net/npm/esptool-js@0.2.0/bundle.js";
+                  script.onload = resolve;
+                  script.onerror = reject;
+                  document.head.appendChild(script);
+              });
+              if (window.esptooljs) {
+                  ESPLoader = window.esptooljs.ESPLoader;
+                  Transport = window.esptooljs.Transport;
+              }
+          }
+
+          if (!ESPLoader || !Transport) {
+              throw new Error("Không thể tải thư viện nạp từ máy chủ, vui lòng kiểm tra mạng.");
+          }
 
           let firmwareData;
 
-          // 1. Nạp file từ máy tính
+          // XỬ LÝ LẤY DỮ LIỆU FILE (MÁY TÍNH HOẶC GITHUB)
           if (localFile) {
              addLog(`${curT.logReadLocal} ${localFile.name}...`, 'warning');
              const buffer = await localFile.arrayBuffer();
              firmwareData = new Uint8Array(buffer);
              addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
           } 
-          // 2. Tải từ GitHub
           else {
              addLog(curT.logDL, 'warning');
              let fetchUrl = selectedBoard.url;
-             
-             // Thêm cache-buster để luôn lấy file mới nhất (không bị kẹt bản cũ khi bạn mới update Github)
+             // Thêm cache-buster để tránh tải nhầm file cũ nếu bạn mới up đè lên Github
              fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
 
              const response = await fetch(fetchUrl);
@@ -389,33 +402,53 @@
              addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
           }
 
-          const transport = new esptool.Transport(port);
+          // CHUẨN BỊ NẠP VỚI KIẾN TRÚC TỰ TƯƠNG THÍCH API
+          const transport = new Transport(port);
           addLog(curT.logSync, 'warning');
           
-          // Khởi tạo ESPLoader an toàn
-          const esploader = new esptool.ESPLoader({
-            transport: transport,
-            baudrate: parseInt(baudRate),
-            terminal: { 
-                clean: () => {}, 
-                writeLine: (msg) => addLog(msg, 'device'),
-                write: (msg) => addLog(msg, 'device')
-            }
-          });
+          const terminalParams = { 
+              clean: () => {}, 
+              writeLine: (msg) => addLog(msg, 'device'),
+              write: (msg) => addLog(msg, 'device')
+          };
+
+          let esploader;
+          // Tự động nhận diện cấu trúc hàm theo phiên bản thư viện đã tải được
+          if (ESPLoader.length > 1) { 
+              // Hàm bản mới 0.4.x (Truyền các tham số rời)
+              esploader = new ESPLoader(transport, parseInt(baudRate), terminalParams);
+          } else { 
+              // Hàm bản cũ 0.2.x (Truyền 1 cục object)
+              esploader = new ESPLoader({
+                  transport: transport,
+                  baudrate: parseInt(baudRate),
+                  terminal: terminalParams
+              });
+          }
 
           const chipName = await esploader.main();
           addLog(`${curT.logChip} ${chipName}`, 'success');
 
           addLog(curT.logErase, 'info');
-          await esploader.writeFlash({
-            fileArray: [{ data: firmwareData, address: 0x0 }],
-            flashSize: 'keep',
-            eraseAll: false,
-            compress: true,
-            reportProgress: (fileIndex, written, total) => {
-              setProgress(Math.round((written / total) * 100));
-            }
-          });
+
+          const flashOptions = {
+              fileArray: [{ data: firmwareData, address: 0x0 }],
+              flashSize: 'keep',
+              eraseAll: false,
+              compress: true,
+              reportProgress: (fileIndex, written, total) => {
+                  setProgress(Math.round((written / total) * 100));
+              }
+          };
+
+          // Tự động nhận diện tên hàm nạp
+          if (typeof esploader.write_flash === 'function') {
+              await esploader.write_flash(flashOptions);  // Bản mới dùng dấu gạch dưới
+          } else if (typeof esploader.writeFlash === 'function') {
+              await esploader.writeFlash(flashOptions);   // Bản cũ dùng chữ in hoa
+          } else {
+              throw new Error("Không tìm thấy hàm nạp flash trong thư viện.");
+          }
 
           addLog(curT.logSuccess, 'success');
           await esploader.hardReset();
@@ -467,7 +500,6 @@
               </select>
             </div>
 
-            {/* KHU VỰC CHỌN FILE VÀ TRẠNG THÁI */}
             <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 {localFile ? (
@@ -479,7 +511,7 @@
                 )}
                 <div>
                   <p className="text-sm font-bold text-slate-200">{t.fwStatus}</p>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-400 mt-0.5 break-all">
                     {localFile 
                       ? `${t.statusReadyLocal} (${localFile.name})` 
                       : selectedBoard?.url 
@@ -489,7 +521,6 @@
                 </div>
               </div>
 
-              {/* Nút Upload File Tùy Chọn */}
               <div className="border-t border-slate-800/50 pt-3">
                 <label className="block text-xs font-medium text-slate-400 mb-2">{t.localFileLabel}</label>
                 <input 
