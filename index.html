@@ -14,8 +14,8 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
-  <!-- ESPTOOL-JS: Nạp bản 0.3.2 ổn định nhất -->
-  <script src="https://unpkg.com/esptool-js@0.3.2/bundle.js"></script>
+  <!-- ESPTOOL-JS: Tải bản đóng gói MỚI NHẤT, tuyệt đối không dùng type="module" để tránh lỗi SyntaxError -->
+  <script src="https://unpkg.com/esptool-js/bundle.js"></script>
 </head>
 <body class="bg-slate-950 m-0 p-0 overflow-x-hidden">
   <div id="root"></div>
@@ -36,7 +36,7 @@
       { id: 'CYD-2432W328C', name: 'CYD-2432W328C', chip: 'ESP32', url: '' },
       { id: 'CYD-2432W328C_2', name: 'CYD-2432W328C_2', chip: 'ESP32', url: '' },
       { id: 'CYD-2432W328R-or-S024R', name: 'CYD-2432W328R-or-S024R', chip: 'ESP32', url: '' },
-      { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-display-ttgo.bin' },
+      { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32', url: 'Bruce-lilygo-t-display-ttgo.bin' },
       { id: 'lilygo-t-embed-cc1101', name: 'Lilygo T-Embed CC1101', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-embed-cc1101.bin' },
       { id: 'm5stack-cplus1_1', name: 'M5StickC Plus 1.1', chip: 'ESP32', url: '' },
       { id: 'm5stack-cplus2', name: 'M5StickC Plus 2', chip: 'ESP32', url: '' },
@@ -63,7 +63,7 @@
         alertSaved: "Settings saved locally!\nNote: To apply globally, update the 'INITIAL_BOARDS' in the source code on GitHub.", alertWrongPass: "Wrong password!",
         browserErrTitle: "Browser not supported", browserErrDesc: "Please use Google Chrome or Edge on a PC to connect via USB.",
         logInit: "Initializing esptool library...", logDL: "Downloading Firmware from Repo...", logReadLocal: "Reading local file:",
-        logDLDone: "Firmware loaded", logSync: "Syncing with ESP device...", logChip: "Chip detected:",
+        logDLDone: "Firmware loaded", logSync: "Connecting to ESP device...", logChip: "Chip detected:",
         logErase: "Erasing Flash and starting to write...", logSuccess: "Firmware flashed SUCCESSFULLY! Rebooting...",
         logFail: "Flashing failed:", logRestore: "Restoring Serial monitor...", logConnOk: "Connected successfully via Serial port",
         logConnFail: "Connection failed:", logDisconn: "Disconnected.", logUnlock: "Admin Mode Unlocked.",
@@ -84,8 +84,8 @@
         modalTitle: "Xác thực Quản trị", modalDesc: "Vui lòng nhập mật khẩu quản trị hệ thống.", modalInput: "Nhập mật khẩu...", modalCancel: "Hủy", modalUnlock: "Mở khóa",
         alertSaved: "Đã lưu thiết lập trên máy này!\nLưu ý: Để hiển thị cho người khác, bạn phải sửa biến INITIAL_BOARDS trong code và tải lên GitHub.", alertWrongPass: "Sai mật khẩu!",
         browserErrTitle: "Trình duyệt không hỗ trợ", browserErrDesc: "Vui lòng sử dụng Google Chrome hoặc Edge trên máy tính để kết nối cáp USB.",
-        logInit: "Đang chuẩn bị luồng nạp Flash...", logDL: "Đang tải Firmware từ Kho lưu trữ...", logReadLocal: "Đang đọc file từ ổ cứng:",
-        logDLDone: "Đã nạp xong dữ liệu file", logSync: "Đang đồng bộ với thiết bị ESP...", logChip: "Phát hiện chip:",
+        logInit: "Đang chuẩn bị trình nạp Flash...", logDL: "Đang tải Firmware từ Kho lưu trữ...", logReadLocal: "Đang đọc file từ ổ cứng:",
+        logDLDone: "Đã nạp xong dữ liệu file", logSync: "Đang kết nối cổng với thiết bị ESP...", logChip: "Phát hiện chip:",
         logErase: "Đang xóa Flash và bắt đầu nạp...", logSuccess: "Nạp Firmware THÀNH CÔNG! Đang khởi động lại...",
         logFail: "Nạp thất bại:", logRestore: "Khôi phục trình đọc Serial...", logConnOk: "Đã kết nối thành công qua cổng Serial",
         logConnFail: "Kết nối thất bại:", logDisconn: "Đã ngắt kết nối.", logUnlock: "Đã mở khóa Chế độ Quản trị.",
@@ -95,6 +95,7 @@
       }
     };
 
+    // Đã xóa export default để tránh lỗi SyntaxError trong Babel
     function App() {
       const [lang, setLang] = useState('vi'); 
       const t = TRANSLATIONS[lang]; 
@@ -267,7 +268,7 @@
       };
 
       // ==============================================================
-      // XỬ LÝ NẠP FLASH V18 - FIX CÚ PHÁP TRUYỀN THAM SỐ CỦA ESPTOOL 0.3.2
+      // XỬ LÝ NẠP FLASH
       // ==============================================================
       const handleFlash = async () => {
         const curT = TRANSLATIONS[langRef.current];
@@ -283,20 +284,22 @@
         try {
           addLog(curT.logInit, 'info');
 
-          // 1. NGẮT KẾT NỐI LUỒNG ĐỌC VÀ ĐÓNG CỔNG USB HOÀN TOÀN
+          // 1. NGẮT LUỒNG LOG VÀ TRẢ LẠI QUYỀN ĐIỀU KHIỂN CỔNG CHO HỆ ĐIỀU HÀNH
           keepReadingRef.current = false;
           if (readerRef.current) {
               await readerRef.current.cancel().catch(() => {});
           }
-          if (port) {
-              await port.close().catch(() => {});
+          await new Promise(r => setTimeout(r, 200)); 
+
+          // ĐÓNG CỔNG HIỆN TẠI (Để Transport của esptooljs tự động mở lại một cách sạch sẽ)
+          if (port && port.readable) {
+              try { await port.close(); } catch(e) {}
           }
-          // Chờ Hệ điều hành giải phóng cổng hoàn toàn
-          await new Promise(r => setTimeout(r, 600)); 
+          await new Promise(r => setTimeout(r, 400)); // Đợi HĐH Windows/Mac nhả cổng
 
           const esptool = window.esptooljs;
           if (!esptool) {
-              throw new Error("Thư viện hệ thống chưa sẵn sàng. Vui lòng tải lại trang (F5).");
+              throw new Error("Thư viện nạp chưa sẵn sàng, vui lòng F5 tải lại trang.");
           }
 
           // 2. CHUẨN BỊ DỮ LIỆU FILE FIRMWARE
@@ -319,11 +322,12 @@
              addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
           }
 
-          // 3. TIẾN HÀNH KẾT NỐI VÀ NẠP BẰNG ESPTOOL
+          // 3. TIẾN HÀNH KẾT NỐI VÀ NẠP BẰNG ESPTOOL ĐỜI MỚI
           addLog(curT.logSync, 'warning');
           
-          // Khởi tạo đối tượng Transport
           const transport = new esptool.Transport(port);
+          // GỌI HÀM CONNECT CỦA ESPTOOL
+          await transport.connect(parseInt(baudRate));
           
           const terminalParams = { 
               clean: () => {}, 
@@ -331,20 +335,14 @@
               write: (msg) => addLog(msg, 'device')
           };
 
-          // [FIX QUAN TRỌNG NHẤT] Truyền tham số rời rạc cho bản 0.3.2 thay vì truyền Object {}
-          // Cú pháp chuẩn của thư viện: new ESPLoader(transport, baudrate, terminal)
-          const esploader = new esptool.ESPLoader(
-              transport, 
-              parseInt(baudRate), 
-              terminalParams
-          );
+          // Khởi tạo trình nạp
+          const esploader = new esptool.ESPLoader(transport, parseInt(baudRate), terminalParams);
 
           const chipName = await esploader.main();
           addLog(`${curT.logChip} ${chipName}`, 'success');
 
           addLog(curT.logErase, 'info');
 
-          // Đóng gói thông số nạp
           const flashOptions = {
               fileArray: [{ data: firmwareData, address: 0x0 }],
               flashSize: 'keep',
@@ -355,19 +353,18 @@
               }
           };
 
-          // Hỗ trợ cả 2 tên hàm phòng trường hợp thư viện cập nhật
           if (typeof esploader.write_flash === 'function') {
               await esploader.write_flash(flashOptions);
-          } else if (typeof esploader.writeFlash === 'function') {
-              await esploader.writeFlash(flashOptions);
           } else {
-              throw new Error("Không tìm thấy hàm nạp flash trong thư viện.");
+              await esploader.writeFlash(flashOptions);
           }
 
           addLog(curT.logSuccess, 'success');
           
+          // Reset chip và đóng cổng của Transport
           await esploader.hardReset();
-          await transport.disconnect().catch(() => {});
+          await transport.disconnect();
+          await new Promise(r => setTimeout(r, 400));
 
         } catch (error) {
           addLog(`${curT.logFail} ${error.message}`, 'error');
@@ -375,20 +372,20 @@
         } finally {
           setIsFlashing(false);
           
-          // 4. MỞ LẠI CỔNG ĐỂ KHÔI PHỤC LOG CHO NGƯỜI DÙNG
+          // 4. MỞ LẠI CỔNG ĐỂ TIẾP TỤC ĐỌC LOG CHO NGƯỜI DÙNG
           setTimeout(async () => {
-            addLog(curT.logRestore, 'info');
             try {
                 if (port) {
                     await port.open({ baudRate: parseInt(baudRate) });
+                    addLog(curT.logRestore, 'info');
                     readLoop(port);
                 }
             } catch (e) {
-                addLog(`Cần kết nối lại thủ công: ${e.message}`, 'warning');
+                addLog(`Không thể tự động kết nối lại Log: ${e.message}. Bạn có thể bấm nút Kết nối ở trên.`, 'warning');
                 setIsConnected(false);
             }
             setProgress(0);
-          }, 1500);
+          }, 1000);
         }
       };
 
