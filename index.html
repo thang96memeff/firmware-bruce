@@ -53,7 +53,6 @@
 
     function App() {
       const [isSupported, setIsSupported] = useState(true);
-      const [port, setPort] = useState(null);
       const [isConnected, setIsConnected] = useState(false);
       const [baudRate, setBaudRate] = useState(115200);
       
@@ -79,13 +78,16 @@
       const [progress, setProgress] = useState(0);
       
       const terminalRef = useRef(null);
+      const portRef = useRef(null);
+      const transportRef = useRef(null);
       const readerRef = useRef(null);
+      
       const keepReadingRef = useRef(false);
-      const isReadingRef = useRef(false); // Biến cờ theo dõi trạng thái vòng lặp Log
+      const isReadingRef = useRef(false); // Theo dõi trạng thái vòng lặp Log an toàn
 
       useEffect(() => {
         if (!('serial' in navigator)) setIsSupported(false);
-        const savedConfig = localStorage.getItem('duscu_flasher_config_v35');
+        const savedConfig = localStorage.getItem('duscu_flasher_config_v36');
         if (savedConfig) {
           try {
             const parsed = JSON.parse(savedConfig);
@@ -134,17 +136,28 @@
             }
           }
         } finally {
-          isReadingRef.current = false; // Báo hiệu vòng lặp đã chết hoàn toàn
+          isReadingRef.current = false; // Báo hiệu vòng lặp đã tắt hoàn toàn
         }
       };
 
       const handleConnect = async () => {
         try {
+          if (!window.esptooljs) {
+            addLog("Đang tải thư viện Espressif...", "info");
+            window.esptooljs = await window.esptoolPromise;
+          }
+
           const selectedPort = await navigator.serial.requestPort();
-          await selectedPort.open({ baudRate: parseInt(baudRate) });
-          setPort(selectedPort);
+          const transport = new window.esptooljs.Transport(selectedPort);
+          
+          addLog(`Đang mở cổng Serial (${baudRate})...`, "warning");
+          await transport.connect(parseInt(baudRate)); 
+          
+          portRef.current = selectedPort;
+          transportRef.current = transport;
           setIsConnected(true);
-          addLog(`Đã kết nối Serial (${baudRate}) để đọc Log...`, 'success');
+          
+          addLog("Kết nối thành công! Đang đọc Log...", "success");
           startReadLoop(selectedPort);
         } catch (err) {
           addLog(`Lỗi kết nối: ${err.message}`, "error");
@@ -160,8 +173,12 @@
             await new Promise(r => setTimeout(r, 50));
         }
 
-        if (port) await port.close().catch(()=>{});
-        setPort(null);
+        if (transportRef.current) {
+            await transportRef.current.disconnect().catch(()=>{});
+        }
+        
+        portRef.current = null;
+        transportRef.current = null;
         setIsConnected(false);
         addLog("Đã ngắt kết nối.", "warning");
       };
@@ -176,40 +193,26 @@
         setProgress(0);
 
         try {
-          addLog("Đang chuẩn bị trình nạp Flash...", 'info');
+          addLog("Chuẩn bị quá trình nạp...", 'info');
 
-          // 1. DỪNG VÀ ĐÓNG CỔNG SERIAL HIỆN TẠI (QUAN TRỌNG NHẤT)
+          // 1. DỪNG ĐỌC LOG (NHƯNG TUYỆT ĐỐI KHÔNG ĐÓNG CỔNG)
           keepReadingRef.current = false;
           if (readerRef.current) {
               await readerRef.current.cancel().catch(()=>{});
           }
           
-          // Chờ cho đến khi cờ isReadingRef báo false (Vòng lặp đã kết thúc)
-          addLog("Đang giải phóng cổng Serial Monitor...", "warning");
+          // Chờ cho đến khi cờ isReadingRef báo false (Luồng đã nhả khóa)
           let waitTime = 0;
           while (isReadingRef.current && waitTime < 40) {
               await new Promise(r => setTimeout(r, 50));
               waitTime++;
           }
 
-          // CHÍNH THỨC ĐÓNG CỔNG ĐỂ NHƯỜNG CHO ESPTOOL
-          if (port && port.readable) {
-              try { 
-                  await port.close(); 
-              } catch(e) { 
-                  console.error("Lỗi đóng port:", e); 
-              }
-          }
-          
-          // Nghỉ 1 giây để Hệ điều hành Windows dọn dẹp khóa phần cứng
-          await new Promise(r => setTimeout(r, 1000)); 
+          const esptoolModule = window.esptooljs;
+          if (!esptoolModule) throw new Error("Mất kết nối thư viện nạp.");
+          const { ESPLoader } = esptoolModule;
 
-          // 2. KHỞI TẠO THƯ VIỆN ESPTOOL
-          const esptoolModule = await window.esptoolPromise;
-          if (!esptoolModule) throw new Error("Không thể tải thư viện nạp từ máy chủ.");
-          const { ESPLoader, Transport } = esptoolModule;
-
-          // 3. LẤY DỮ LIỆU FILE
+          // 2. TẢI DỮ LIỆU FILE FIRMWARE
           let firmwareData;
           if (localFile) {
              addLog(`Đang đọc file ${localFile.name}...`, 'warning');
@@ -229,25 +232,22 @@
              addLog(`Đã tải file (${(firmwareData.length/1024).toFixed(1)} KB)`, "success");
           }
 
-          // 4. KẾT NỐI VÀ ÉP CHIP VÀO BOOTLOADER (DTR/RTS)
-          addLog("Đang kết nối Bootloader (Gửi tín hiệu Reset)...", "warning");
-          const transport = new Transport(port);
-          // Lệnh connect() này sẽ mở cổng và gạt chân DTR/RTS để vào chế độ nạp!
-          await transport.connect(parseInt(baudRate));
-          
+          // 3. TÁI SỬ DỤNG TRANSPORT ĐANG MỞ
+          // Truyền trực tiếp Transport đã mở vào ESPLoader, nó sẽ tự gửi tín hiệu DTR/RTS
           const terminalParams = { 
               clean: () => {}, 
               writeLine: (msg) => addLog(msg, "device"),
               write: (msg) => addLog(msg, "device")
           };
 
-          // KHỞI TẠO TRÌNH NẠP BẰNG OBJECT (Đã Sửa lỗi getInfo)
           const esploader = new ESPLoader({
-            transport: transport,
+            transport: transportRef.current,
             baudrate: parseInt(baudRate),
             terminal: terminalParams
           });
 
+          addLog("Gửi tín hiệu DTR/RTS để vào Bootloader...", "warning");
+          // Lệnh main() sẽ tự động reset chip vào chế độ nạp (Flash Mode)
           const chipName = await esploader.main();
           addLog(`Đã nhận diện chip: ${chipName}`, "success");
 
@@ -262,10 +262,8 @@
 
           addLog("NẠP THÀNH CÔNG! Thiết bị đang khởi động lại...", "success");
           
-          // 5. RESET VÀ TRẢ LẠI CỔNG CHO TRÌNH DUYỆT
+          // 4. RESET CHIP VỀ CHẾ ĐỘ HOẠT ĐỘNG BÌNH THƯỜNG
           await esploader.hardReset();
-          await transport.disconnect(); // Hàm này sẽ Đóng cổng USB an toàn
-          await new Promise(r => setTimeout(r, 1000)); // Đợi nhả cổng
 
         } catch (error) {
           addLog(`Nạp thất bại: ${error.message}`, "error");
@@ -274,18 +272,20 @@
           setIsFlashing(false);
           setProgress(0);
           
-          // 6. TỰ ĐỘNG KHÔI PHỤC LẠI SERIAL MONITOR
-          if (isConnected && port) {
-             setTimeout(async () => {
-               try {
-                   await port.open({ baudRate: parseInt(baudRate) });
-                   addLog("Khôi phục luồng đọc Log...", 'info');
-                   startReadLoop(port);
-               } catch (e) {
-                   addLog(`Không thể mở lại Log: ${e.message}. Vui lòng bấm Kết Nối lại.`, 'warning');
-                   setIsConnected(false);
-               }
-             }, 1000);
+          // 5. LÀM SẠCH VÀ KHÔI PHỤC SERIAL MONITOR
+          if (isConnected && transportRef.current) {
+             try {
+                // Đóng ngắt tạm thời để đảm bảo Baudrate được thiết lập đúng cho Log
+                await transportRef.current.disconnect();
+                await new Promise(r => setTimeout(r, 300));
+                await transportRef.current.connect(parseInt(baudRate));
+                
+                addLog("Khôi phục luồng đọc Log...", 'info');
+                startReadLoop(portRef.current);
+             } catch (e) {
+                addLog(`Cần bấm Kết Nối lại: ${e.message}`, 'warning');
+                setIsConnected(false);
+             }
           }
         }
       };
@@ -312,7 +312,7 @@
       };
 
       const saveAdminConfig = () => {
-        localStorage.setItem('duscu_flasher_config_v35', JSON.stringify({
+        localStorage.setItem('duscu_flasher_config_v36', JSON.stringify({
           boards: boards,
           settings: { bgUrl, logoUrl }
         }));
@@ -419,8 +419,9 @@
                   <select 
                     value={baudRate} 
                     onChange={(e) => setBaudRate(e.target.value)}
-                    disabled={isFlashing}
-                    className="bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm text-slate-300 outline-none w-32 shadow-lg"
+                    disabled={isConnected || isFlashing}
+                    className="bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm text-slate-300 outline-none w-32 shadow-lg disabled:opacity-50"
+                    title="Chỉ thay đổi Baudrate khi đã Ngắt Kết Nối"
                   >
                     {BAUDRATES.map(rate => <option key={rate} value={rate}>{rate}</option>)}
                   </select>
@@ -581,7 +582,7 @@
                 </div>
                 <div>
                   <h1 className="text-3xl font-black text-white tracking-tighter uppercase">
-                    DUSCU FLASHER <span className="text-sm font-bold text-slate-500 align-top ml-1">v35</span>
+                    DUSCU FLASHER <span className="text-sm font-bold text-slate-500 align-top ml-1">v36</span>
                   </h1>
                   <p className="text-blue-400 font-medium text-sm tracking-wide">Trình cài đặt Bruce Firmware 1-Click</p>
                 </div>
