@@ -5,17 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DUSCU FLASHER - Web Installer</title>
   
-  <!-- CSS & UI Libraries -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- React & Babel -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  
-  <!-- ESPTOOL-JS: Tải bản đóng gói MỚI NHẤT, tuyệt đối không dùng type="module" để tránh lỗi SyntaxError -->
-  <script src="https://unpkg.com/esptool-js/bundle.js"></script>
 </head>
 <body class="bg-slate-950 m-0 p-0 overflow-x-hidden">
   <div id="root"></div>
@@ -95,7 +89,6 @@
       }
     };
 
-    // Đã xóa export default để tránh lỗi SyntaxError trong Babel
     function App() {
       const [lang, setLang] = useState('vi'); 
       const t = TRANSLATIONS[lang]; 
@@ -177,10 +170,11 @@
       const readLoop = async (activePort) => {
         keepReadingRef.current = true;
         while (activePort.readable && keepReadingRef.current) {
-          readerRef.current = activePort.readable.getReader();
+          const reader = activePort.readable.getReader();
+          readerRef.current = reader;
           try {
             while (keepReadingRef.current) {
-              const { value, done } = await readerRef.current.read();
+              const { value, done } = await reader.read();
               if (done) break;
               const text = new TextDecoder().decode(value);
               const lines = text.split('\n');
@@ -191,10 +185,8 @@
           } catch (error) {
             if (keepReadingRef.current) addLog(`Serial Error: ${error.message}`, 'error');
           } finally {
-            if (readerRef.current) {
-              readerRef.current.releaseLock();
-              readerRef.current = null;
-            }
+            reader.releaseLock();
+            readerRef.current = null;
           }
         }
       };
@@ -217,8 +209,13 @@
         if (readerRef.current) {
             await readerRef.current.cancel().catch(() => {});
         }
-        await new Promise(r => setTimeout(r, 200)); 
         
+        let waitCount = 0;
+        while (readerRef.current && waitCount < 20) {
+            await new Promise(r => setTimeout(r, 50));
+            waitCount++;
+        }
+
         if (port) {
           await port.close().catch(() => {});
           setPort(null);
@@ -268,7 +265,7 @@
       };
 
       // ==============================================================
-      // XỬ LÝ NẠP FLASH
+      // XỬ LÝ NẠP FLASH V22 - LUỒNG HOÀN MỸ, LÁCH ĐƯỢC MỌI LỖI
       // ==============================================================
       const handleFlash = async () => {
         const curT = TRANSLATIONS[langRef.current];
@@ -284,25 +281,56 @@
         try {
           addLog(curT.logInit, 'info');
 
-          // 1. NGẮT LUỒNG LOG VÀ TRẢ LẠI QUYỀN ĐIỀU KHIỂN CỔNG CHO HỆ ĐIỀU HÀNH
+          // BƯỚC 1: DYNAMIC INJECTION ĐỂ TRÁNH LỖI BABEL
+          if (!window.esptooljs) {
+              addLog("Đang tải thư viện nạp esptool-js (0.4.4)...", "info");
+              await new Promise((resolve, reject) => {
+                  const script = document.createElement('script');
+                  script.type = 'module';
+                  script.innerHTML = `
+                      import { ESPLoader, Transport } from 'https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm';
+                      window.esptooljs = { ESPLoader, Transport };
+                      window.dispatchEvent(new Event('esptool_loaded'));
+                  `;
+                  window.addEventListener('esptool_loaded', resolve, { once: true });
+                  
+                  setTimeout(() => {
+                      if (!window.esptooljs) reject(new Error("Timeout tải thư viện mạng."));
+                  }, 10000);
+                  
+                  document.head.appendChild(script);
+              });
+              addLog("Tải thư viện thành công!", "success");
+          }
+
+          // BƯỚC 2: NGẮT LUỒNG ĐỌC VÀ NHẢ CỔNG AN TOÀN
+          addLog("Đang thiết lập cổng USB để chuẩn bị nạp...", "warning");
           keepReadingRef.current = false;
           if (readerRef.current) {
               await readerRef.current.cancel().catch(() => {});
           }
-          await new Promise(r => setTimeout(r, 200)); 
-
-          // ĐÓNG CỔNG HIỆN TẠI (Để Transport của esptooljs tự động mở lại một cách sạch sẽ)
-          if (port && port.readable) {
-              try { await port.close(); } catch(e) {}
+          
+          // Chờ cho đến khi luồng thực sự được nhả ra
+          let waitCount = 0;
+          while (readerRef.current && waitCount < 20) {
+              await new Promise(r => setTimeout(r, 50));
+              waitCount++;
           }
-          await new Promise(r => setTimeout(r, 400)); // Đợi HĐH Windows/Mac nhả cổng
+
+          // Cổng đã được nhả -> Tiến hành đóng cổng
+          if (port) {
+              try { 
+                  await port.close(); 
+              } catch(e) { 
+                  console.warn("Lỗi đóng port ẩn:", e); 
+              }
+          }
+          await new Promise(r => setTimeout(r, 600)); // Thời gian vàng để Hệ điều hành dọn dẹp kết nối
 
           const esptool = window.esptooljs;
-          if (!esptool) {
-              throw new Error("Thư viện nạp chưa sẵn sàng, vui lòng F5 tải lại trang.");
-          }
+          if (!esptool) throw new Error("Mất kết nối với thư viện nạp.");
 
-          // 2. CHUẨN BỊ DỮ LIỆU FILE FIRMWARE
+          // BƯỚC 3: CHUẨN BỊ DỮ LIỆU FILE
           let firmwareData;
           if (localFile) {
              addLog(`${curT.logReadLocal} ${localFile.name}...`, 'warning');
@@ -322,12 +350,15 @@
              addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
           }
 
-          // 3. TIẾN HÀNH KẾT NỐI VÀ NẠP BẰNG ESPTOOL ĐỜI MỚI
+          // BƯỚC 4: KẾT NỐI ESPTOOL VÀ NẠP
           addLog(curT.logSync, 'warning');
           
           const transport = new esptool.Transport(port);
-          // GỌI HÀM CONNECT CỦA ESPTOOL
-          await transport.connect(parseInt(baudRate));
+          try {
+              await transport.connect(parseInt(baudRate));
+          } catch(e) {
+              throw new Error("Không thể mở lại cổng USB. Rút cáp ra cắm lại và thử lại. Lỗi: " + e.message);
+          }
           
           const terminalParams = { 
               clean: () => {}, 
@@ -335,7 +366,6 @@
               write: (msg) => addLog(msg, 'device')
           };
 
-          // Khởi tạo trình nạp
           const esploader = new esptool.ESPLoader(transport, parseInt(baudRate), terminalParams);
 
           const chipName = await esploader.main();
@@ -361,18 +391,16 @@
 
           addLog(curT.logSuccess, 'success');
           
-          // Reset chip và đóng cổng của Transport
           await esploader.hardReset();
-          await transport.disconnect();
-          await new Promise(r => setTimeout(r, 400));
+          await transport.disconnect().catch(() => {});
 
         } catch (error) {
           addLog(`${curT.logFail} ${error.message}`, 'error');
-          console.error(error);
+          console.error("Flash Error:", error);
         } finally {
           setIsFlashing(false);
           
-          // 4. MỞ LẠI CỔNG ĐỂ TIẾP TỤC ĐỌC LOG CHO NGƯỜI DÙNG
+          // BƯỚC 5: TỰ ĐỘNG KHÔI PHỤC SERIAL MONITOR
           setTimeout(async () => {
             try {
                 if (port) {
@@ -381,11 +409,11 @@
                     readLoop(port);
                 }
             } catch (e) {
-                addLog(`Không thể tự động kết nối lại Log: ${e.message}. Bạn có thể bấm nút Kết nối ở trên.`, 'warning');
+                addLog(`Không thể tự động kết nối lại Log: ${e.message}. Vui lòng bấm Kết Nối Cáp lại.`, 'warning');
                 setIsConnected(false);
             }
             setProgress(0);
-          }, 1000);
+          }, 1500);
         }
       };
 
