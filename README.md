@@ -1,3 +1,46 @@
+# 🚀 Bruce Firmware Web Installer
+
+Trang web hỗ trợ nạp firmware **Bruce** trực tiếp qua trình duyệt bằng công nghệ Web Serial API. Không cần cài đặt Python, không cần dòng lệnh phức tạp.
+
+🔗 **Truy cập ngay:** [https://thang96memeff.github.io/firmware-bruce/](https://thang96memeff.github.io/firmware-bruce/)
+
+---
+
+## 🌟 Tính năng chính
+
+- **Nạp Code Online:** Cài đặt firmware Bruce chỉ với vài cú click chuột.
+- **Không cài đặt:** Chỉ cần trình duyệt (Chrome, Edge hoặc các trình duyệt nhân Chromium).
+- **Tốc độ cao:** Quá trình xóa và ghi flash diễn ra nhanh chóng, ổn định.
+- **Giao diện thân thiện:** Dễ dàng theo dõi tiến trình qua log trực tiếp.
+
+## 🛠 Thiết bị hỗ trợ
+
+Công cụ này hỗ trợ các bo mạch dựa trên chip ESP32 (thường dùng cho ESP32-S2, v.v.):
+- ESP32 / ESP32-S2 / ESP32-C3 / ESP32-S3
+
+## 📖 Hướng dẫn sử dụng
+
+1.  **Kết nối thiết bị:** Cắm mạch ESP32 vào máy tính qua cáp USB chất lượng tốt.
+2.  **Mở trình duyệt:** Sử dụng Google Chrome hoặc Microsoft Edge (phiên bản mới nhất).
+3.  **Chọn Kết nối (Connect):** Nhấn nút "Connect" hoặc "Install" trên trang web.
+4.  **Chọn cổng COM:** Một cửa sổ hiện lên, chọn đúng cổng COM của thiết bị và nhấn "Connect".
+5.  **Nạp Firmware:** Làm theo hướng dẫn trên màn hình (thường là chọn bản build và nhấn Install).
+6.  **Hoàn tất:** Đợi thanh tiến trình chạy đến 100%. Rút cáp và tận hưởng!
+
+## ⚠️ Lưu ý quan trọng
+
+- **Trình duyệt:** Hiện tại Web Serial API **không hỗ trợ** trên Firefox, Safari và các trình duyệt trên điện thoại (ngoại trừ một số bản mod trên Android).
+- **Driver:** Nếu máy tính không nhận cổng COM, bạn cần cài đặt driver tương ứng (thường là CP210x hoặc CH340).
+- **Chế độ Boot:** Nếu không kết nối được, hãy nhấn giữ nút **BOOT** trên mạch khi nhấn Connect.
+
+## 🤝 Đóng góp & Bản quyền
+
+- Firmware **Bruce** được phát triển bởi cộng đồng. Vui lòng tham khảo repository gốc của Bruce để biết thêm chi tiết về tính năng firmware.
+- Công cụ web flasher dựa trên [ESP Web Tools](https://web.esphome.io/).
+
+---
+Ghé thăm Profile của mình tại: [@thang96memeff](https://github.com/thang96memeff)
+
 link bw16 firmware for flipper mode: https://github.com/gorebrau/delfyRTL
 
 
