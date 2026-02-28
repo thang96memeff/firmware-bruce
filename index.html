@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DUSCU FLASHER - Web Installer</title>
   
+  <!-- CSS & UI Libraries -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- React & Babel -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -30,7 +33,7 @@
       { id: 'CYD-2432W328C', name: 'CYD-2432W328C', chip: 'ESP32', url: '' },
       { id: 'CYD-2432W328C_2', name: 'CYD-2432W328C_2', chip: 'ESP32', url: '' },
       { id: 'CYD-2432W328R-or-S024R', name: 'CYD-2432W328R-or-S024R', chip: 'ESP32', url: '' },
-      { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32', url: 'Bruce-lilygo-t-display-ttgo.bin' },
+      { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-display-ttgo.bin' },
       { id: 'lilygo-t-embed-cc1101', name: 'Lilygo T-Embed CC1101', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-embed-cc1101.bin' },
       { id: 'm5stack-cplus1_1', name: 'M5StickC Plus 1.1', chip: 'ESP32', url: '' },
       { id: 'm5stack-cplus2', name: 'M5StickC Plus 2', chip: 'ESP32', url: '' },
@@ -183,6 +186,7 @@
               });
             }
           } catch (error) {
+            // Chỉ log nếu không phải là hành động cố ý hủy luồng
             if (keepReadingRef.current) addLog(`Serial Error: ${error.message}`, 'error');
           } finally {
             reader.releaseLock();
@@ -265,7 +269,7 @@
       };
 
       // ==============================================================
-      // XỬ LÝ NẠP FLASH V22 - LUỒNG HOÀN MỸ, LÁCH ĐƯỢC MỌI LỖI
+      // XỬ LÝ NẠP FLASH V25 - HOÀN THIỆN TUYỆT ĐỐI THEO ESPRESSIF
       // ==============================================================
       const handleFlash = async () => {
         const curT = TRANSLATIONS[langRef.current];
@@ -281,56 +285,43 @@
         try {
           addLog(curT.logInit, 'info');
 
-          // BƯỚC 1: DYNAMIC INJECTION ĐỂ TRÁNH LỖI BABEL
+          // BƯỚC 1: TẢI ĐỘNG THƯ VIỆN ĐỂ LÁCH LỖI BABEL EXPORT
           if (!window.esptooljs) {
               addLog("Đang tải thư viện nạp esptool-js (0.4.4)...", "info");
-              await new Promise((resolve, reject) => {
-                  const script = document.createElement('script');
-                  script.type = 'module';
-                  script.innerHTML = `
-                      import { ESPLoader, Transport } from 'https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm';
-                      window.esptooljs = { ESPLoader, Transport };
-                      window.dispatchEvent(new Event('esptool_loaded'));
-                  `;
-                  window.addEventListener('esptool_loaded', resolve, { once: true });
-                  
-                  setTimeout(() => {
-                      if (!window.esptooljs) reject(new Error("Timeout tải thư viện mạng."));
-                  }, 10000);
-                  
-                  document.head.appendChild(script);
-              });
-              addLog("Tải thư viện thành công!", "success");
+              try {
+                  window.esptooljs = await new Function("return import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm')")();
+                  addLog("Tải thư viện thành công!", "success");
+              } catch(e) {
+                  throw new Error("Không thể tải thư viện: " + e.message);
+              }
           }
 
-          // BƯỚC 2: NGẮT LUỒNG ĐỌC VÀ NHẢ CỔNG AN TOÀN
+          // BƯỚC 2: NGẮT LUỒNG ĐỌC VÀ ĐÓNG CỔNG CHUẨN XÁC
           addLog("Đang thiết lập cổng USB để chuẩn bị nạp...", "warning");
           keepReadingRef.current = false;
           if (readerRef.current) {
               await readerRef.current.cancel().catch(() => {});
           }
           
-          // Chờ cho đến khi luồng thực sự được nhả ra
           let waitCount = 0;
           while (readerRef.current && waitCount < 20) {
               await new Promise(r => setTimeout(r, 50));
               waitCount++;
           }
 
-          // Cổng đã được nhả -> Tiến hành đóng cổng
           if (port) {
               try { 
                   await port.close(); 
               } catch(e) { 
-                  console.warn("Lỗi đóng port ẩn:", e); 
+                  console.warn("Lỗi đóng port:", e); 
               }
           }
-          await new Promise(r => setTimeout(r, 600)); // Thời gian vàng để Hệ điều hành dọn dẹp kết nối
+          await new Promise(r => setTimeout(r, 500)); // Thời gian nghỉ cho Hệ Điều Hành
 
           const esptool = window.esptooljs;
           if (!esptool) throw new Error("Mất kết nối với thư viện nạp.");
 
-          // BƯỚC 3: CHUẨN BỊ DỮ LIỆU FILE
+          // BƯỚC 3: TẢI DỮ LIỆU FILE
           let firmwareData;
           if (localFile) {
              addLog(`${curT.logReadLocal} ${localFile.name}...`, 'warning');
@@ -350,49 +341,64 @@
              addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
           }
 
-          // BƯỚC 4: KẾT NỐI ESPTOOL VÀ NẠP
+          // BƯỚC 4: KẾT NỐI VÀ NẠP (SỬ DỤNG KHỐI TRY...FINALLY KÉP)
           addLog(curT.logSync, 'warning');
           
           const transport = new esptool.Transport(port);
+          
           try {
+              // Transport sẽ tự động open() port
               await transport.connect(parseInt(baudRate));
-          } catch(e) {
-              throw new Error("Không thể mở lại cổng USB. Rút cáp ra cắm lại và thử lại. Lỗi: " + e.message);
-          }
-          
-          const terminalParams = { 
-              clean: () => {}, 
-              writeLine: (msg) => addLog(msg, 'device'),
-              write: (msg) => addLog(msg, 'device')
-          };
+              
+              const terminalParams = { 
+                  clean: () => {}, 
+                  writeLine: (msg) => addLog(msg, 'device'),
+                  write: (msg) => addLog(msg, 'device')
+              };
 
-          const esploader = new esptool.ESPLoader(transport, parseInt(baudRate), terminalParams);
+              // SỬA LỖI getInfo: Bắt buộc truyền vào 1 Object như trang chính chủ của Espressif
+              const esploader = new esptool.ESPLoader({
+                  transport: transport,
+                  baudrate: parseInt(baudRate),
+                  terminal: terminalParams
+              });
 
-          const chipName = await esploader.main();
-          addLog(`${curT.logChip} ${chipName}`, 'success');
+              // Hàm main() gọi getInfo() ngầm bên trong
+              const chipName = await esploader.main();
+              addLog(`${curT.logChip} ${chipName}`, 'success');
 
-          addLog(curT.logErase, 'info');
+              addLog(curT.logErase, 'info');
 
-          const flashOptions = {
-              fileArray: [{ data: firmwareData, address: 0x0 }],
-              flashSize: 'keep',
-              eraseAll: false,
-              compress: true,
-              reportProgress: (fileIndex, written, total) => {
-                  setProgress(Math.round((written / total) * 100));
-              }
-          };
+              const flashOptions = {
+                  fileArray: [{ data: firmwareData, address: 0x0 }],
+                  flashSize: 'keep',
+                  eraseAll: false,
+                  compress: true,
+                  reportProgress: (fileIndex, written, total) => {
+                      setProgress(Math.round((written / total) * 100));
+                  }
+              };
 
-          if (typeof esploader.write_flash === 'function') {
-              await esploader.write_flash(flashOptions);
-          } else {
+              // Viết hoa chữ F theo bản chuẩn
               await esploader.writeFlash(flashOptions);
-          }
+              
+              addLog(curT.logSuccess, 'success');
+              
+              // Lệnh Reset sẽ khởi động lại chip
+              if (typeof esploader.after === 'function') {
+                  await esploader.after(); 
+              } else {
+                  await esploader.hardReset();
+              }
 
-          addLog(curT.logSuccess, 'success');
-          
-          await esploader.hardReset();
-          await transport.disconnect().catch(() => {});
+          } finally {
+              // BƯỚC QUAN TRỌNG NHẤT: Bất kể nạp thành công hay crash lỗi getInfo, 
+              // cổng USB LUÔN LUÔN được đóng lại, dọn sạch đường cho việc đọc Log.
+              try { 
+                  await transport.disconnect(); 
+              } catch(e) {}
+              await new Promise(r => setTimeout(r, 500));
+          }
 
         } catch (error) {
           addLog(`${curT.logFail} ${error.message}`, 'error');
@@ -413,7 +419,7 @@
                 setIsConnected(false);
             }
             setProgress(0);
-          }, 1500);
+          }, 1000);
         }
       };
 
