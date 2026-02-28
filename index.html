@@ -13,6 +13,12 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- FIX 1: Tải Esptool bằng Module script chuẩn để tránh lỗi SyntaxError 'export' -->
+  <script type="module">
+    import * as esptooljs from 'https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm';
+    window.esptooljs = esptooljs;
+  </script>
 </head>
 <body class="bg-slate-950 m-0 p-0 overflow-x-hidden">
   <div id="root"></div>
@@ -131,7 +137,6 @@
 
       useEffect(() => {
         if (!('serial' in navigator)) { setIsSupported(false); }
-        
         const savedLang = localStorage.getItem('duscu_lang');
         if (savedLang) setLang(savedLang);
 
@@ -139,18 +144,12 @@
         if (savedConfig) {
           try {
             const parsed = JSON.parse(savedConfig);
-            if (parsed.boards) {
-              const mergedBoards = INITIAL_BOARDS.map(initB => {
-                 const savedB = parsed.boards.find(pb => pb.id === initB.id);
-                 return savedB && savedB.url ? savedB : initB;
-              });
-              setBoards(mergedBoards);
-            }
+            if (parsed.boards) setBoards(parsed.boards);
             if (parsed.settings) {
               setBgUrl(parsed.settings.bgUrl || "");
               setLogoUrl(parsed.settings.logoUrl || "");
             }
-          } catch(e) { console.error("Config parse error", e); }
+          } catch(e) {}
         }
       }, []);
 
@@ -186,7 +185,6 @@
               });
             }
           } catch (error) {
-            // Chỉ log nếu không phải là hành động cố ý hủy luồng
             if (keepReadingRef.current) addLog(`Serial Error: ${error.message}`, 'error');
           } finally {
             reader.releaseLock();
@@ -269,7 +267,7 @@
       };
 
       // ==============================================================
-      // XỬ LÝ NẠP FLASH V25 - HOÀN THIỆN TUYỆT ĐỐI THEO ESPRESSIF
+      // XỬ LÝ NẠP FLASH V26 - LUỒNG CHUẨN KỸ THUẬT ESPRESSIF
       // ==============================================================
       const handleFlash = async () => {
         const curT = TRANSLATIONS[langRef.current];
@@ -281,47 +279,40 @@
 
         setIsFlashing(true);
         setProgress(0);
+        let transport = null;
 
         try {
           addLog(curT.logInit, 'info');
 
-          // BƯỚC 1: TẢI ĐỘNG THƯ VIỆN ĐỂ LÁCH LỖI BABEL EXPORT
-          if (!window.esptooljs) {
-              addLog("Đang tải thư viện nạp esptool-js (0.4.4)...", "info");
-              try {
-                  window.esptooljs = await new Function("return import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm')")();
-                  addLog("Tải thư viện thành công!", "success");
-              } catch(e) {
-                  throw new Error("Không thể tải thư viện: " + e.message);
-              }
-          }
-
-          // BƯỚC 2: NGẮT LUỒNG ĐỌC VÀ ĐÓNG CỔNG CHUẨN XÁC
-          addLog("Đang thiết lập cổng USB để chuẩn bị nạp...", "warning");
+          // BƯỚC 1: DỪNG TERMINAL VÀ GIẢI PHÓNG READER KHỎI CỔNG
+          addLog("Đang giải phóng cổng Serial Monitor...", "warning");
           keepReadingRef.current = false;
           if (readerRef.current) {
               await readerRef.current.cancel().catch(() => {});
           }
           
+          // Chờ đợi an toàn cho đến khi Reader được gỡ hoàn toàn (readerRef trở thành null)
           let waitCount = 0;
           while (readerRef.current && waitCount < 20) {
               await new Promise(r => setTimeout(r, 50));
               waitCount++;
           }
 
+          // Cực kỳ quan trọng: Phải gọi close() để esptool có quyền open() lại
           if (port) {
               try { 
                   await port.close(); 
               } catch(e) { 
-                  console.warn("Lỗi đóng port:", e); 
+                  console.warn("Cổng đã đóng hoặc lỗi đóng cổng:", e); 
               }
           }
-          await new Promise(r => setTimeout(r, 500)); // Thời gian nghỉ cho Hệ Điều Hành
+          // Nghỉ 600ms để Hệ điều hành dọn dẹp kết nối
+          await new Promise(r => setTimeout(r, 600));
 
           const esptool = window.esptooljs;
-          if (!esptool) throw new Error("Mất kết nối với thư viện nạp.");
+          if (!esptool) throw new Error("Thư viện nạp chưa sẵn sàng. Vui lòng tải lại trang (F5).");
 
-          // BƯỚC 3: TẢI DỮ LIỆU FILE
+          // BƯỚC 2: CHUẨN BỊ DỮ LIỆU
           let firmwareData;
           if (localFile) {
              addLog(`${curT.logReadLocal} ${localFile.name}...`, 'warning');
@@ -333,72 +324,52 @@
              addLog(curT.logDL, 'warning');
              let fetchUrl = selectedBoard.url;
              fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
-
              const response = await fetch(fetchUrl);
-             if (!response.ok) throw new Error(`Không tìm thấy file ${selectedBoard.url} trên kho GitHub (${response.status})`);
+             if (!response.ok) throw new Error(`Không tìm thấy file ${selectedBoard.url}`);
              const buffer = await response.arrayBuffer();
              firmwareData = new Uint8Array(buffer);
              addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
           }
 
-          // BƯỚC 4: KẾT NỐI VÀ NẠP (SỬ DỤNG KHỐI TRY...FINALLY KÉP)
+          // BƯỚC 3: KẾT NỐI ESPTOOL VÀ NẠP (CHUẨN API ESPRESSIF)
           addLog(curT.logSync, 'warning');
           
-          const transport = new esptool.Transport(port);
+          transport = new esptool.Transport(port);
+          await transport.connect(parseInt(baudRate));
           
-          try {
-              // Transport sẽ tự động open() port
-              await transport.connect(parseInt(baudRate));
-              
-              const terminalParams = { 
-                  clean: () => {}, 
-                  writeLine: (msg) => addLog(msg, 'device'),
-                  write: (msg) => addLog(msg, 'device')
-              };
+          const terminalParams = { 
+              clean: () => {}, 
+              writeLine: (msg) => addLog(msg, 'device'),
+              write: (msg) => addLog(msg, 'device')
+          };
 
-              // SỬA LỖI getInfo: Bắt buộc truyền vào 1 Object như trang chính chủ của Espressif
-              const esploader = new esptool.ESPLoader({
-                  transport: transport,
-                  baudrate: parseInt(baudRate),
-                  terminal: terminalParams
-              });
+          // FIX getInfo: Truyền tham số rời rạc (Positional Args) như code gốc của hãng
+          const esploader = new esptool.ESPLoader(transport, parseInt(baudRate), terminalParams);
 
-              // Hàm main() gọi getInfo() ngầm bên trong
-              const chipName = await esploader.main();
-              addLog(`${curT.logChip} ${chipName}`, 'success');
+          const chipName = await esploader.main();
+          addLog(`${curT.logChip} ${chipName}`, 'success');
 
-              addLog(curT.logErase, 'info');
+          addLog(curT.logErase, 'info');
 
-              const flashOptions = {
-                  fileArray: [{ data: firmwareData, address: 0x0 }],
-                  flashSize: 'keep',
-                  eraseAll: false,
-                  compress: true,
-                  reportProgress: (fileIndex, written, total) => {
-                      setProgress(Math.round((written / total) * 100));
-                  }
-              };
-
-              // Viết hoa chữ F theo bản chuẩn
-              await esploader.writeFlash(flashOptions);
-              
-              addLog(curT.logSuccess, 'success');
-              
-              // Lệnh Reset sẽ khởi động lại chip
-              if (typeof esploader.after === 'function') {
-                  await esploader.after(); 
-              } else {
-                  await esploader.hardReset();
+          const flashOptions = {
+              fileArray: [{ data: firmwareData, address: 0x0 }],
+              flashSize: 'keep',
+              eraseAll: false,
+              compress: true,
+              reportProgress: (fileIndex, written, total) => {
+                  setProgress(Math.round((written / total) * 100));
               }
+          };
 
-          } finally {
-              // BƯỚC QUAN TRỌNG NHẤT: Bất kể nạp thành công hay crash lỗi getInfo, 
-              // cổng USB LUÔN LUÔN được đóng lại, dọn sạch đường cho việc đọc Log.
-              try { 
-                  await transport.disconnect(); 
-              } catch(e) {}
-              await new Promise(r => setTimeout(r, 500));
+          // Gọi đúng hàm writeFlash theo chuẩn 0.4.4
+          if (typeof esploader.writeFlash === 'function') {
+              await esploader.writeFlash(flashOptions);
+          } else {
+              await esploader.write_flash(flashOptions);
           }
+
+          addLog(curT.logSuccess, 'success');
+          await esploader.hardReset();
 
         } catch (error) {
           addLog(`${curT.logFail} ${error.message}`, 'error');
@@ -406,7 +377,13 @@
         } finally {
           setIsFlashing(false);
           
-          // BƯỚC 5: TỰ ĐỘNG KHÔI PHỤC SERIAL MONITOR
+          // DỌN DẸP: Bắt buộc ngắt Transport trước khi mở lại Log
+          if (transport) {
+              try { await transport.disconnect(); } catch(e){}
+              await new Promise(r => setTimeout(r, 500));
+          }
+
+          // BƯỚC 4: KHÔI PHỤC SERIAL MONITOR
           setTimeout(async () => {
             try {
                 if (port) {
@@ -415,7 +392,7 @@
                     readLoop(port);
                 }
             } catch (e) {
-                addLog(`Không thể tự động kết nối lại Log: ${e.message}. Vui lòng bấm Kết Nối Cáp lại.`, 'warning');
+                addLog(`Không thể tự động mở lại Log. Hãy bấm Kết Nối lại.`, 'warning');
                 setIsConnected(false);
             }
             setProgress(0);
@@ -441,7 +418,6 @@
             <i className="fa-solid fa-sliders text-blue-500 text-xl"></i>
             <h2>{t.selectDevice}</h2>
           </div>
-          
           <div className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">{t.boardType}</label>
@@ -449,14 +425,13 @@
                 value={selectedBoardId} 
                 onChange={(e) => setSelectedBoardId(e.target.value)}
                 disabled={isConnected || isFlashing}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50 cursor-pointer"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer"
               >
                 {boards.map(b => (
                   <option key={b.id} value={b.id}>{b.name} ({b.chip})</option>
                 ))}
               </select>
             </div>
-
             <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 flex flex-col gap-4">
               <div className="flex items-center gap-3">
                 {localFile ? (
@@ -477,7 +452,6 @@
                   </p>
                 </div>
               </div>
-
               <div className="border-t border-slate-800/50 pt-3">
                 <label className="block text-xs font-medium text-slate-400 mb-2">{t.localFileLabel}</label>
                 <input 
@@ -489,7 +463,6 @@
                 />
               </div>
             </div>
-
             <div className="pt-2 space-y-3">
               {!isConnected ? (
                 <button 
@@ -519,7 +492,6 @@
                   </select>
                 </div>
               )}
-
               <button 
                 onClick={handleFlash}
                 disabled={!isConnected || isFlashing || (!selectedBoard?.url && !localFile)}
@@ -531,7 +503,6 @@
               >
                 <i className={`fa-solid fa-bolt text-lg ${isFlashing ? 'fa-beat-fade' : ''}`}></i>
                 {isFlashing ? `${t.btnFlashing} ${progress}%` : t.btnFlash}
-                
                 {isFlashing && (
                   <div 
                     className="absolute left-0 bottom-0 top-0 bg-white/20 transition-all duration-300 pointer-events-none"
@@ -556,7 +527,6 @@
               {t.adminSave}
             </button>
           </div>
-
           <div className="flex border-b border-slate-800 shrink-0 bg-slate-950/50">
             <button 
               onClick={() => setAdminTab('firmware')}
@@ -571,7 +541,6 @@
               <i className="fa-solid fa-palette"></i> {t.adminTabUi}
             </button>
           </div>
-
           <div className="overflow-y-auto p-5 custom-scrollbar flex-1 bg-slate-900/50">
             {adminTab === 'firmware' && (
               <div className="space-y-4">
@@ -581,7 +550,6 @@
                     {t.adminGuide}
                   </p>
                 </div>
-                
                 <div className="space-y-3">
                   {boards.map(board => (
                     <div key={board.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col xl:flex-row xl:items-center gap-3 hover:border-slate-600 transition-colors">
@@ -604,7 +572,6 @@
                 </div>
               </div>
             )}
-
             {adminTab === 'ui' && (
               <div className="space-y-6">
                 <div className="bg-slate-950 p-5 rounded-xl border border-slate-800">
@@ -625,7 +592,6 @@
                     </div>
                   )}
                 </div>
-
                 <div className="bg-slate-950 p-5 rounded-xl border border-slate-800">
                   <h3 className="text-white font-bold flex items-center gap-2 mb-4">
                     <i className="fa-solid fa-image text-pink-500"></i> {t.adminUiBg}
@@ -660,9 +626,7 @@
           }}
         >
           <div className={`absolute inset-0 z-0 pointer-events-none transition-colors duration-500 ${bgUrl ? 'bg-slate-950/85 backdrop-blur-sm' : 'bg-transparent'}`}></div>
-
           <div className="max-w-6xl mx-auto space-y-6 relative z-10 p-4 md:p-8">
-            
             <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800/60 pb-6 gap-4">
               <div className="flex items-center gap-4">
                 <div className="w-14 h-14 bg-blue-600/20 rounded-xl flex items-center justify-center text-blue-500 overflow-hidden shadow-lg border border-blue-500/20 backdrop-blur-md shrink-0">
@@ -679,7 +643,6 @@
                   <p className="text-sm text-blue-400 font-medium tracking-wide">{t.subtitle}</p>
                 </div>
               </div>
-
               <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap justify-end">
                 <span className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-700 shadow-lg mr-2">
                   <span className={`relative flex h-2.5 w-2.5`}>
@@ -690,7 +653,6 @@
                     {isConnected ? t.connected : t.disconnected}
                   </span>
                 </span>
-                
                 <button 
                   onClick={() => setShowDonateModal(true)}
                   className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white h-10 px-4 rounded-full font-bold shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50 hover:scale-105 transition-all"
@@ -698,7 +660,6 @@
                   <i className="fa-solid fa-heart fa-beat"></i>
                   <span className="text-sm">{t.btnDonate}</span>
                 </button>
-
                 <button 
                   onClick={toggleLang}
                   className="px-3 h-10 flex items-center justify-center text-sm font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors bg-slate-900/80 backdrop-blur-md rounded-full border border-slate-700 shadow-lg"
@@ -706,7 +667,6 @@
                 >
                   {lang === 'en' ? '🇻🇳 VI' : '🇬🇧 EN'}
                 </button>
-
                 <a 
                   href={GITHUB_LINK} 
                   target="_blank" 
@@ -716,7 +676,6 @@
                 >
                   <i className="fab fa-github text-lg"></i>
                 </a>
-
                 <button 
                   onClick={() => isAdmin ? setIsAdmin(false) : setShowAdminModal(true)}
                   className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-purple-400 hover:bg-slate-800 transition-colors bg-slate-900/80 backdrop-blur-md rounded-full border border-slate-700 shadow-lg"
@@ -726,12 +685,10 @@
                 </button>
               </div>
             </header>
-
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
               <div className="lg:col-span-5 space-y-6">
                 {isAdmin ? AdminView : UserView}
               </div>
-
               <div className="lg:col-span-7 h-[600px] flex flex-col bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
                   <div className="flex items-center gap-2 text-slate-300 font-semibold">
@@ -745,7 +702,6 @@
                     {t.logsClear}
                   </button>
                 </div>
-                
                 <div 
                   ref={terminalRef}
                   className="flex-1 p-5 overflow-y-auto font-mono text-sm space-y-2 bg-[#050b14]/80 custom-scrollbar select-text"
@@ -795,7 +751,6 @@
                   />
                   {loginError && <p className="text-rose-500 text-xs mb-4"><i className="fa-solid fa-circle-exclamation mr-1"></i>{t.alertWrongPass}</p>}
                   {!loginError && <div className="mb-4"></div>}
-                  
                   <div className="flex gap-3">
                     <button 
                       type="button"
@@ -823,21 +778,17 @@
           {showDonateModal && (
             <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
               <div className="bg-slate-900 border border-pink-500/30 rounded-3xl p-8 w-full max-w-sm shadow-[0_0_50px_rgba(236,72,153,0.15)] flex flex-col items-center text-center relative">
-                
                 <button 
                   onClick={() => setShowDonateModal(false)}
                   className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 hover:bg-rose-500 text-slate-400 hover:text-white transition-colors"
                 >
                   <i className="fa-solid fa-xmark"></i>
                 </button>
-
                 <div className="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center text-pink-500 text-2xl mb-4 shadow-[0_0_20px_rgba(236,72,153,0.3)]">
                   <i className="fa-solid fa-heart fa-beat"></i>
                 </div>
-                
                 <h3 className="text-2xl font-bold text-white mb-2">{t.donateTitle}</h3>
                 <p className="text-sm text-slate-400 mb-6">{t.donateDesc}</p>
-                
                 <div className="bg-white p-3 rounded-2xl mb-6 shadow-xl w-64 h-64 flex items-center justify-center">
                   <img 
                     src={`https://quickchart.io/qr?size=300&text=${encodeURIComponent(DONATE_QR_STRING)}`} 
@@ -845,7 +796,6 @@
                     className="w-full h-full object-contain"
                   />
                 </div>
-
                 <div className="w-full flex gap-3">
                   <button 
                     onClick={copyQRString}
