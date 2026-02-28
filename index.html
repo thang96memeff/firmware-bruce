@@ -7,15 +7,10 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  
-  <!-- FIX 1: Tải esptool-js riêng biệt bằng ES Module để tránh lỗi "Unexpected token export" -->
-  <script type="module">
-    import { ESPLoader, Transport } from 'https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm';
-    window.ESPToolJS = { ESPLoader, Transport };
-  </script>
 </head>
 <body class="bg-slate-950 m-0 p-0 overflow-x-hidden">
   <div id="root"></div>
@@ -84,7 +79,7 @@
         modalTitle: "Xác thực Quản trị", modalDesc: "Vui lòng nhập mật khẩu quản trị hệ thống.", modalInput: "Nhập mật khẩu...", modalCancel: "Hủy", modalUnlock: "Mở khóa",
         alertSaved: "Đã lưu thiết lập trên máy này!\nLưu ý: Để hiển thị cho người khác, bạn phải sửa biến INITIAL_BOARDS trong code và tải lên GitHub.", alertWrongPass: "Sai mật khẩu!",
         browserErrTitle: "Trình duyệt không hỗ trợ", browserErrDesc: "Vui lòng sử dụng Google Chrome hoặc Edge trên máy tính để kết nối cáp USB.",
-        logInit: "Đang chuẩn bị trình nạp Flash...", logDL: "Đang tải Firmware từ Kho lưu trữ...", logReadLocal: "Đang đọc file từ ổ cứng:",
+        logInit: "Đang tải thư viện nạp esptool...", logDL: "Đang tải Firmware từ Kho lưu trữ...", logReadLocal: "Đang đọc file từ ổ cứng:",
         logDLDone: "Đã nạp xong dữ liệu file", logSync: "Đang đồng bộ với thiết bị ESP...", logChip: "Phát hiện chip:",
         logErase: "Đang xóa Flash và bắt đầu nạp...", logSuccess: "Nạp Firmware THÀNH CÔNG! Đang khởi động lại...",
         logFail: "Nạp thất bại:", logRestore: "Khôi phục trình đọc Serial...", logConnOk: "Đã kết nối thành công qua cổng Serial",
@@ -134,9 +129,7 @@
       useEffect(() => { langRef.current = lang; }, [lang]);
 
       useEffect(() => {
-        if (!('serial' in navigator)) {
-          setIsSupported(false);
-        }
+        if (!('serial' in navigator)) { setIsSupported(false); }
         
         const savedLang = localStorage.getItem('duscu_lang');
         if (savedLang) setLang(savedLang);
@@ -179,10 +172,11 @@
       const readLoop = async (activePort) => {
         keepReadingRef.current = true;
         while (activePort.readable && keepReadingRef.current) {
-          readerRef.current = activePort.readable.getReader();
+          const reader = activePort.readable.getReader();
+          readerRef.current = reader;
           try {
             while (keepReadingRef.current) {
-              const { value, done } = await readerRef.current.read();
+              const { value, done } = await reader.read();
               if (done) break;
               const text = new TextDecoder().decode(value);
               const lines = text.split('\n');
@@ -193,10 +187,8 @@
           } catch (error) {
             if (keepReadingRef.current) addLog(`Serial Error: ${error.message}`, 'error');
           } finally {
-            if (readerRef.current) {
-              readerRef.current.releaseLock();
-              readerRef.current = null;
-            }
+            reader.releaseLock();
+            readerRef.current = null;
           }
         }
       };
@@ -270,7 +262,7 @@
       };
 
       // ==============================================================
-      // FIX 2: TẮT LUỒNG SERIAL SẠCH SẼ ĐỂ TRÁNH LỖI ALREADY OPEN 
+      // XỬ LÝ NẠP FLASH V17 - KHẮC PHỤC LỖI ALREADY OPEN & EXPORT
       // ==============================================================
       const handleFlash = async () => {
         const curT = TRANSLATIONS[langRef.current];
@@ -284,7 +276,9 @@
         setProgress(0);
 
         try {
-          // BƯỚC 1: DỪNG TRÌNH ĐỌC LOG HIỆN TẠI VÀ ĐÓNG CỔNG
+          addLog(curT.logInit, 'info');
+
+          // 1. ĐÓNG SẠCH CỔNG SERIAL MONITOR
           keepReadingRef.current = false;
           if (readerRef.current) {
               await readerRef.current.cancel().catch(() => {});
@@ -293,18 +287,19 @@
               await port.close().catch(() => {});
           }
           
-          // Chờ hệ điều hành nhả cổng (Cực kỳ quan trọng để không bị lỗi Already Open)
-          await new Promise(r => setTimeout(r, 600)); 
+          // Chờ 500ms cho Window/Mac nhả kết nối USB hoàn toàn
+          await new Promise(r => setTimeout(r, 500));
 
-          addLog(curT.logInit, 'info');
-
-          // Lấy esptool từ thẻ script <head> ta đã khai báo
-          if (!window.ESPToolJS) {
-              throw new Error("Thư viện hệ thống chưa sẵn sàng. Vui lòng tải lại trang (F5).");
+          // 2. DYNAMIC IMPORT THƯ VIỆN ESPTOOL (Dùng Function ẩn để lách lỗi Babel Export)
+          let esptooljs = window.esptooljs;
+          if (!esptooljs) {
+              // Tải an toàn bản 0.4.4
+              esptooljs = await new Function("return import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm')")();
+              window.esptooljs = esptooljs;
           }
-          const { ESPLoader, Transport } = window.ESPToolJS;
+          const { ESPLoader, Transport } = esptooljs;
 
-          // BƯỚC 2: CHUẨN BỊ DỮ LIỆU FIRMWARE
+          // 3. TẢI DỮ LIỆU FILE FIRMWARE
           let firmwareData;
           if (localFile) {
              addLog(`${curT.logReadLocal} ${localFile.name}...`, 'warning');
@@ -324,9 +319,9 @@
              addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
           }
 
-          // BƯỚC 3: KẾT NỐI VÀ NẠP BẰNG ESPTOOL
-          const transport = new Transport(port);
+          // 4. BẮT ĐẦU NẠP
           addLog(curT.logSync, 'warning');
+          const transport = new Transport(port);
           
           const terminalParams = { 
               clean: () => {}, 
@@ -334,16 +329,15 @@
               write: (msg) => addLog(msg, 'device')
           };
 
-          // Khởi tạo ESPLoader (bản 0.4.4 dùng tham số rời)
           const esploader = new ESPLoader(transport, parseInt(baudRate), terminalParams);
 
-          // Hàm main() của esptool tự động kết nối cổng và đồng bộ với chip
           const chipName = await esploader.main();
           addLog(`${curT.logChip} ${chipName}`, 'success');
 
           addLog(curT.logErase, 'info');
 
-          await esploader.write_flash({
+          // Ở bản 0.4.4 hàm nạp là writeFlash (Viết hoa chữ F)
+          await esploader.writeFlash({
               fileArray: [{ data: firmwareData, address: 0x0 }],
               flashSize: 'keep',
               eraseAll: false,
@@ -354,9 +348,8 @@
           });
 
           addLog(curT.logSuccess, 'success');
-          await esploader.hardReset();
           
-          // Ngắt kết nối esptool sau khi nạp xong
+          await esploader.hardReset();
           await transport.disconnect().catch(() => {});
 
         } catch (error) {
@@ -365,7 +358,7 @@
         } finally {
           setIsFlashing(false);
           
-          // BƯỚC 4: TỰ ĐỘNG KHÔI PHỤC LẠI SERIAL MONITOR
+          // 5. KHÔI PHỤC LẠI SERIAL MONITOR TỰ ĐỘNG
           setTimeout(async () => {
             addLog(curT.logRestore, 'info');
             try {
@@ -374,7 +367,7 @@
                     readLoop(port);
                 }
             } catch (e) {
-                addLog("Không thể tự động kết nối lại. Bạn có thể bấm nút Kết nối ở trên.", 'warning');
+                addLog(`Không thể mở lại Serial Monitor tự động: ${e.message}. Vui lòng bấm Kết Nối Cáp lại.`, 'warning');
                 setIsConnected(false);
             }
             setProgress(0);
