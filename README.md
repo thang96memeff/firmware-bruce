@@ -1,4 +1,4 @@
-# 🚀 Bruce Firmware Web Installer
+# 🚀 DUSCU FLASHER
 
 Trang web hỗ trợ nạp firmware **Bruce** trực tiếp qua trình duyệt bằng công nghệ Web Serial API. Không cần cài đặt Python, không cần dòng lệnh phức tạp.
 
