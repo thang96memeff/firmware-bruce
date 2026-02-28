@@ -14,7 +14,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- FIX 1: Tải Esptool bằng Module script chuẩn để tránh lỗi SyntaxError 'export' -->
+  <!-- Tải Esptool bằng Module script chuẩn -->
   <script type="module">
     import * as esptooljs from 'https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm';
     window.esptooljs = esptooljs;
@@ -27,7 +27,7 @@
     const { useState, useEffect, useRef } = React;
 
     // ==========================================
-    // CẤU HÌNH DỰ ÁN CỦA BẠN 
+    // CẤU HÌNH HỆ THỐNG
     // ==========================================
     const ADMIN_PASSWORD_HASH = "bb84f53ce294e2c3a185586e1414a48e76f85bd594c0879a57ae8f9af8e8a903"; 
     const GITHUB_LINK = "https://github.com/thang96memeff/firmware-bruce"; 
@@ -63,15 +63,15 @@
         adminGuide: "Guide: You can paste a direct URL OR just the filename (e.g. firmware.bin) if it's hosted in the same GitHub Repo.",
         adminUiLogo: "Logo Configuration", adminUiLogoLabel: "Logo URL (Square)", adminUiBg: "Background Configuration", adminUiBgLabel: "Background URL", adminEx: "Example:",
         modalTitle: "Admin Authentication", modalDesc: "Please enter the admin password.", modalInput: "Enter password...", modalCancel: "Cancel", modalUnlock: "Unlock",
-        alertSaved: "Settings saved locally!\nNote: To apply globally, update the 'INITIAL_BOARDS' in the source code on GitHub.", alertWrongPass: "Wrong password!",
+        alertSaved: "Settings saved locally!", alertWrongPass: "Wrong password!",
         browserErrTitle: "Browser not supported", browserErrDesc: "Please use Google Chrome or Edge on a PC to connect via USB.",
         logInit: "Initializing esptool library...", logDL: "Downloading Firmware from Repo...", logReadLocal: "Reading local file:",
         logDLDone: "Firmware loaded", logSync: "Connecting to ESP device...", logChip: "Chip detected:",
         logErase: "Erasing Flash and starting to write...", logSuccess: "Firmware flashed SUCCESSFULLY! Rebooting...",
-        logFail: "Flashing failed:", logRestore: "Restoring Serial monitor...", logConnOk: "Connected successfully via Serial port",
+        logFail: "Flashing failed:", logRestore: "Restoring Serial monitor...", logConnOk: "Connected successfully",
         logConnFail: "Connection failed:", logDisconn: "Disconnected.", logUnlock: "Admin Mode Unlocked.",
-        logMissingFw: "Error: Firmware not configured and no local file selected.", btnDonate: "Donate",
-        donateTitle: "Support the Developer", donateDesc: "If you find this tool helpful, please consider buying me a coffee. Your support is greatly appreciated!",
+        logMissingFw: "Error: Firmware not configured.", btnDonate: "Donate",
+        donateTitle: "Support the Developer", donateDesc: "If you find this tool helpful, please consider buying me a coffee.",
         donateCopy: "Copy QR String", donateCopied: "Copied!"
       },
       vi: {
@@ -85,15 +85,15 @@
         adminGuide: "Hướng dẫn: Bạn có thể dán Link đầy đủ HOẶC chỉ cần điền tên file (VD: firmware.bin) nếu file đã nằm chung thư mục trên GitHub.",
         adminUiLogo: "Cấu hình Logo", adminUiLogoLabel: "Đường dẫn ảnh Logo (Vuông)", adminUiBg: "Cấu hình Hình Nền", adminUiBgLabel: "Đường dẫn Hình Nền (Background)", adminEx: "Ví dụ:",
         modalTitle: "Xác thực Quản trị", modalDesc: "Vui lòng nhập mật khẩu quản trị hệ thống.", modalInput: "Nhập mật khẩu...", modalCancel: "Hủy", modalUnlock: "Mở khóa",
-        alertSaved: "Đã lưu thiết lập trên máy này!\nLưu ý: Để hiển thị cho người khác, bạn phải sửa biến INITIAL_BOARDS trong code và tải lên GitHub.", alertWrongPass: "Sai mật khẩu!",
-        browserErrTitle: "Trình duyệt không hỗ trợ", browserErrDesc: "Vui lòng sử dụng Google Chrome hoặc Edge trên máy tính để kết nối cáp USB.",
-        logInit: "Đang chuẩn bị trình nạp Flash...", logDL: "Đang tải Firmware từ Kho lưu trữ...", logReadLocal: "Đang đọc file từ ổ cứng:",
+        alertSaved: "Đã lưu thiết lập thành công!", alertWrongPass: "Sai mật khẩu!",
+        browserErrTitle: "Trình duyệt không hỗ trợ", browserErrDesc: "Vui lòng sử dụng Google Chrome hoặc Edge trên máy tính.",
+        logInit: "Đang chuẩn bị luồng nạp Flash...", logDL: "Đang tải Firmware từ Kho lưu trữ...", logReadLocal: "Đang đọc file từ ổ cứng:",
         logDLDone: "Đã nạp xong dữ liệu file", logSync: "Đang kết nối cổng với thiết bị ESP...", logChip: "Phát hiện chip:",
         logErase: "Đang xóa Flash và bắt đầu nạp...", logSuccess: "Nạp Firmware THÀNH CÔNG! Đang khởi động lại...",
-        logFail: "Nạp thất bại:", logRestore: "Khôi phục trình đọc Serial...", logConnOk: "Đã kết nối thành công qua cổng Serial",
+        logFail: "Nạp thất bại:", logRestore: "Khôi phục trình đọc Serial...", logConnOk: "Đã kết nối thành công",
         logConnFail: "Kết nối thất bại:", logDisconn: "Đã ngắt kết nối.", logUnlock: "Đã mở khóa Chế độ Quản trị.",
-        logMissingFw: "Lỗi: Chưa có file nào được cấu hình hoặc chọn.", btnDonate: "Ủng hộ",
-        donateTitle: "Ủng hộ Tác giả", donateDesc: "Nếu bạn thấy công cụ này hữu ích, hãy ủng hộ mình một ly cà phê qua mã QR ngân hàng nhé. Cảm ơn bạn rất nhiều!",
+        logMissingFw: "Lỗi: Chưa có file nào được cấu hình.", btnDonate: "Ủng hộ",
+        donateTitle: "Ủng hộ Tác giả", donateDesc: "Nếu bạn thấy công cụ này hữu ích, hãy ủng hộ mình một ly cà phê nhé.",
         donateCopy: "Copy chuỗi QR", donateCopied: "Đã copy!"
       }
     };
@@ -104,7 +104,8 @@
       const langRef = useRef(lang); 
 
       const [isSupported, setIsSupported] = useState(true);
-      const [port, setPort] = useState(null);
+      const [device, setDevice] = useState(null);
+      const [transport, setTransport] = useState(null);
       const [isConnected, setIsConnected] = useState(false);
       const [baudRate, setBaudRate] = useState(115200);
       
@@ -169,10 +170,15 @@
         setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg, type }]);
       };
 
-      const readLoop = async (activePort) => {
+      // Vòng lặp đọc Serial Monitor
+      const readLoop = async (currentTransport) => {
         keepReadingRef.current = true;
-        while (activePort.readable && keepReadingRef.current) {
-          const reader = activePort.readable.getReader();
+        // Kiểm tra xem transport có device/port không
+        const port = currentTransport.device; 
+        if (!port || !port.readable) return;
+
+        while (port.readable && keepReadingRef.current) {
+          const reader = port.readable.getReader();
           readerRef.current = reader;
           try {
             while (keepReadingRef.current) {
@@ -185,7 +191,7 @@
               });
             }
           } catch (error) {
-            if (keepReadingRef.current) addLog(`Serial Error: ${error.message}`, 'error');
+            if (keepReadingRef.current) console.error("Read Error:", error);
           } finally {
             reader.releaseLock();
             readerRef.current = null;
@@ -193,14 +199,26 @@
         }
       };
 
+      // Ý TƯỞNG CỦA BẠN: Để thư viện Esptool tự quản lý việc Open cổng
       const handleConnect = async () => {
         try {
-          const newPort = await navigator.serial.requestPort();
-          await newPort.open({ baudRate: parseInt(baudRate) });
-          setPort(newPort);
+          const selectedPort = await navigator.serial.requestPort();
+          const esptool = window.esptooljs;
+          if (!esptool) throw new Error("Thư viện hệ thống đang tải, vui lòng thử lại sau 2 giây.");
+
+          // Khởi tạo Transport (Chưa Open)
+          const newTransport = new esptool.Transport(selectedPort);
+          
+          // Thư viện tự Open cổng tại đây
+          await newTransport.connect(parseInt(baudRate));
+          
+          setDevice(selectedPort);
+          setTransport(newTransport);
           setIsConnected(true);
-          addLog(`${TRANSLATIONS[langRef.current].logConnOk} (${baudRate})`, 'success');
-          readLoop(newPort);
+          addLog(`${TRANSLATIONS[langRef.current].logConnOk} (Baud: ${baudRate})`, 'success');
+          
+          // Bắt đầu đọc log
+          readLoop(newTransport);
         } catch (err) {
           addLog(`${TRANSLATIONS[langRef.current].logConnFail} ${err.message}`, 'error');
         }
@@ -212,18 +230,21 @@
             await readerRef.current.cancel().catch(() => {});
         }
         
+        // Chờ luồng đọc nhả khóa
         let waitCount = 0;
         while (readerRef.current && waitCount < 20) {
             await new Promise(r => setTimeout(r, 50));
             waitCount++;
         }
 
-        if (port) {
-          await port.close().catch(() => {});
-          setPort(null);
-          setIsConnected(false);
-          addLog(TRANSLATIONS[langRef.current].logDisconn, 'warning');
+        if (transport) {
+          await transport.disconnect().catch(() => {});
         }
+        
+        setTransport(null);
+        setDevice(null);
+        setIsConnected(false);
+        addLog(TRANSLATIONS[langRef.current].logDisconn, 'warning');
       };
 
       const handleAdminLogin = async (e) => {
@@ -244,7 +265,7 @@
           } else {
             setLoginError(true);
           }
-        } catch (error) { console.error("Auth error", error); }
+        } catch (error) {}
       };
 
       const handleUrlChange = (id, newUrl) => {
@@ -267,7 +288,7 @@
       };
 
       // ==============================================================
-      // XỬ LÝ NẠP FLASH V26 - LUỒNG CHUẨN KỸ THUẬT ESPRESSIF
+      // XỬ LÝ NẠP FLASH V27 - CHUẨN KỸ THUẬT ESPRESSIF TUYỆT ĐỐI
       // ==============================================================
       const handleFlash = async () => {
         const curT = TRANSLATIONS[langRef.current];
@@ -279,40 +300,32 @@
 
         setIsFlashing(true);
         setProgress(0);
-        let transport = null;
 
         try {
           addLog(curT.logInit, 'info');
 
-          // BƯỚC 1: DỪNG TERMINAL VÀ GIẢI PHÓNG READER KHỎI CỔNG
-          addLog("Đang giải phóng cổng Serial Monitor...", "warning");
+          // 1. DỪNG ĐỌC NHẬT KÝ VÀ NGẮT KẾT NỐI TRANSPORT HIỆN TẠI
           keepReadingRef.current = false;
           if (readerRef.current) {
               await readerRef.current.cancel().catch(() => {});
           }
           
-          // Chờ đợi an toàn cho đến khi Reader được gỡ hoàn toàn (readerRef trở thành null)
           let waitCount = 0;
           while (readerRef.current && waitCount < 20) {
               await new Promise(r => setTimeout(r, 50));
               waitCount++;
           }
 
-          // Cực kỳ quan trọng: Phải gọi close() để esptool có quyền open() lại
-          if (port) {
-              try { 
-                  await port.close(); 
-              } catch(e) { 
-                  console.warn("Cổng đã đóng hoặc lỗi đóng cổng:", e); 
-              }
+          // Đóng kết nối cũ để esptool tạo handshake mới
+          if (transport) {
+              await transport.disconnect().catch(() => {});
           }
-          // Nghỉ 600ms để Hệ điều hành dọn dẹp kết nối
-          await new Promise(r => setTimeout(r, 600));
+          await new Promise(r => setTimeout(r, 500)); 
 
           const esptool = window.esptooljs;
-          if (!esptool) throw new Error("Thư viện nạp chưa sẵn sàng. Vui lòng tải lại trang (F5).");
+          if (!esptool) throw new Error("Hệ thống chưa sẵn sàng. F5 lại trang.");
 
-          // BƯỚC 2: CHUẨN BỊ DỮ LIỆU
+          // 2. TẢI FIRMWARE
           let firmwareData;
           if (localFile) {
              addLog(`${curT.logReadLocal} ${localFile.name}...`, 'warning');
@@ -325,17 +338,16 @@
              let fetchUrl = selectedBoard.url;
              fetchUrl += (fetchUrl.includes('?') ? '&' : '?') + 't=' + new Date().getTime();
              const response = await fetch(fetchUrl);
-             if (!response.ok) throw new Error(`Không tìm thấy file ${selectedBoard.url}`);
+             if (!response.ok) throw new Error("Lỗi tải Firmware từ GitHub.");
              const buffer = await response.arrayBuffer();
              firmwareData = new Uint8Array(buffer);
              addLog(`${curT.logDLDone} (${(firmwareData.length / 1024).toFixed(1)} KB)`, 'success');
           }
 
-          // BƯỚC 3: KẾT NỐI ESPTOOL VÀ NẠP (CHUẨN API ESPRESSIF)
+          // 3. TẠO LUỒNG KẾT NỐI MỚI DÀNH RIÊNG CHO NẠP
           addLog(curT.logSync, 'warning');
-          
-          transport = new esptool.Transport(port);
-          await transport.connect(parseInt(baudRate));
+          const flashTransport = new esptool.Transport(device);
+          await flashTransport.connect(parseInt(baudRate));
           
           const terminalParams = { 
               clean: () => {}, 
@@ -343,8 +355,8 @@
               write: (msg) => addLog(msg, 'device')
           };
 
-          // FIX getInfo: Truyền tham số rời rạc (Positional Args) như code gốc của hãng
-          const esploader = new esptool.ESPLoader(transport, parseInt(baudRate), terminalParams);
+          // [FIX QUAN TRỌNG NHẤT]: Truyền tham số rời rạc đúng cú pháp hãng Espressif
+          const esploader = new esptool.ESPLoader(flashTransport, parseInt(baudRate), terminalParams);
 
           const chipName = await esploader.main();
           addLog(`${curT.logChip} ${chipName}`, 'success');
@@ -361,15 +373,11 @@
               }
           };
 
-          // Gọi đúng hàm writeFlash theo chuẩn 0.4.4
-          if (typeof esploader.writeFlash === 'function') {
-              await esploader.writeFlash(flashOptions);
-          } else {
-              await esploader.write_flash(flashOptions);
-          }
-
+          await esploader.writeFlash(flashOptions);
           addLog(curT.logSuccess, 'success');
+          
           await esploader.hardReset();
+          await flashTransport.disconnect();
 
         } catch (error) {
           addLog(`${curT.logFail} ${error.message}`, 'error');
@@ -377,22 +385,18 @@
         } finally {
           setIsFlashing(false);
           
-          // DỌN DẸP: Bắt buộc ngắt Transport trước khi mở lại Log
-          if (transport) {
-              try { await transport.disconnect(); } catch(e){}
-              await new Promise(r => setTimeout(r, 500));
-          }
-
-          // BƯỚC 4: KHÔI PHỤC SERIAL MONITOR
+          // 4. MỞ LẠI TRANSPORT VÀ KHÔI PHỤC LOG
           setTimeout(async () => {
             try {
-                if (port) {
-                    await port.open({ baudRate: parseInt(baudRate) });
+                if (device) {
+                    const newTransport = new esptool.Transport(device);
+                    await newTransport.connect(parseInt(baudRate));
+                    setTransport(newTransport);
                     addLog(curT.logRestore, 'info');
-                    readLoop(port);
+                    readLoop(newTransport);
                 }
             } catch (e) {
-                addLog(`Không thể tự động mở lại Log. Hãy bấm Kết Nối lại.`, 'warning');
+                addLog(`Cần bấm Kết Nối lại: ${e.message}`, 'warning');
                 setIsConnected(false);
             }
             setProgress(0);
@@ -447,7 +451,7 @@
                     {localFile 
                       ? `${t.statusReadyLocal} (${localFile.name})` 
                       : selectedBoard?.url 
-                        ? `${t.fwReady}: ${selectedBoard.url}` 
+                        ? `${t.fwReady}` 
                         : t.fwNotConfigured}
                   </p>
                 </div>
@@ -541,74 +545,24 @@
               <i className="fa-solid fa-palette"></i> {t.adminTabUi}
             </button>
           </div>
-          <div className="overflow-y-auto p-5 custom-scrollbar flex-1 bg-slate-900/50">
+          <div className="overflow-y-auto p-5 flex-1 bg-slate-900/50">
             {adminTab === 'firmware' && (
-              <div className="space-y-4">
-                <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl mb-6">
-                  <p className="text-sm text-blue-200 leading-relaxed">
-                    <i className="fa-solid fa-circle-info mr-1"></i>
-                    {t.adminGuide}
-                  </p>
-                </div>
-                <div className="space-y-3">
-                  {boards.map(board => (
-                    <div key={board.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col xl:flex-row xl:items-center gap-3 hover:border-slate-600 transition-colors">
-                      <div className="xl:w-1/3">
-                        <p className="text-sm font-bold text-slate-200">{board.name}</p>
-                        <p className="text-xs text-slate-500">Chip: {board.chip}</p>
-                      </div>
-                      <div className="xl:w-2/3 relative flex-1">
-                        <i className="fa-solid fa-link absolute left-3 top-3.5 text-slate-500"></i>
-                        <input 
-                          type="text"
-                          placeholder={`${t.adminEx} Bruce-smoochiee-board.bin`}
-                          value={board.url}
-                          onChange={(e) => handleUrlChange(board.id, e.target.value)}
-                          className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg pl-9 pr-3 py-2.5 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
-                        />
-                      </div>
+              <div className="space-y-3">
+                {boards.map(board => (
+                  <div key={board.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col xl:flex-row xl:items-center gap-3">
+                    <div className="xl:w-1/3">
+                      <p className="text-sm font-bold text-slate-200">{board.name}</p>
                     </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            {adminTab === 'ui' && (
-              <div className="space-y-6">
-                <div className="bg-slate-950 p-5 rounded-xl border border-slate-800">
-                  <h3 className="text-white font-bold flex items-center gap-2 mb-4">
-                    <i className="fa-solid fa-image text-pink-500"></i> {t.adminUiLogo}
-                  </h3>
-                  <label className="block text-xs font-medium text-slate-400 mb-2">{t.adminUiLogoLabel}</label>
-                  <input 
-                    type="text"
-                    placeholder={`${t.adminEx} https://imgur.com/logo.png`}
-                    value={logoUrl}
-                    onChange={(e) => setLogoUrl(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 focus:border-pink-500 outline-none"
-                  />
-                  {logoUrl && (
-                    <div className="mt-4 p-4 bg-slate-900 border border-slate-800 rounded-lg inline-block">
-                      <img src={logoUrl} alt="Preview Logo" className="w-16 h-16 object-contain rounded" />
+                    <div className="xl:w-2/3 relative flex-1">
+                      <input 
+                        type="text"
+                        value={board.url}
+                        onChange={(e) => handleUrlChange(board.id, e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2 outline-none"
+                      />
                     </div>
-                  )}
-                </div>
-                <div className="bg-slate-950 p-5 rounded-xl border border-slate-800">
-                  <h3 className="text-white font-bold flex items-center gap-2 mb-4">
-                    <i className="fa-solid fa-image text-pink-500"></i> {t.adminUiBg}
-                  </h3>
-                  <label className="block text-xs font-medium text-slate-400 mb-2">{t.adminUiBgLabel}</label>
-                  <input 
-                    type="text"
-                    placeholder={`${t.adminEx} https://imgur.com/bg.jpg`}
-                    value={bgUrl}
-                    onChange={(e) => setBgUrl(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 focus:border-pink-500 outline-none"
-                  />
-                  {bgUrl && (
-                    <div className="mt-4 w-full h-32 rounded-lg border border-slate-700 bg-cover bg-center" style={{ backgroundImage: `url(${bgUrl})` }}>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -616,195 +570,69 @@
       );
 
       return (
-        <div 
-          className="min-h-screen bg-slate-950 text-slate-300 font-sans relative transition-all duration-500"
-          style={{
-            backgroundImage: bgUrl ? `url(${bgUrl})` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundAttachment: 'fixed'
-          }}
-        >
-          <div className={`absolute inset-0 z-0 pointer-events-none transition-colors duration-500 ${bgUrl ? 'bg-slate-950/85 backdrop-blur-sm' : 'bg-transparent'}`}></div>
+        <div className="min-h-screen bg-slate-950 text-slate-300 font-sans relative" style={{ backgroundImage: bgUrl ? `url(${bgUrl})` : 'none', backgroundSize: 'cover', backgroundAttachment: 'fixed' }}>
+          <div className={`absolute inset-0 z-0 ${bgUrl ? 'bg-slate-950/85 backdrop-blur-sm' : 'bg-transparent'}`}></div>
           <div className="max-w-6xl mx-auto space-y-6 relative z-10 p-4 md:p-8">
             <header className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-800/60 pb-6 gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 bg-blue-600/20 rounded-xl flex items-center justify-center text-blue-500 overflow-hidden shadow-lg border border-blue-500/20 backdrop-blur-md shrink-0">
-                  {logoUrl ? (
-                    <img src={logoUrl} alt="DUSCU Logo" className="w-full h-full object-cover" />
-                  ) : (
-                    <i className="fa-solid fa-microchip text-3xl"></i>
-                  )}
+                <div className="w-14 h-14 bg-blue-600/20 rounded-xl flex items-center justify-center text-blue-500 overflow-hidden shrink-0">
+                  {logoUrl ? <img src={logoUrl} className="w-full h-full object-cover" /> : <i className="fa-solid fa-microchip text-3xl"></i>}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-extrabold text-white tracking-tight drop-shadow-md">
-                    {t.title}
-                  </h1>
-                  <p className="text-sm text-blue-400 font-medium tracking-wide">{t.subtitle}</p>
+                  <h1 className="text-3xl font-extrabold text-white tracking-tight">{t.title}</h1>
+                  <p className="text-sm text-blue-400 font-medium">{t.subtitle}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap sm:flex-nowrap justify-end">
-                <span className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-700 shadow-lg mr-2">
-                  <span className={`relative flex h-2.5 w-2.5`}>
-                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isConnected ? 'bg-emerald-400' : 'bg-rose-400'}`}></span>
-                    <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${isConnected ? 'bg-emerald-500' : 'bg-rose-500'}`}></span>
-                  </span>
-                  <span className="text-xs font-bold hidden md:inline text-slate-200 uppercase tracking-wider whitespace-nowrap">
-                    {isConnected ? t.connected : t.disconnected}
-                  </span>
-                </span>
-                <button 
-                  onClick={() => setShowDonateModal(true)}
-                  className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white h-10 px-4 rounded-full font-bold shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50 hover:scale-105 transition-all"
-                >
-                  <i className="fa-solid fa-heart fa-beat"></i>
-                  <span className="text-sm">{t.btnDonate}</span>
-                </button>
-                <button 
-                  onClick={toggleLang}
-                  className="px-3 h-10 flex items-center justify-center text-sm font-bold text-slate-300 hover:text-white hover:bg-slate-800 transition-colors bg-slate-900/80 backdrop-blur-md rounded-full border border-slate-700 shadow-lg"
-                  title="Change Language"
-                >
-                  {lang === 'en' ? '🇻🇳 VI' : '🇬🇧 EN'}
-                </button>
-                <a 
-                  href={GITHUB_LINK} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition-colors bg-slate-900/80 backdrop-blur-md rounded-full border border-slate-700 shadow-lg"
-                  title="GitHub Source"
-                >
-                  <i className="fab fa-github text-lg"></i>
-                </a>
-                <button 
-                  onClick={() => isAdmin ? setIsAdmin(false) : setShowAdminModal(true)}
-                  className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-purple-400 hover:bg-slate-800 transition-colors bg-slate-900/80 backdrop-blur-md rounded-full border border-slate-700 shadow-lg"
-                  title="Admin Panel"
-                >
-                  <i className={`fa-solid ${isAdmin ? 'fa-lock-open' : 'fa-lock'}`}></i>
-                </button>
+              <div className="flex items-center gap-3">
+                <button onClick={() => setShowDonateModal(true)} className="flex items-center gap-2 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-400 hover:to-rose-400 text-white h-10 px-4 rounded-full font-bold shadow-lg transition-all"><i className="fa-solid fa-heart fa-beat"></i>{t.btnDonate}</button>
+                <button onClick={toggleLang} className="px-3 h-10 text-sm font-bold bg-slate-900 rounded-full border border-slate-700 shadow-lg">{lang === 'en' ? '🇻🇳 VI' : '🇬🇧 EN'}</button>
+                <a href={GITHUB_LINK} target="_blank" className="w-10 h-10 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 shadow-lg"><i className="fab fa-github text-lg"></i></a>
+                <button onClick={() => isAdmin ? setIsAdmin(false) : setShowAdminModal(true)} className="w-10 h-10 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 shadow-lg"><i className={`fa-solid ${isAdmin ? 'fa-lock-open' : 'fa-lock'}`}></i></button>
               </div>
             </header>
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-5 space-y-6">
-                {isAdmin ? AdminView : UserView}
-              </div>
+              <div className="lg:col-span-5 space-y-6">{isAdmin ? AdminView : UserView}</div>
               <div className="lg:col-span-7 h-[600px] flex flex-col bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
-                  <div className="flex items-center gap-2 text-slate-300 font-semibold">
-                    <i className="fa-solid fa-terminal text-emerald-500"></i>
-                    <h2>{t.logsTitle}</h2>
-                  </div>
-                  <button 
-                    onClick={() => setLogs([])}
-                    className="text-xs font-medium px-4 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-full text-slate-300 transition-colors border border-slate-700"
-                  >
-                    {t.logsClear}
-                  </button>
+                  <div className="flex items-center gap-2 text-slate-300 font-semibold"><i className="fa-solid fa-terminal text-emerald-500"></i><h2>{t.logsTitle}</h2></div>
+                  <button onClick={() => setLogs([])} className="text-xs px-4 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-full border border-slate-700">{t.logsClear}</button>
                 </div>
-                <div 
-                  ref={terminalRef}
-                  className="flex-1 p-5 overflow-y-auto font-mono text-sm space-y-2 bg-[#050b14]/80 custom-scrollbar select-text"
-                  style={{ scrollBehavior: 'smooth' }}
-                >
-                  {logs.length === 0 ? (
-                    <div className="text-slate-600 flex items-center justify-center h-full italic text-center px-4">
-                      {t.logsEmpty}
+                <div ref={terminalRef} className="flex-1 p-5 overflow-y-auto font-mono text-sm space-y-2 bg-[#050b14]/80 select-text">
+                  {logs.length === 0 ? <div className="text-slate-600 flex items-center justify-center h-full italic">{t.logsEmpty}</div> : logs.map((log, idx) => (
+                    <div key={idx} className="flex gap-3 leading-relaxed break-all">
+                      <span className="text-slate-500 shrink-0 select-none">[{log.time}]</span>
+                      <span className={`${log.type === 'error' ? 'text-rose-400 font-semibold' : ''}${log.type === 'success' ? 'text-emerald-400' : ''}${log.type === 'warning' ? 'text-amber-400' : ''}${log.type === 'device' ? 'text-slate-300' : ''}`}>{log.msg}</span>
                     </div>
-                  ) : (
-                    logs.map((log, idx) => (
-                      <div key={idx} className="flex gap-3 leading-relaxed break-all">
-                        <span className="text-slate-500 shrink-0 select-none">[{log.time}]</span>
-                        <span className={`
-                          ${log.type === 'error' ? 'text-rose-400 font-semibold' : ''}
-                          ${log.type === 'success' ? 'text-emerald-400 font-medium' : ''}
-                          ${log.type === 'warning' ? 'text-amber-400' : ''}
-                          ${log.type === 'info' ? 'text-blue-300' : ''}
-                          ${log.type === 'device' ? 'text-slate-300' : ''}
-                        `}>
-                          {log.msg}
-                        </span>
-                      </div>
-                    ))
-                  )}
+                  ))}
                 </div>
               </div>
             </div>
           </div>
-
           {showAdminModal && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
               <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl">
                 <h3 className="text-xl font-bold text-white mb-2">{t.modalTitle}</h3>
-                <p className="text-sm text-slate-400 mb-5">{t.modalDesc}</p>
                 <form onSubmit={handleAdminLogin}>
-                  <input 
-                    type="password"
-                    autoFocus
-                    value={adminInput}
-                    onChange={e => {
-                      setAdminInput(e.target.value);
-                      setLoginError(false);
-                    }}
-                    placeholder={t.modalInput}
-                    className={`w-full bg-slate-950 border rounded-lg p-3 text-white mb-3 focus:ring-1 outline-none transition-colors ${loginError ? 'border-rose-500 focus:border-rose-500 focus:ring-rose-500' : 'border-slate-700 focus:border-purple-500 focus:ring-purple-500'}`}
-                  />
-                  {loginError && <p className="text-rose-500 text-xs mb-4"><i className="fa-solid fa-circle-exclamation mr-1"></i>{t.alertWrongPass}</p>}
-                  {!loginError && <div className="mb-4"></div>}
+                  <input type="password" autoFocus value={adminInput} onChange={e => {setAdminInput(e.target.value); setLoginError(false);}} placeholder={t.modalInput} className="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-white mb-3 outline-none" />
+                  {loginError && <p className="text-rose-500 text-xs mb-4">{t.alertWrongPass}</p>}
                   <div className="flex gap-3">
-                    <button 
-                      type="button"
-                      onClick={() => {
-                        setShowAdminModal(false);
-                        setLoginError(false);
-                        setAdminInput("");
-                      }}
-                      className="flex-1 py-2.5 rounded-lg font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors border border-slate-700"
-                    >
-                      {t.modalCancel}
-                    </button>
-                    <button 
-                      type="submit"
-                      className="flex-1 py-2.5 rounded-lg font-medium text-white bg-purple-600 hover:bg-purple-500 transition-colors shadow-lg shadow-purple-900/50"
-                    >
-                      {t.modalUnlock}
-                    </button>
+                    <button type="button" onClick={() => setShowAdminModal(false)} className="flex-1 py-2.5 rounded-lg bg-slate-800 text-slate-300">{t.modalCancel}</button>
+                    <button type="submit" className="flex-1 py-2.5 rounded-lg bg-purple-600 text-white font-medium">{t.modalUnlock}</button>
                   </div>
                 </form>
               </div>
             </div>
           )}
-
           {showDonateModal && (
-            <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
-              <div className="bg-slate-900 border border-pink-500/30 rounded-3xl p-8 w-full max-w-sm shadow-[0_0_50px_rgba(236,72,153,0.15)] flex flex-col items-center text-center relative">
-                <button 
-                  onClick={() => setShowDonateModal(false)}
-                  className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-slate-800 hover:bg-rose-500 text-slate-400 hover:text-white transition-colors"
-                >
-                  <i className="fa-solid fa-xmark"></i>
-                </button>
-                <div className="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center text-pink-500 text-2xl mb-4 shadow-[0_0_20px_rgba(236,72,153,0.3)]">
-                  <i className="fa-solid fa-heart fa-beat"></i>
-                </div>
+            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+              <div className="bg-slate-900 border border-pink-500/30 rounded-3xl p-8 w-full max-w-sm shadow-2xl text-center">
+                <button onClick={() => setShowDonateModal(false)} className="absolute top-4 right-4 text-slate-400"><i className="fa-solid fa-xmark"></i></button>
+                <div className="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center text-pink-500 text-2xl mx-auto mb-4"><i className="fa-solid fa-heart fa-beat"></i></div>
                 <h3 className="text-2xl font-bold text-white mb-2">{t.donateTitle}</h3>
-                <p className="text-sm text-slate-400 mb-6">{t.donateDesc}</p>
-                <div className="bg-white p-3 rounded-2xl mb-6 shadow-xl w-64 h-64 flex items-center justify-center">
-                  <img 
-                    src={`https://quickchart.io/qr?size=300&text=${encodeURIComponent(DONATE_QR_STRING)}`} 
-                    alt="Donate QR Code"
-                    className="w-full h-full object-contain"
-                  />
+                <div className="bg-white p-3 rounded-2xl mb-6 mx-auto w-64 h-64 flex items-center justify-center">
+                  <img src={`https://quickchart.io/qr?size=300&text=${encodeURIComponent(DONATE_QR_STRING)}`} className="w-full h-full" />
                 </div>
-                <div className="w-full flex gap-3">
-                  <button 
-                    onClick={copyQRString}
-                    className="flex-1 py-3 px-4 rounded-xl font-medium text-pink-400 bg-pink-500/10 hover:bg-pink-500/20 transition-colors border border-pink-500/30 flex items-center justify-center gap-2"
-                  >
-                    {copied ? <i className="fa-solid fa-check"></i> : <i className="fa-regular fa-copy"></i>}
-                    {copied ? t.donateCopied : t.donateCopy}
-                  </button>
-                </div>
+                <button onClick={copyQRString} className="w-full py-3 rounded-xl font-medium text-pink-400 bg-pink-500/10 border border-pink-500/30">{copied ? t.donateCopied : t.donateCopy}</button>
               </div>
             </div>
           )}
@@ -817,10 +645,9 @@
   </script>
 
   <style>
-    .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #334155; border-radius: 20px; border: 2px solid transparent; background-clip: padding-box; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: #475569; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background-color: #334155; border-radius: 20px; border: 2px solid transparent; background-clip: padding-box; }
   </style>
 </body>
 </html>
