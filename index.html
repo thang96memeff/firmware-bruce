@@ -1,520 +1,419 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Terminal as LucideTerminal, 
-  Bolt, 
-  Usb, 
-  Unplug, 
-  Trash2, 
-  Settings, 
-  ShieldCheck, 
-  Heart, 
-  Github, 
-  Globe, 
-  Zap, 
-  TriangleAlert, 
-  CloudDownload, 
-  CheckCircle2, 
-  AlertCircle 
-} from 'lucide-react';
-
-// ==========================================
-// CẤU HÌNH HỆ THỐNG
-// ==========================================
-const ADMIN_PASSWORD_HASH = "bb84f53ce294e2c3a185586e1414a48e76f85bd594c0879a57ae8f9af8e8a903"; 
-const GITHUB_BASE = "https://thang96memeff.github.io/firmware-bruce/"; // Link hosting files
-const GITHUB_REPO_LINK = "https://github.com/thang96memeff/firmware-bruce";
-const DONATE_QR_STRING = "00020101021138570010A000000727012700069704220113VQRQADXDU20070208QRIBFTTA53037045802VN62150107NPS6869080063042FC8";
-
-const INITIAL_BOARDS = [
-  { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: 'Bruce-CYD-2432S028.bin' },
-  { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-display-ttgo.bin' },
-  { id: 'xingzhi-cube-s3', name: 'Xingzhi-Cube', chip: 'ESP32-S3', url: 'Bruce-xingzhi-cube-s3.bin' },
-  { id: 'smoochiee-board', name: 'Smoochiee Board', chip: 'ESP32', url: 'Bruce-smoochiee-board.bin' },
-];
-
-const BAUDRATES = [115200, 460800, 921600];
-
-const TRANSLATIONS = {
-  vi: {
-    title: "DUSCU FLASHER",
-    subtitle: "Trình cài đặt Bruce Firmware 1-Click",
-    btnConnect: "1. Kết nối cáp USB",
-    btnDisconnect: "Ngắt kết nối",
-    btnFlash: "2. NẠP FIRMWARE",
-    btnFlashing: "ĐANG NẠP...",
-    statusConnected: "Đã kết nối",
-    statusDisconnected: "Chưa kết nối",
-    logTitle: "Log Thiết Bị (Serial Monitor)",
-    logClear: "Xóa Log",
-    logEmpty: "Đang đợi dữ liệu Serial...",
-    adminTitle: "Cài đặt nâng cao",
-    donateTitle: "Ủng hộ tác giả",
-    copyQR: "Copy mã QR",
-    copied: "Đã copy!"
-  },
-  en: {
-    title: "DUSCU FLASHER",
-    subtitle: "Bruce Firmware 1-Click Installer",
-    btnConnect: "1. Connect USB Cable",
-    btnDisconnect: "Disconnect",
-    btnFlash: "2. FLASH FIRMWARE",
-    btnFlashing: "FLASHING...",
-    statusConnected: "Connected",
-    statusDisconnected: "Disconnected",
-    logTitle: "Device Logs (Serial Monitor)",
-    logClear: "Clear Log",
-    logEmpty: "Waiting for Serial data...",
-    adminTitle: "Advanced Settings",
-    donateTitle: "Donate to Developer",
-    copyQR: "Copy QR String",
-    copied: "Copied!"
-  }
-};
-
-export default function App() {
-  const [lang, setLang] = useState('vi');
-  const t = TRANSLATIONS[lang];
-
-  // State
-  const [isSupported, setIsSupported] = useState(true);
-  const [isConnected, setIsConnected] = useState(false);
-  const [baudRate, setBaudRate] = useState(115200);
-  const [boards, setBoards] = useState(INITIAL_BOARDS);
-  const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
-  const selectedBoard = boards.find(b => b.id === selectedBoardId);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DUSCU FLASHER - Web Installer</title>
   
-  const [logs, setLogs] = useState([]);
-  const [isFlashing, setIsFlashing] = useState(false);
-  const [progress, setProgress] = useState(0);
+  <!-- CSS & UI Libraries -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Load Lucide Icons as a global library -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.min.js"></script>
   
-  // Modals
-  const [showAdmin, setShowAdmin] = useState(false);
-  const [showDonate, setShowDonate] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [passInput, setPassInput] = useState("");
-  const [loginErr, setLoginErr] = useState(false);
+  <!-- React & Babel Standalone -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-[#020617] m-0 p-0 overflow-x-hidden text-slate-300">
+  <div id="root"></div>
 
-  // Refs for Hardware
-  const terminalRef = useRef(null);
-  const transportRef = useRef(null);
-  const readerRef = useRef(null);
-  const keepReadingRef = useRef(true);
+  <script type="text/babel">
+    // Lấy các hook từ React Global
+    const { useState, useEffect, useRef } = React;
+    // Lấy icon từ LucideReact Global
+    const { 
+      Terminal: LucideTerminal, Bolt, Usb, Unplug, Trash2, 
+      Settings, ShieldCheck, Heart, Github, Globe, 
+      Zap, TriangleAlert, CloudDownload, CheckCircle2, AlertCircle 
+    } = window.lucideReact;
 
-  useEffect(() => {
-    if (!('serial' in navigator)) setIsSupported(false);
-    
-    // Load config
-    const saved = localStorage.getItem('duscu_flasher_v28');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed.boards) setBoards(parsed.boards);
-      } catch(e) {}
-    }
-  }, []);
+    // ==========================================
+    // CẤU HÌNH HỆ THỐNG
+    // ==========================================
+    const ADMIN_PASSWORD_HASH = "bb84f53ce294e2c3a185586e1414a48e76f85bd594c0879a57ae8f9af8e8a903"; 
+    const GITHUB_BASE = "https://thang96memeff.github.io/firmware-bruce/"; 
+    const DONATE_QR_STRING = "00020101021138570010A000000727012700069704220113VQRQADXDU20070208QRIBFTTA53037045802VN62150107NPS6869080063042FC8";
 
-  useEffect(() => {
-    if (terminalRef.current) {
-      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-    }
-  }, [logs]);
+    const INITIAL_BOARDS = [
+      { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: 'Bruce-CYD-2432S028.bin' },
+      { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-display-ttgo.bin' },
+      { id: 'xingzhi-cube-s3', name: 'Xingzhi-Cube', chip: 'ESP32-S3', url: 'Bruce-xingzhi-cube-s3.bin' },
+      { id: 'smoochiee-board', name: 'Smoochiee Board', chip: 'ESP32', url: 'Bruce-smoochiee-board.bin' },
+    ];
 
-  const addLog = (msg, type = 'info') => {
-    setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg, type }]);
-  };
+    const BAUDRATES = [115200, 460800, 921600];
 
-  // Vòng lặp đọc log từ Transport
-  const startReadLoop = async (transport) => {
-    keepReadingRef.current = true;
-    const port = transport.device; // esptool-js transport chứa đối tượng device (SerialPort)
+    const TRANSLATIONS = {
+      vi: {
+        title: "DUSCU FLASHER",
+        subtitle: "Trình cài đặt Bruce Firmware 1-Click",
+        btnConnect: "1. Kết nối cáp USB",
+        btnDisconnect: "Ngắt kết nối",
+        btnFlash: "2. NẠP FIRMWARE",
+        btnFlashing: "ĐANG NẠP...",
+        logTitle: "Log Thiết Bị (Serial Monitor)",
+        logClear: "Xóa Log",
+        logEmpty: "Đang đợi dữ liệu Serial...",
+        donateTitle: "Ủng hộ tác giả",
+      },
+      en: {
+        title: "DUSCU FLASHER",
+        subtitle: "Bruce Firmware 1-Click Installer",
+        btnConnect: "1. Connect USB Cable",
+        btnDisconnect: "Disconnect",
+        btnFlash: "2. FLASH FIRMWARE",
+        btnFlashing: "FLASHING...",
+        logTitle: "Device Logs (Serial Monitor)",
+        logClear: "Clear Log",
+        logEmpty: "Waiting for Serial data...",
+        donateTitle: "Donate to Developer",
+      }
+    };
 
-    while (port.readable && keepReadingRef.current) {
-      try {
-        const reader = port.readable.getReader();
-        readerRef.current = reader;
+    function App() {
+      const [lang, setLang] = useState('vi');
+      const t = TRANSLATIONS[lang];
+
+      const [isSupported, setIsSupported] = useState(true);
+      const [isConnected, setIsConnected] = useState(false);
+      const [baudRate, setBaudRate] = useState(115200);
+      const [boards, setBoards] = useState(INITIAL_BOARDS);
+      const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
+      const selectedBoard = boards.find(b => b.id === selectedBoardId);
+      
+      const [logs, setLogs] = useState([]);
+      const [isFlashing, setIsFlashing] = useState(false);
+      const [progress, setProgress] = useState(0);
+      
+      const [showAdmin, setShowAdmin] = useState(false);
+      const [showDonate, setShowDonate] = useState(false);
+      const [isAdmin, setIsAdmin] = useState(false);
+      const [passInput, setPassInput] = useState("");
+      const [loginErr, setLoginErr] = useState(false);
+
+      const terminalRef = useRef(null);
+      const transportRef = useRef(null);
+      const readerRef = useRef(null);
+      const keepReadingRef = useRef(true);
+
+      useEffect(() => {
+        if (!('serial' in navigator)) setIsSupported(false);
+        const saved = localStorage.getItem('duscu_flasher_v30');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (parsed.boards) setBoards(parsed.boards);
+          } catch(e) {}
+        }
+      }, []);
+
+      useEffect(() => {
+        if (terminalRef.current) {
+          terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+        }
+      }, [logs]);
+
+      const addLog = (msg, type = 'info') => {
+        setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg, type }]);
+      };
+
+      const startReadLoop = async (transport) => {
+        keepReadingRef.current = true;
+        const port = transport.device;
+        while (port.readable && keepReadingRef.current) {
+          try {
+            const reader = port.readable.getReader();
+            readerRef.current = reader;
+            try {
+              while (keepReadingRef.current) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                const text = new TextDecoder().decode(value);
+                const lines = text.split('\n');
+                lines.forEach(line => {
+                  if (line.trim()) addLog(line.trim(), 'device');
+                });
+              }
+            } finally {
+              reader.releaseLock();
+              readerRef.current = null;
+            }
+          } catch (e) { break; }
+        }
+      };
+
+      const handleConnect = async () => {
         try {
-          while (keepReadingRef.current) {
-            const { value, done } = await reader.read();
-            if (done) break;
-            const text = new TextDecoder().decode(value);
-            const lines = text.split('\n');
-            lines.forEach(line => {
-              if (line.trim()) addLog(line.trim(), 'device');
-            });
+          if (!window.esptooljs) {
+            addLog("Đang tải thư viện hệ thống...", "info");
+            // Tải thư viện ESM một cách an toàn
+            const module = await new Function("return import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm')")();
+            window.esptooljs = module;
           }
-        } catch (e) {
-        } finally {
-          reader.releaseLock();
-          readerRef.current = null;
+
+          const port = await navigator.serial.requestPort();
+          const transport = new window.esptooljs.Transport(port);
+          
+          addLog(`Đang mở cổng Serial (${baudRate})...`, "warning");
+          await transport.connect(parseInt(baudRate));
+          
+          transportRef.current = transport;
+          setIsConnected(true);
+          addLog("Kết nối thành công!", "success");
+
+          startReadLoop(transport);
+        } catch (err) {
+          addLog(`Lỗi: ${err.message}`, "error");
         }
-      } catch (e) {
-        break;
-      }
-    }
-  };
+      };
 
-  // HÀM KẾT NỐI CHUẨN: Giao phó hoàn toàn cho Esptool-js
-  const handleConnect = async () => {
-    try {
-      // 1. Tải thư viện ẩn (Lách lỗi Babel export)
-      if (!window.esptooljs) {
-        addLog("Đang tải thư viện hệ thống...", "info");
-        const module = await new Function("return import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm')")();
-        window.esptooljs = module;
-      }
+      const handleDisconnect = async () => {
+        keepReadingRef.current = false;
+        if (readerRef.current) await readerRef.current.cancel().catch(()=>{});
+        if (transportRef.current) await transportRef.current.disconnect().catch(()=>{});
+        transportRef.current = null;
+        setIsConnected(false);
+        addLog("Đã ngắt kết nối.", "warning");
+      };
 
-      // 2. Xin quyền cổng
-      const port = await navigator.serial.requestPort();
-      
-      // 3. Khởi tạo Transport của hãng
-      const transport = new window.esptooljs.Transport(port);
-      
-      // 4. Lệnh Connect: Thư viện tự Open cổng và Handshake
-      addLog(`Đang kết nối thiết bị qua baudrate ${baudRate}...`, "warning");
-      await transport.connect(parseInt(baudRate));
-      
-      transportRef.current = transport;
-      setIsConnected(true);
-      addLog("Đã kết nối thành công (Chip Mode)!", "success");
-
-      // Bắt đầu đọc Log
-      startReadLoop(transport);
-
-    } catch (err) {
-      addLog(`Lỗi kết nối: ${err.message}`, "error");
-    }
-  };
-
-  const handleDisconnect = async () => {
-    keepReadingRef.current = false;
-    if (readerRef.current) await readerRef.current.cancel().catch(()=>{});
-    if (transportRef.current) await transportRef.current.disconnect().catch(()=>{});
-    
-    transportRef.current = null;
-    setIsConnected(false);
-    addLog("Đã ngắt kết nối.", "warning");
-  };
-
-  // HÀM NẠP CHUẨN 100% CỦA HÃNG ESPRESSIF
-  const handleFlash = async () => {
-    if (!selectedBoard?.url) return addLog("Chưa cấu hình Firmware!", "error");
-    
-    setIsFlashing(true);
-    setProgress(0);
-    const transport = transportRef.current;
-
-    try {
-      // 1. Tạm dừng đọc log (Giải phóng Stream nhưng không đóng cổng)
-      keepReadingRef.current = false;
-      if (readerRef.current) await readerRef.current.cancel().catch(()=>{});
-      await new Promise(r => setTimeout(r, 400));
-
-      addLog("Đang tải Firmware Bruce từ máy chủ...", "warning");
-      const resp = await fetch(GITHUB_BASE + selectedBoard.url);
-      if (!resp.ok) throw new Error("Không thể tải file firmware từ GitHub.");
-      const firmwareData = new Uint8Array(await resp.arrayBuffer());
-      addLog(`Đã nhận file: ${(firmwareData.length / 1024).toFixed(1)} KB`, "success");
-
-      // 2. Cấu hình ESPLoader (Sử dụng Object syntax theo code gốc của hãng bạn gửi)
-      const esploader = new window.esptooljs.ESPLoader({
-        transport: transport,
-        baudrate: parseInt(baudRate),
-        terminal: {
-          clean: () => {},
-          writeLine: (msg) => addLog(msg, "device"),
-          write: (msg) => addLog(msg, "device")
-        }
-      });
-
-      // 3. Thực hiện Handshake để vào Bootloader
-      addLog("Đang đồng bộ với Bootloader...", "warning");
-      const chipName = await esploader.main();
-      addLog(`Đã nhận diện chip: ${chipName}`, "success");
-
-      // 4. Tiến hành nạp (Flash)
-      addLog("Bắt đầu quá trình nạp Bruce Firmware...", "info");
-      await esploader.writeFlash({
-        fileArray: [{ data: firmwareData, address: 0x0 }],
-        flashSize: 'keep',
-        eraseAll: false,
-        compress: true,
-        reportProgress: (idx, written, total) => setProgress(Math.round((written/total)*100))
-      });
-
-      addLog("NẠP THÀNH CÔNG! Đang khởi động lại thiết bị...", "success");
-      await esploader.hardReset(); // Hoặc esploader.after() nếu thư viện cho phép
-
-    } catch (err) {
-      addLog(`Lỗi nạp Flash: ${err.message}`, "error");
-      console.error(err);
-    } finally {
-      setIsFlashing(false);
-      setProgress(0);
-      // Tự động bật lại log
-      setTimeout(() => {
-        if (isConnected && transportRef.current) {
-          addLog("Khôi phục Serial Monitor...", "info");
-          startReadLoop(transportRef.current);
-        }
-      }, 1000);
-    }
-  };
-
-  const unlockAdmin = (e) => {
-    e.preventDefault();
-    // SHA256 simulation for browser
-    const msg = new TextEncoder().encode(passInput);
-    crypto.subtle.digest('SHA-256', msg).then(hash => {
-      const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-      if (hex === ADMIN_PASSWORD_HASH) {
-        setIsAdmin(true);
-        setShowAdmin(false);
-        addLog("Chế độ Admin đã được mở khóa!", "warning");
-      } else {
-        setLoginErr(true);
-      }
-    });
-  };
-
-  if (!isSupported) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-center">
-        <div className="max-w-md bg-slate-900 border border-red-500/50 p-8 rounded-3xl shadow-2xl">
-          <TriangleAlert className="w-16 h-16 text-red-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-white mb-2">Trình duyệt không hỗ trợ</h2>
-          <p className="text-slate-400">Vui lòng sử dụng Google Chrome hoặc Microsoft Edge trên máy tính để sử dụng tính năng nạp USB.</p>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-[#020617] text-slate-300 selection:bg-blue-500/30">
-      <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-6">
+      const handleFlash = async () => {
+        if (!selectedBoard?.url) return addLog("Lỗi: Bo mạch chưa cấu hình file nạp.", "error");
         
-        {/* Header */}
-        <header className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-slate-800 pb-8">
-          <div className="flex items-center gap-5">
-            <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center shadow-[0_0_30px_-5px_rgba(37,99,235,0.4)] border border-blue-500/30">
-              <Zap className="w-9 h-9 text-blue-500 fill-blue-500/10" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black text-white tracking-tighter uppercase">{t.title}</h1>
-              <p className="text-blue-400 font-medium text-sm tracking-wide">{t.subtitle}</p>
+        setIsFlashing(true);
+        setProgress(0);
+        const transport = transportRef.current;
+
+        try {
+          // Ngắt trình đọc log
+          keepReadingRef.current = false;
+          if (readerRef.current) await readerRef.current.cancel().catch(()=>{});
+          await new Promise(r => setTimeout(r, 400));
+
+          addLog("Đang tải Firmware Bruce...", "warning");
+          const resp = await fetch(GITHUB_BASE + selectedBoard.url);
+          if (!resp.ok) throw new Error("Không thể tải file từ máy chủ.");
+          const firmwareData = new Uint8Array(await resp.arrayBuffer());
+          addLog(`Đã tải file (${(firmwareData.length/1024).toFixed(1)} KB)`, "success");
+
+          // KHỞI TẠO TRÌNH NẠP (Sửa lỗi getInfo: Truyền Object đúng chuẩn 0.4.4)
+          const esploader = new window.esptooljs.ESPLoader({
+            transport: transport,
+            baudrate: parseInt(baudRate),
+            terminal: {
+              clean: () => {},
+              writeLine: (msg) => addLog(msg, "device"),
+              write: (msg) => addLog(msg, "device")
+            }
+          });
+
+          addLog("Đang vào Bootloader...", "warning");
+          const chipName = await esploader.main();
+          addLog(`Chip phát hiện: ${chipName}`, "success");
+
+          await esploader.writeFlash({
+            fileArray: [{ data: firmwareData, address: 0x0 }],
+            flashSize: 'keep',
+            eraseAll: false,
+            compress: true,
+            reportProgress: (idx, written, total) => setProgress(Math.round((written/total)*100))
+          });
+
+          addLog("NẠP THÀNH CÔNG!", "success");
+          await esploader.hardReset();
+
+        } catch (err) {
+          addLog(`Nạp thất bại: ${err.message}`, "error");
+        } finally {
+          setIsFlashing(false);
+          setProgress(0);
+          setTimeout(() => {
+            if (isConnected && transportRef.current) {
+              addLog("Khôi phục log...", "info");
+              startReadLoop(transportRef.current);
+            }
+          }, 1000);
+        }
+      };
+
+      const unlockAdmin = (e) => {
+        e.preventDefault();
+        const msg = new TextEncoder().encode(passInput);
+        crypto.subtle.digest('SHA-256', msg).then(hash => {
+          const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
+          if (hex === ADMIN_PASSWORD_HASH) {
+            setIsAdmin(true);
+            setShowAdmin(false);
+            addLog("Đã mở Admin.", "warning");
+          } else { setLoginErr(true); }
+        });
+      };
+
+      if (!isSupported) {
+        return (
+          <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 text-center">
+            <div className="max-w-md bg-slate-900 border border-red-500/50 p-8 rounded-3xl shadow-2xl">
+              <TriangleAlert className="w-16 h-16 text-red-500 mx-auto mb-4" />
+              <h2 className="text-xl font-bold text-white mb-2">Trình duyệt không hỗ trợ</h2>
+              <p className="text-slate-400 text-sm">Hãy dùng Google Chrome trên máy tính.</p>
             </div>
           </div>
+        );
+      }
 
-          <div className="flex items-center gap-3">
-             <button 
-                onClick={() => setShowDonate(true)}
-                className="flex items-center gap-2 bg-gradient-to-br from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white px-5 py-2.5 rounded-full font-bold shadow-lg shadow-pink-900/20 transition-all hover:scale-105 active:scale-95"
-              >
-                <Heart className="w-4 h-4 fill-white" />
-                <span className="hidden sm:inline">{t.btnDonate}</span>
-              </button>
-
-              <button 
-                onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}
-                className="w-11 h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl"
-              >
-                <Globe className="w-5 h-5" />
-              </button>
-
-              <button 
-                onClick={() => isConnected ? handleDisconnect() : handleConnect()}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold transition-all shadow-lg active:scale-95 ${isConnected ? 'bg-slate-800 text-white border border-slate-700' : 'bg-white text-black hover:bg-slate-100'}`}
-              >
-                {isConnected ? <Unplug className="w-4 h-4" /> : <Usb className="w-4 h-4" />}
-                {isConnected ? t.btnDisconnect : t.btnConnect}
-              </button>
-          </div>
-        </header>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Cột trái: Điều khiển */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-6 rounded-3xl shadow-2xl space-y-6">
-              <div className="flex items-center justify-between text-white font-bold">
-                <div className="flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-blue-500" />
-                  <h2>Thiết lập phần cứng</h2>
+      return (
+        <div className="min-h-screen bg-[#020617] text-slate-300 font-sans">
+          <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-6">
+            
+            {/* Header */}
+            <header className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-slate-800 pb-8">
+              <div className="flex items-center gap-5">
+                <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center border border-blue-500/30 shadow-[0_0_20px_rgba(37,99,235,0.2)]">
+                  <Zap className="w-9 h-9 text-blue-500" />
                 </div>
-                {!isAdmin && (
-                  <button onClick={() => setShowAdmin(true)} className="p-2 hover:bg-slate-800 rounded-lg text-slate-500 transition-colors">
-                    <ShieldCheck className="w-5 h-5" />
+                <div>
+                  <h1 className="text-3xl font-black text-white tracking-tighter uppercase">{t.title}</h1>
+                  <p className="text-blue-400 font-medium text-xs tracking-widest">{t.subtitle}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                 <button onClick={() => setShowDonate(true)} className="flex items-center gap-2 bg-gradient-to-br from-pink-600 to-rose-600 px-5 py-2.5 rounded-full font-bold text-white shadow-lg active:scale-95 transition-all">
+                    <Heart className="w-4 h-4 fill-white" />
+                    <span className="hidden sm:inline">{t.btnDonate}</span>
                   </button>
-                )}
+                  <button onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')} className="w-11 h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors">
+                    <Globe className="w-5 h-5" />
+                  </button>
+                  <button onClick={() => isConnected ? handleDisconnect() : handleConnect()} className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold transition-all shadow-lg active:scale-95 ${isConnected ? 'bg-slate-800 text-white' : 'bg-white text-black'}`}>
+                    {isConnected ? <Unplug className="w-4 h-4" /> : <Usb className="w-4 h-4" />}
+                    {isConnected ? t.btnDisconnect : t.btnConnect}
+                  </button>
               </div>
+            </header>
 
-              <div className="space-y-4">
-                <div>
-                  <label className="text-xs font-bold text-slate-500 uppercase mb-2 block tracking-widest">Loại Bo Mạch</label>
-                  <select 
-                    value={selectedBoardId}
-                    onChange={(e) => setSelectedBoardId(e.target.value)}
-                    disabled={isConnected || isFlashing}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 transition-all outline-none"
-                  >
-                    {boards.map(b => (
-                      <option key={b.id} value={b.id}>{b.name} ({b.chip})</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-500 uppercase mb-2 block tracking-widest">Tốc độ nạp (Baud)</label>
-                  <select 
-                    value={baudRate}
-                    onChange={(e) => setBaudRate(e.target.value)}
-                    disabled={isConnected || isFlashing}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-blue-500 transition-all outline-none"
-                  >
-                    {BAUDRATES.map(b => <option key={b} value={b}>{b}</option>)}
-                  </select>
-                </div>
-              </div>
-
-              <div className="pt-4">
-                <button 
-                  onClick={handleFlash}
-                  disabled={!isConnected || isFlashing}
-                  className={`w-full group flex items-center justify-center gap-3 py-5 rounded-2xl font-black text-lg transition-all relative overflow-hidden shadow-2xl ${(!isConnected || isFlashing) ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-500 active:scale-95 shadow-blue-900/20'}`}
-                >
-                  <Zap className={`w-6 h-6 ${isFlashing ? 'animate-pulse fill-white' : ''}`} />
-                  {isFlashing ? `${t.btnFlashing} ${progress}%` : t.btnFlash}
-                  
-                  {isFlashing && (
-                    <div 
-                      className="absolute bottom-0 left-0 h-1.5 bg-white/40 transition-all duration-300"
-                      style={{ width: `${progress}%` }}
-                    />
-                  )}
-                </button>
-                {!isConnected && (
-                  <p className="text-center text-xs text-slate-500 mt-4 italic flex items-center justify-center gap-1">
-                    <AlertCircle className="w-3 h-3" /> Hãy kết nối cáp USB trước khi nạp
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Firmware Info */}
-            <div className="bg-slate-900/30 border border-slate-800/50 p-6 rounded-3xl space-y-4">
-               <div className="flex items-center gap-3">
-                  <CloudDownload className="w-5 h-5 text-emerald-500" />
-                  <span className="font-bold text-slate-200">Trạng thái Firmware</span>
-               </div>
-               <div className="p-4 bg-slate-950/50 rounded-2xl border border-slate-800 text-sm">
-                  <p className="text-slate-400 mb-1 leading-relaxed italic">
-                    Tệp tin sẽ được tải trực tiếp từ máy chủ GitHub Bruce.
-                  </p>
-                  <code className="text-emerald-400 font-mono text-[10px] break-all">
-                    {GITHUB_BASE}{selectedBoard?.url}
-                  </code>
-               </div>
-            </div>
-          </div>
-
-          {/* Cột phải: Terminal */}
-          <div className="lg:col-span-7 flex flex-col bg-slate-900/80 backdrop-blur-2xl border border-slate-800 rounded-3xl shadow-2xl h-[640px] overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
-              <div className="flex items-center gap-2 font-bold text-white text-sm">
-                <LucideTerminal className="w-4 h-4 text-blue-500" />
-                <h2>{t.logTitle}</h2>
-              </div>
-              <button 
-                onClick={() => setLogs([])}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-red-900/40 hover:text-red-400 text-xs font-bold rounded-lg transition-all"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                {t.logClear}
-              </button>
-            </div>
-
-            <div 
-              ref={terminalRef}
-              className="flex-1 p-5 overflow-y-auto font-mono text-xs space-y-1.5 bg-[#050b14] custom-scrollbar select-text"
-            >
-              {logs.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-slate-700 italic text-sm">
-                  {t.logEmpty}
-                </div>
-              ) : (
-                logs.map((log, i) => (
-                  <div key={i} className="flex gap-3 leading-relaxed border-b border-slate-800/20 pb-0.5 animate-in fade-in slide-in-from-left-2 duration-300">
-                    <span className="text-slate-600 shrink-0 select-none">[{log.time}]</span>
-                    <span className={`
-                      ${log.type === 'error' ? 'text-red-400 font-bold' : ''}
-                      ${log.type === 'success' ? 'text-emerald-400 font-bold' : ''}
-                      ${log.type === 'warning' ? 'text-blue-400' : ''}
-                      ${log.type === 'device' ? 'text-slate-300' : 'text-blue-300/80 italic'}
-                    `}>
-                      {log.msg}
-                    </span>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-5 space-y-6">
+                <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-6 rounded-3xl shadow-2xl space-y-6">
+                  <div className="flex items-center justify-between text-white font-bold">
+                    <div className="flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-blue-500" />
+                      <h2>Cấu hình nạp</h2>
+                    </div>
+                    {!isAdmin && (
+                      <button onClick={() => setShowAdmin(true)} className="p-2 hover:bg-slate-800 rounded-lg text-slate-600">
+                        <ShieldCheck className="w-5 h-5" />
+                      </button>
+                    )}
                   </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase mb-2 block tracking-widest">Loại thiết bị</label>
+                      <select value={selectedBoardId} onChange={(e) => setSelectedBoardId(e.target.value)} disabled={isConnected || isFlashing} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        {boards.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold text-slate-500 uppercase mb-2 block tracking-widest">Tốc độ nạp (Baud)</label>
+                      <select value={baudRate} onChange={(e) => setBaudRate(e.target.value)} disabled={isConnected || isFlashing} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                        {BAUDRATES.map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <button onClick={handleFlash} disabled={!isConnected || isFlashing} className={`w-full flex items-center justify-center gap-3 py-5 rounded-2xl font-black text-lg transition-all relative overflow-hidden ${(!isConnected || isFlashing) ? 'bg-slate-800 text-slate-500' : 'bg-blue-600 text-white hover:bg-blue-500 shadow-xl'}`}>
+                    <Zap className={`w-6 h-6 ${isFlashing ? 'animate-pulse' : ''}`} />
+                    {isFlashing ? `${t.btnFlashing} ${progress}%` : t.btnFlash}
+                    {isFlashing && <div className="absolute bottom-0 left-0 h-1 bg-white/40 transition-all duration-300" style={{ width: `${progress}%` }} />}
+                  </button>
+                </div>
 
-      {/* Modal Donate */}
-      {showDonate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-          <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 text-center shadow-2xl relative">
-            <button onClick={() => setShowDonate(false)} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
-              <Unplug className="w-6 h-6 rotate-45" />
-            </button>
-            <div className="w-20 h-20 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Heart className="w-10 h-10 text-pink-500 fill-pink-500 animate-pulse" />
-            </div>
-            <h3 className="text-2xl font-black text-white mb-2">{t.donateTitle}</h3>
-            <p className="text-slate-400 text-sm mb-8 leading-relaxed">Nếu bạn yêu thích công cụ này, hãy mời mình một ly cà phê nhé. Cảm ơn sự đồng hành của bạn!</p>
-            <div className="bg-white p-3 rounded-3xl mb-8 shadow-xl">
-              <img src={`https://quickchart.io/qr?size=300&text=${encodeURIComponent(DONATE_QR_STRING)}`} className="w-full h-auto" alt="QR" />
-            </div>
-            <button onClick={() => {
-              navigator.clipboard.writeText(DONATE_QR_STRING);
-              addLog("Đã copy chuỗi QR!", "success");
-            }} className="w-full py-4 rounded-2xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
-              <Zap className="w-4 h-4" /> Copy chuỗi QR ngân hàng
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Admin */}
-      {showAdmin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
-          <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
-            <h3 className="text-xl font-bold text-white mb-2">Xác nhận quyền Quản trị</h3>
-            <p className="text-sm text-slate-400 mb-6">Nhập mật khẩu để thay đổi đường dẫn Firmware.</p>
-            <form onSubmit={unlockAdmin} className="space-y-4">
-              <input 
-                type="password" 
-                autoFocus
-                placeholder="Mật khẩu..." 
-                value={passInput}
-                onChange={e => {setPassInput(e.target.value); setLoginErr(false);}}
-                className={`w-full bg-slate-950 border rounded-xl p-4 text-white outline-none focus:ring-2 transition-all ${loginErr ? 'border-red-500 ring-red-500/20' : 'border-slate-800 focus:ring-blue-500/20'}`} 
-              />
-              {loginErr && <p className="text-red-500 text-xs font-bold">Mật khẩu không chính xác!</p>}
-              <div className="flex gap-3 pt-2">
-                <button type="button" onClick={() => setShowAdmin(false)} className="flex-1 py-3 text-slate-400 font-bold hover:text-white transition-colors">Hủy</button>
-                <button type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20">Mở khóa</button>
+                <div className="bg-slate-900/30 border border-slate-800/50 p-6 rounded-3xl space-y-3">
+                   <div className="flex items-center gap-3 text-emerald-500">
+                      <CloudDownload className="w-5 h-5" />
+                      <span className="font-bold text-slate-200">Trạng thái tệp</span>
+                   </div>
+                   <div className="p-3 bg-slate-950/50 rounded-xl border border-slate-800 text-[10px] font-mono break-all text-slate-500 italic">
+                      {GITHUB_BASE}{selectedBoard?.url}
+                   </div>
+                </div>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
 
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
-      `}</style>
-    </div>
-  );
-}
+              <div className="lg:col-span-7 flex flex-col bg-slate-900/80 backdrop-blur-2xl border border-slate-800 rounded-3xl shadow-2xl h-[600px] overflow-hidden">
+                <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
+                  <div className="flex items-center gap-2 font-bold text-white text-sm">
+                    <LucideTerminal className="w-4 h-4 text-blue-500" />
+                    <h2>{t.logTitle}</h2>
+                  </div>
+                  <button onClick={() => setLogs([])} className="px-3 py-1 bg-slate-800 hover:bg-red-900/40 text-[10px] font-bold rounded-lg transition-all">{t.logClear}</button>
+                </div>
+                <div ref={terminalRef} className="flex-1 p-5 overflow-y-auto font-mono text-xs space-y-1 bg-[#050b14] custom-scrollbar select-text">
+                  {logs.length === 0 ? <div className="h-full flex items-center justify-center text-slate-700 italic">{t.logEmpty}</div> : logs.map((log, i) => (
+                    <div key={i} className="flex gap-3 leading-relaxed border-b border-slate-800/10 pb-0.5 animate-in fade-in duration-300">
+                      <span className="text-slate-600">[{log.time}]</span>
+                      <span className={`${log.type === 'error' ? 'text-red-400 font-bold' : ''} ${log.type === 'success' ? 'text-emerald-400 font-bold' : ''} ${log.type === 'device' ? 'text-slate-300' : 'text-blue-300/80 italic'}`}>{log.msg}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {showDonate && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+              <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 text-center shadow-2xl relative">
+                <button onClick={() => setShowDonate(false)} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
+                  <Unplug className="w-6 h-6 rotate-45" />
+                </button>
+                <div className="w-20 h-20 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Heart className="w-10 h-10 text-pink-500 fill-pink-500 animate-pulse" />
+                </div>
+                <h3 className="text-2xl font-black text-white mb-2">{t.donateTitle}</h3>
+                <div className="bg-white p-3 rounded-3xl mb-8 shadow-xl">
+                  <img src={`https://quickchart.io/qr?size=300&text=${encodeURIComponent(DONATE_QR_STRING)}`} className="w-full h-auto" />
+                </div>
+                <button onClick={() => { navigator.clipboard.writeText(DONATE_QR_STRING); addLog("Đã copy mã QR!", "success"); }} className="w-full py-4 rounded-2xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 active:scale-95">
+                  <Zap className="w-4 h-4" /> Copy chuỗi QR ngân hàng
+                </button>
+              </div>
+            </div>
+          )}
+
+          {showAdmin && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
+              <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+                <h3 className="text-xl font-bold text-white mb-6">Xác thực quyền</h3>
+                <form onSubmit={unlockAdmin} className="space-y-4">
+                  <input type="password" autoFocus placeholder="Mật khẩu..." value={passInput} onChange={e => {setPassInput(e.target.value); setLoginErr(false);}} className={`w-full bg-slate-950 border rounded-xl p-4 text-white outline-none focus:ring-2 transition-all ${loginErr ? 'border-red-500 ring-red-500/20' : 'border-slate-800 focus:ring-blue-500/20'}`} />
+                  {loginErr && <p className="text-red-500 text-[10px] font-bold text-center">Mật khẩu không chính xác!</p>}
+                  <div className="flex gap-3">
+                    <button type="button" onClick={() => setShowAdmin(false)} className="flex-1 py-3 text-slate-400 font-bold hover:text-white transition-colors">Hủy</button>
+                    <button type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 shadow-lg transition-all">Mở khóa</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          <style dangerouslySetInnerHTML={{__html: `
+            .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+            .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+            .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
+          `}} />
+        </div>
+      );
+    }
+
+    // KHỞI TẠO ROOT VÀ RENDER (Đảm bảo chỉ gọi createRoot một lần)
+    const container = document.getElementById('root');
+    if (container && !container._reactRoot) {
+      const root = ReactDOM.createRoot(container);
+      container._reactRoot = root;
+      root.render(<App />);
+    } else if (container && container._reactRoot) {
+      container._reactRoot.render(<App />);
+    }
+  </script>
+</body>
+</html>
