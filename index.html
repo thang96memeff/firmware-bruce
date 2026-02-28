@@ -5,106 +5,153 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DUSCU FLASHER - Web Installer</title>
   
-  <!-- CSS & UI Libraries -->
+  <!-- CSS & UI Libraries (Sử dụng FontAwesome thay cho Lucide để độ ổn định đạt 100%) -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Load Lucide Icons as a global library -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://unpkg.com/lucide-react@latest/dist/umd/lucide-react.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- React & Babel Standalone -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Tải Esptool bằng Module script chuẩn để không bị lỗi Babel -->
+  <script type="module">
+    import * as esptooljs from 'https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm';
+    window.esptooljs = esptooljs;
+  </script>
 </head>
-<body class="bg-[#020617] m-0 p-0 overflow-x-hidden text-slate-300">
+<body class="bg-slate-950 m-0 p-0 overflow-x-hidden text-slate-300">
   <div id="root"></div>
 
   <script type="text/babel">
-    // Lấy các hook từ React Global
     const { useState, useEffect, useRef } = React;
-    // Lấy icon từ LucideReact Global
-    const { 
-      Terminal: LucideTerminal, Bolt, Usb, Unplug, Trash2, 
-      Settings, ShieldCheck, Heart, Github, Globe, 
-      Zap, TriangleAlert, CloudDownload, CheckCircle2, AlertCircle 
-    } = window.lucideReact;
 
     // ==========================================
     // CẤU HÌNH HỆ THỐNG
     // ==========================================
     const ADMIN_PASSWORD_HASH = "bb84f53ce294e2c3a185586e1414a48e76f85bd594c0879a57ae8f9af8e8a903"; 
     const GITHUB_BASE = "https://thang96memeff.github.io/firmware-bruce/"; 
+    const GITHUB_REPO_LINK = "https://github.com/thang96memeff/firmware-bruce";
     const DONATE_QR_STRING = "00020101021138570010A000000727012700069704220113VQRQADXDU20070208QRIBFTTA53037045802VN62150107NPS6869080063042FC8";
 
     const INITIAL_BOARDS = [
       { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: 'Bruce-CYD-2432S028.bin' },
+      { id: 'CYD-2USB', name: 'CYD-2USB', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432W328C', name: 'CYD-2432W328C', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432W328C_2', name: 'CYD-2432W328C_2', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432W328R-or-S024R', name: 'CYD-2432W328R-or-S024R', chip: 'ESP32', url: '' },
       { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-display-ttgo.bin' },
+      { id: 'lilygo-t-embed-cc1101', name: 'Lilygo T-Embed CC1101', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-embed-cc1101.bin' },
+      { id: 'm5stack-cplus1_1', name: 'M5StickC Plus 1.1', chip: 'ESP32', url: '' },
+      { id: 'm5stack-cplus2', name: 'M5StickC Plus 2', chip: 'ESP32', url: '' },
       { id: 'xingzhi-cube-s3', name: 'Xingzhi-Cube', chip: 'ESP32-S3', url: 'Bruce-xingzhi-cube-s3.bin' },
       { id: 'smoochiee-board', name: 'Smoochiee Board', chip: 'ESP32', url: 'Bruce-smoochiee-board.bin' },
+      { id: 'm5stack-cardputer', name: 'M5Stack Cardputer', chip: 'ESP32-S3', url: '' },
+      { id: 'esp32-c5-tft', name: 'ESP32-C5', chip: 'ESP32-C5', url: '' },
     ];
 
     const BAUDRATES = [115200, 460800, 921600];
 
     const TRANSLATIONS = {
-      vi: {
-        title: "DUSCU FLASHER",
-        subtitle: "Trình cài đặt Bruce Firmware 1-Click",
-        btnConnect: "1. Kết nối cáp USB",
-        btnDisconnect: "Ngắt kết nối",
-        btnFlash: "2. NẠP FIRMWARE",
-        btnFlashing: "ĐANG NẠP...",
-        logTitle: "Log Thiết Bị (Serial Monitor)",
-        logClear: "Xóa Log",
-        logEmpty: "Đang đợi dữ liệu Serial...",
-        donateTitle: "Ủng hộ tác giả",
-      },
       en: {
-        title: "DUSCU FLASHER",
-        subtitle: "Bruce Firmware 1-Click Installer",
-        btnConnect: "1. Connect USB Cable",
-        btnDisconnect: "Disconnect",
-        btnFlash: "2. FLASH FIRMWARE",
-        btnFlashing: "FLASHING...",
-        logTitle: "Device Logs (Serial Monitor)",
-        logClear: "Clear Log",
-        logEmpty: "Waiting for Serial data...",
-        donateTitle: "Donate to Developer",
+        title: "DUSCU FLASHER", subtitle: "1-Click Firmware Installer", connected: "Connected", disconnected: "Not Connected",
+        selectDevice: "Select device to flash", boardType: "Board Type", fwStatus: "Firmware Status",
+        fwReady: "Ready to flash from Repo", fwNotConfigured: "Firmware Link not configured.",
+        localFileLabel: "Or flash directly from local .bin file:", statusReadyLocal: "Ready to flash local file",
+        btnConnect: "1. Connect USB Cable", btnDisconnect: "Disconnect", btnFlash: "2. FLASH FIRMWARE", btnFlashing: "FLASHING FIRMWARE...",
+        logsTitle: "Device Logs (Serial Monitor)", logsClear: "Clear Log", logsEmpty: "No data. Please connect and flash...",
+        adminTitle: "System Admin Panel", adminSave: "Save Settings", adminTabFw: "Firmware Links (.bin)", adminTabUi: "UI Settings",
+        adminGuide: "Guide: You can paste a direct URL OR just the filename (e.g. firmware.bin) if it's hosted in the same GitHub Repo.",
+        adminUiLogo: "Logo Configuration", adminUiLogoLabel: "Logo URL (Square)", adminUiBg: "Background Configuration", adminUiBgLabel: "Background URL", adminEx: "Example:",
+        modalTitle: "Admin Authentication", modalDesc: "Please enter the admin password.", modalInput: "Enter password...", modalCancel: "Cancel", modalUnlock: "Unlock",
+        alertSaved: "Settings saved locally!\nNote: To apply globally, update the 'INITIAL_BOARDS' in the source code on GitHub.", alertWrongPass: "Wrong password!",
+        browserErrTitle: "Browser not supported", browserErrDesc: "Please use Google Chrome or Edge on a PC to connect via USB.",
+        logInit: "Initializing esptool library...", logDL: "Downloading Firmware from Repo...", logReadLocal: "Reading local file:",
+        logDLDone: "Firmware loaded", logSync: "Connecting to ESP device...", logChip: "Chip detected:",
+        logErase: "Erasing Flash and starting to write...", logSuccess: "Firmware flashed SUCCESSFULLY! Rebooting...",
+        logFail: "Flashing failed:", logRestore: "Restoring Serial monitor...", logConnOk: "Connected successfully via Serial port",
+        logConnFail: "Connection failed:", logDisconn: "Disconnected.", logUnlock: "Admin Mode Unlocked.",
+        logMissingFw: "Error: Firmware not configured and no local file selected.", btnDonate: "Donate",
+        donateTitle: "Support the Developer", donateDesc: "If you find this tool helpful, please consider buying me a coffee. Your support is greatly appreciated!",
+        donateCopy: "Copy QR String", donateCopied: "Copied!"
+      },
+      vi: {
+        title: "DUSCU FLASHER", subtitle: "Trình cài đặt Firmware 1-Click", connected: "Đã kết nối", disconnected: "Chưa kết nối",
+        selectDevice: "Chọn thiết bị cần nạp", boardType: "Loại Bo Mạch", fwStatus: "Trạng thái Firmware",
+        fwReady: "Sẵn sàng nạp từ Kho GitHub", fwNotConfigured: "Chưa cấu hình File.",
+        localFileLabel: "Hoặc chọn File .bin trực tiếp từ máy tính:", statusReadyLocal: "Sẵn sàng nạp file từ máy",
+        btnConnect: "1. Kết nối cáp USB", btnDisconnect: "Ngắt kết nối", btnFlash: "2. NẠP FIRMWARE", btnFlashing: "ĐANG NẠP FIRMWARE...",
+        logsTitle: "Log Thiết Bị (Serial Monitor)", logsClear: "Xóa Log", logsEmpty: "Chưa có dữ liệu. Hãy kết nối và nạp firmware...",
+        adminTitle: "Bảng Quản Trị Hệ Thống", adminSave: "Lưu thiết lập", adminTabFw: "Link / Tên File (.bin)", adminTabUi: "Giao diện",
+        adminGuide: "Hướng dẫn: Bạn có thể dán Link đầy đủ HOẶC chỉ cần điền tên file (VD: firmware.bin) nếu file đã nằm chung thư mục trên GitHub.",
+        adminUiLogo: "Cấu hình Logo", adminUiLogoLabel: "Đường dẫn ảnh Logo (Vuông)", adminUiBg: "Cấu hình Hình Nền", adminUiBgLabel: "Đường dẫn Hình Nền (Background)", adminEx: "Ví dụ:",
+        modalTitle: "Xác thực Quản trị", modalDesc: "Vui lòng nhập mật khẩu quản trị hệ thống.", modalInput: "Nhập mật khẩu...", modalCancel: "Hủy", modalUnlock: "Mở khóa",
+        alertSaved: "Đã lưu thiết lập trên máy này!\nLưu ý: Để hiển thị cho người khác, bạn phải sửa biến INITIAL_BOARDS trong code và tải lên GitHub.", alertWrongPass: "Sai mật khẩu!",
+        browserErrTitle: "Trình duyệt không hỗ trợ", browserErrDesc: "Vui lòng sử dụng Google Chrome hoặc Edge trên máy tính để kết nối cáp USB.",
+        logInit: "Đang chuẩn bị trình nạp Flash...", logDL: "Đang tải Firmware từ Kho lưu trữ...", logReadLocal: "Đang đọc file từ ổ cứng:",
+        logDLDone: "Đã nạp xong dữ liệu file", logSync: "Đang kết nối cổng với thiết bị ESP...", logChip: "Phát hiện chip:",
+        logErase: "Đang xóa Flash và bắt đầu nạp...", logSuccess: "Nạp Firmware THÀNH CÔNG! Đang khởi động lại...",
+        logFail: "Nạp thất bại:", logRestore: "Khôi phục trình đọc Serial...", logConnOk: "Đã kết nối thành công qua cổng Serial",
+        logConnFail: "Kết nối thất bại:", logDisconn: "Đã ngắt kết nối.", logUnlock: "Đã mở khóa Chế độ Quản trị.",
+        logMissingFw: "Lỗi: Chưa có file nào được cấu hình hoặc chọn.", btnDonate: "Ủng hộ",
+        donateTitle: "Ủng hộ Tác giả", donateDesc: "Nếu bạn thấy công cụ này hữu ích, hãy ủng hộ mình một ly cà phê qua mã QR ngân hàng nhé. Cảm ơn bạn rất nhiều!",
+        donateCopy: "Copy chuỗi QR", donateCopied: "Đã copy!"
       }
     };
 
     function App() {
-      const [lang, setLang] = useState('vi');
-      const t = TRANSLATIONS[lang];
+      const [lang, setLang] = useState('vi'); 
+      const t = TRANSLATIONS[lang]; 
+      const langRef = useRef(lang); 
 
       const [isSupported, setIsSupported] = useState(true);
+      const [port, setPort] = useState(null);
       const [isConnected, setIsConnected] = useState(false);
       const [baudRate, setBaudRate] = useState(115200);
+      
       const [boards, setBoards] = useState(INITIAL_BOARDS);
       const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
       const selectedBoard = boards.find(b => b.id === selectedBoardId);
-      
+
+      const [localFile, setLocalFile] = useState(null);
+
+      const [bgUrl, setBgUrl] = useState("");
+      const [logoUrl, setLogoUrl] = useState("");
+
+      const [isAdmin, setIsAdmin] = useState(false);
+      const [showAdminModal, setShowAdminModal] = useState(false);
+      const [adminInput, setAdminInput] = useState("");
+      const [adminTab, setAdminTab] = useState('firmware');
+      const [loginError, setLoginError] = useState(false);
+
+      const [showDonateModal, setShowDonateModal] = useState(false);
+      const [copied, setCopied] = useState(false);
+
+      // States Nạp Firmware
       const [logs, setLogs] = useState([]);
       const [isFlashing, setIsFlashing] = useState(false);
       const [progress, setProgress] = useState(0);
       
-      const [showAdmin, setShowAdmin] = useState(false);
-      const [showDonate, setShowDonate] = useState(false);
-      const [isAdmin, setIsAdmin] = useState(false);
-      const [passInput, setPassInput] = useState("");
-      const [loginErr, setLoginErr] = useState(false);
-
       const terminalRef = useRef(null);
       const transportRef = useRef(null);
       const readerRef = useRef(null);
       const keepReadingRef = useRef(true);
 
       useEffect(() => {
+        langRef.current = lang;
+      }, [lang]);
+
+      useEffect(() => {
         if (!('serial' in navigator)) setIsSupported(false);
-        const saved = localStorage.getItem('duscu_flasher_v30');
-        if (saved) {
+        const savedConfig = localStorage.getItem('duscu_flasher_config_v32');
+        if (savedConfig) {
           try {
-            const parsed = JSON.parse(saved);
+            const parsed = JSON.parse(savedConfig);
             if (parsed.boards) setBoards(parsed.boards);
+            if (parsed.settings) {
+              setBgUrl(parsed.settings.bgUrl || "");
+              setLogoUrl(parsed.settings.logoUrl || "");
+            }
           } catch(e) {}
         }
       }, []);
@@ -121,10 +168,10 @@
 
       const startReadLoop = async (transport) => {
         keepReadingRef.current = true;
-        const port = transport.device;
-        while (port.readable && keepReadingRef.current) {
+        const currentPort = transport.device;
+        while (currentPort.readable && keepReadingRef.current) {
           try {
-            const reader = port.readable.getReader();
+            const reader = currentPort.readable.getReader();
             readerRef.current = reader;
             try {
               while (keepReadingRef.current) {
@@ -148,20 +195,19 @@
         try {
           if (!window.esptooljs) {
             addLog("Đang tải thư viện hệ thống...", "info");
-            // Tải thư viện ESM một cách an toàn
             const module = await new Function("return import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm')")();
             window.esptooljs = module;
           }
 
-          const port = await navigator.serial.requestPort();
-          const transport = new window.esptooljs.Transport(port);
+          const selectedPort = await navigator.serial.requestPort();
+          const transport = new window.esptooljs.Transport(selectedPort);
           
           addLog(`Đang mở cổng Serial (${baudRate})...`, "warning");
-          await transport.connect(parseInt(baudRate));
+          await transport.connect(parseInt(baudRate)); 
           
           transportRef.current = transport;
           setIsConnected(true);
-          addLog("Kết nối thành công!", "success");
+          addLog("Kết nối thành công! Đang đọc Log...", "success");
 
           startReadLoop(transport);
         } catch (err) {
@@ -172,6 +218,13 @@
       const handleDisconnect = async () => {
         keepReadingRef.current = false;
         if (readerRef.current) await readerRef.current.cancel().catch(()=>{});
+        
+        let wait = 0;
+        while(readerRef.current && wait < 20) {
+            await new Promise(r => setTimeout(r, 50));
+            wait++;
+        }
+
         if (transportRef.current) await transportRef.current.disconnect().catch(()=>{});
         transportRef.current = null;
         setIsConnected(false);
@@ -179,25 +232,42 @@
       };
 
       const handleFlash = async () => {
-        if (!selectedBoard?.url) return addLog("Lỗi: Bo mạch chưa cấu hình file nạp.", "error");
+        if (!selectedBoard?.url && !localFile) return addLog("Lỗi: Bo mạch chưa cấu hình file nạp.", "error");
         
         setIsFlashing(true);
         setProgress(0);
         const transport = transportRef.current;
 
         try {
-          // Ngắt trình đọc log
           keepReadingRef.current = false;
           if (readerRef.current) await readerRef.current.cancel().catch(()=>{});
-          await new Promise(r => setTimeout(r, 400));
+          
+          let wait = 0;
+          while(readerRef.current && wait < 20) {
+              await new Promise(r => setTimeout(r, 50));
+              wait++;
+          }
+          await new Promise(r => setTimeout(r, 200));
 
-          addLog("Đang tải Firmware Bruce...", "warning");
-          const resp = await fetch(GITHUB_BASE + selectedBoard.url);
-          if (!resp.ok) throw new Error("Không thể tải file từ máy chủ.");
-          const firmwareData = new Uint8Array(await resp.arrayBuffer());
-          addLog(`Đã tải file (${(firmwareData.length/1024).toFixed(1)} KB)`, "success");
+          let firmwareData;
+          if (localFile) {
+             addLog(`Đang đọc file ${localFile.name}...`, 'warning');
+             const buffer = await localFile.arrayBuffer();
+             firmwareData = new Uint8Array(buffer);
+             addLog(`Đã tải file (${(firmwareData.length/1024).toFixed(1)} KB)`, "success");
+          } else {
+             addLog("Đang tải Firmware Bruce...", "warning");
+             const fetchUrl = (selectedBoard.url.startsWith('http')) 
+                              ? selectedBoard.url 
+                              : GITHUB_BASE + selectedBoard.url;
 
-          // KHỞI TẠO TRÌNH NẠP (Sửa lỗi getInfo: Truyền Object đúng chuẩn 0.4.4)
+             const resp = await fetch(fetchUrl);
+             if (!resp.ok) throw new Error("Không thể tải file từ máy chủ.");
+             const buffer = await resp.arrayBuffer();
+             firmwareData = new Uint8Array(buffer);
+             addLog(`Đã tải file (${(firmwareData.length/1024).toFixed(1)} KB)`, "success");
+          }
+
           const esploader = new window.esptooljs.ESPLoader({
             transport: transport,
             baudrate: parseInt(baudRate),
@@ -212,6 +282,7 @@
           const chipName = await esploader.main();
           addLog(`Chip phát hiện: ${chipName}`, "success");
 
+          addLog("Đang xóa Flash và ghi dữ liệu mới...", "warning");
           await esploader.writeFlash({
             fileArray: [{ data: firmwareData, address: 0x0 }],
             flashSize: 'keep',
@@ -220,7 +291,7 @@
             reportProgress: (idx, written, total) => setProgress(Math.round((written/total)*100))
           });
 
-          addLog("NẠP THÀNH CÔNG!", "success");
+          addLog("NẠP THÀNH CÔNG! Thiết bị đang khởi động lại...", "success");
           await esploader.hardReset();
 
         } catch (err) {
@@ -228,167 +299,442 @@
         } finally {
           setIsFlashing(false);
           setProgress(0);
+          
           setTimeout(() => {
             if (isConnected && transportRef.current) {
-              addLog("Khôi phục log...", "info");
+              addLog("Khôi phục Log...", "info");
               startReadLoop(transportRef.current);
             }
           }, 1000);
         }
       };
 
-      const unlockAdmin = (e) => {
+      const handleAdminLogin = async (e) => {
         e.preventDefault();
-        const msg = new TextEncoder().encode(passInput);
-        crypto.subtle.digest('SHA-256', msg).then(hash => {
-          const hex = Array.from(new Uint8Array(hash)).map(b => b.toString(16).padStart(2, '0')).join('');
-          if (hex === ADMIN_PASSWORD_HASH) {
+        setLoginError(false);
+        try {
+          const msgBuffer = new TextEncoder().encode(adminInput);
+          const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+          const hashArray = Array.from(new Uint8Array(hashBuffer));
+          const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+          if (hashHex === ADMIN_PASSWORD_HASH) {
             setIsAdmin(true);
-            setShowAdmin(false);
-            addLog("Đã mở Admin.", "warning");
-          } else { setLoginErr(true); }
-        });
+            setShowAdminModal(false);
+            setAdminInput("");
+            setAdminTab('firmware');
+            addLog("Đã mở khóa Chế độ Quản trị.", "warning");
+          } else {
+            setLoginError(true);
+          }
+        } catch (error) {}
+      };
+
+      const saveAdminConfig = () => {
+        localStorage.setItem('duscu_flasher_config_v32', JSON.stringify({
+          boards: boards,
+          settings: { bgUrl, logoUrl }
+        }));
+        alert("Đã lưu thiết lập thành công!");
+        setIsAdmin(false);
+      };
+
+      const handleUrlChange = (id, newUrl) => {
+        setBoards(boards.map(b => b.id === id ? { ...b, url: newUrl } : b));
+      };
+
+      const copyQRString = () => {
+        navigator.clipboard.writeText(DONATE_QR_STRING);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
       };
 
       if (!isSupported) {
         return (
-          <div className="min-h-screen bg-[#020617] flex items-center justify-center p-6 text-center">
+          <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-center">
             <div className="max-w-md bg-slate-900 border border-red-500/50 p-8 rounded-3xl shadow-2xl">
-              <TriangleAlert className="w-16 h-16 text-red-500 mx-auto mb-4" />
-              <h2 className="text-xl font-bold text-white mb-2">Trình duyệt không hỗ trợ</h2>
-              <p className="text-slate-400 text-sm">Hãy dùng Google Chrome trên máy tính.</p>
+              <i className="fa-solid fa-triangle-exclamation text-6xl text-red-500 mx-auto mb-4 block"></i>
+              <h2 className="text-2xl font-bold text-white mb-2">Trình duyệt không hỗ trợ</h2>
+              <p className="text-slate-400">Vui lòng sử dụng Google Chrome hoặc Microsoft Edge trên máy tính để sử dụng tính năng nạp USB.</p>
             </div>
           </div>
         );
       }
 
+      const UserView = (
+        <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-2xl">
+          <div className="flex items-center gap-2 mb-6 text-white font-semibold border-b border-slate-800 pb-4">
+            <i className="fa-solid fa-sliders text-xl text-blue-500"></i>
+            <h2>Chọn thiết bị cần nạp</h2>
+          </div>
+          
+          <div className="space-y-5">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-widest">Loại Bo Mạch</label>
+              <select 
+                value={selectedBoardId} 
+                onChange={(e) => setSelectedBoardId(e.target.value)}
+                disabled={isConnected || isFlashing}
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50"
+              >
+                {boards.map(b => (
+                  <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                {localFile ? (
+                   <i className="fa-solid fa-circle-check text-2xl text-purple-500 shrink-0"></i>
+                ) : selectedBoard?.url ? (
+                   <i className="fa-solid fa-circle-check text-2xl text-emerald-500 shrink-0"></i>
+                ) : (
+                   <i className="fa-solid fa-circle-xmark text-2xl text-rose-500 shrink-0"></i>
+                )}
+                <div>
+                  <p className="text-sm font-medium text-slate-200">Trạng thái Firmware</p>
+                  <p className="text-xs text-slate-500 mt-0.5 break-all">
+                    {localFile 
+                      ? `Sẵn sàng nạp file từ máy (${localFile.name})` 
+                      : selectedBoard?.url 
+                        ? 'Sẵn sàng nạp trực tuyến (Merged .bin)' 
+                        : 'Chưa được cấu hình, không thể nạp'}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="border-t border-slate-800/50 pt-3">
+                <label className="block text-xs font-medium text-slate-400 mb-2">Hoặc chọn File .bin từ máy tính:</label>
+                <input 
+                  type="file" 
+                  accept=".bin" 
+                  onChange={(e) => setLocalFile(e.target.files[0])}
+                  disabled={isConnected || isFlashing}
+                  className="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-purple-500/10 file:text-purple-400 hover:file:bg-purple-500/20 cursor-pointer disabled:opacity-50"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 space-y-3">
+              {!isConnected ? (
+                <button 
+                  onClick={handleConnect}
+                  className="w-full flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-xl transition-colors border border-slate-700 shadow-lg"
+                >
+                  <i className="fab fa-usb text-xl"></i>
+                  1. Kết nối cáp USB
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <button 
+                    onClick={handleDisconnect}
+                    disabled={isFlashing}
+                    className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 border border-slate-700 shadow-lg"
+                  >
+                    <i className="fa-solid fa-plug-circle-xmark text-xl"></i>
+                    Ngắt kết nối
+                  </button>
+                  <select 
+                    value={baudRate} 
+                    onChange={(e) => setBaudRate(e.target.value)}
+                    disabled={isFlashing}
+                    className="bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm text-slate-300 outline-none w-32 shadow-lg"
+                  >
+                    {BAUDRATES.map(rate => <option key={rate} value={rate}>{rate}</option>)}
+                  </select>
+                </div>
+              )}
+
+              <button 
+                onClick={handleFlash}
+                disabled={!isConnected || isFlashing || (!selectedBoard?.url && !localFile)}
+                className={`w-full flex items-center justify-center gap-2 font-bold py-4 px-4 rounded-xl transition-all duration-300 relative overflow-hidden shadow-xl ${
+                  (!isConnected || (!selectedBoard?.url && !localFile))
+                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-800' 
+                    : 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)] border border-blue-500'
+                }`}
+              >
+                <i className={`fa-solid fa-play text-xl ${isFlashing ? 'animate-pulse' : ''}`}></i>
+                {isFlashing ? `ĐANG NẠP FIRMWARE... ${progress}%` : '2. NẠP FIRMWARE'}
+                
+                {isFlashing && (
+                  <div 
+                    className="absolute left-0 bottom-0 top-0 bg-white/20 transition-all duration-300 pointer-events-none"
+                    style={{ width: `${progress}%` }}
+                  />
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+
+      const AdminView = (
+        <div className="bg-slate-900/95 backdrop-blur-md border border-purple-500/50 rounded-3xl shadow-[0_0_30px_rgba(168,85,247,0.15)] flex flex-col max-h-[700px] overflow-hidden">
+          <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-900 shrink-0">
+            <div className="flex items-center gap-2 text-purple-400 font-bold">
+              <i className="fa-solid fa-lock text-lg"></i>
+              <h2>Khu vực Quản trị</h2>
+            </div>
+            <button onClick={saveAdminConfig} className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-purple-900/50">
+              <i className="fa-solid fa-floppy-disk text-base"></i>
+              Lưu thiết lập
+            </button>
+          </div>
+
+          <div className="flex border-b border-slate-800 shrink-0 bg-slate-950/50">
+            <button 
+              onClick={() => setAdminTab('firmware')}
+              className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${adminTab === 'firmware' ? 'bg-slate-800 text-purple-400 border-b-2 border-purple-500' : 'text-slate-400 hover:text-slate-200'}`}
+            >
+              <i className="fa-solid fa-file-code text-base"></i> Link Firmware (.bin)
+            </button>
+            <button 
+              onClick={() => setAdminTab('ui')}
+              className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${adminTab === 'ui' ? 'bg-slate-800 text-pink-400 border-b-2 border-pink-500' : 'text-slate-400 hover:text-slate-200'}`}
+            >
+              <i className="fa-solid fa-palette text-base"></i> Giao diện
+            </button>
+          </div>
+
+          <div className="overflow-y-auto p-5 custom-scrollbar flex-1 bg-slate-900/50">
+            {adminTab === 'firmware' && (
+              <div className="space-y-4">
+                <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl mb-6">
+                  <p className="text-sm text-blue-200 leading-relaxed">
+                    <strong>Hướng dẫn:</strong> Dán đường dẫn trực tiếp (Direct Link) tới tệp firmware (.bin) đã biên dịch gộp (Merged).
+                  </p>
+                </div>
+                
+                <div className="space-y-3">
+                  {boards.map(board => (
+                    <div key={board.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col xl:flex-row xl:items-center gap-3 hover:border-slate-600 transition-colors">
+                      <div className="xl:w-1/3">
+                        <p className="text-sm font-bold text-slate-200">{board.name}</p>
+                        <p className="text-xs text-slate-500">Chip: {board.chip}</p>
+                      </div>
+                      <div className="xl:w-2/3 relative flex-1">
+                        <i className="fa-solid fa-link absolute left-3 top-3 text-slate-500"></i>
+                        <input 
+                          type="text"
+                          placeholder="https://.../firmware-merged.bin"
+                          value={board.url}
+                          onChange={(e) => handleUrlChange(board.id, e.target.value)}
+                          className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg pl-9 pr-3 py-2.5 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {adminTab === 'ui' && (
+              <div className="space-y-6">
+                <div className="bg-slate-950 p-5 rounded-xl border border-slate-800">
+                  <h3 className="text-white font-bold flex items-center gap-2 mb-4">
+                    <i className="fa-solid fa-image text-lg text-pink-500"></i> Cấu hình Logo
+                  </h3>
+                  <label className="block text-xs font-medium text-slate-400 mb-2">Đường dẫn ảnh Logo (Vuông)</label>
+                  <input 
+                    type="text"
+                    placeholder="Ví dụ: https://imgur.com/logo.png"
+                    value={logoUrl}
+                    onChange={(e) => setLogoUrl(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 focus:border-pink-500 outline-none"
+                  />
+                  {logoUrl && (
+                    <div className="mt-4 p-4 bg-slate-900 border border-slate-800 rounded-lg inline-block">
+                      <img src={logoUrl} alt="Preview Logo" className="w-16 h-16 object-contain rounded" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="bg-slate-950 p-5 rounded-xl border border-slate-800">
+                  <h3 className="text-white font-bold flex items-center gap-2 mb-4">
+                    <i className="fa-solid fa-image text-lg text-pink-500"></i> Cấu hình Hình Nền
+                  </h3>
+                  <label className="block text-xs font-medium text-slate-400 mb-2">Đường dẫn Hình Nền (Background)</label>
+                  <input 
+                    type="text"
+                    placeholder="Ví dụ: https://imgur.com/bg.jpg"
+                    value={bgUrl}
+                    onChange={(e) => setBgUrl(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 focus:border-pink-500 outline-none"
+                  />
+                  {bgUrl && (
+                    <div className="mt-4 w-full h-32 rounded-lg border border-slate-700 bg-cover bg-center" style={{ backgroundImage: `url(${bgUrl})` }}>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+
       return (
-        <div className="min-h-screen bg-[#020617] text-slate-300 font-sans">
-          <div className="max-w-6xl mx-auto p-4 md:p-8 space-y-6">
+        <div 
+          className="min-h-screen bg-[#020617] text-slate-300 font-sans relative transition-all duration-500"
+          style={{
+            backgroundImage: bgUrl ? `url(${bgUrl})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed'
+          }}
+        >
+          <div className={`absolute inset-0 z-0 pointer-events-none transition-colors duration-500 ${bgUrl ? 'bg-slate-950/85 backdrop-blur-sm' : 'bg-transparent'}`}></div>
+
+          <div className="max-w-6xl mx-auto space-y-6 relative z-10 p-4 md:p-8">
             
-            {/* Header */}
-            <header className="flex flex-col md:flex-row items-center justify-between gap-6 border-b border-slate-800 pb-8">
+            {/* Header Toàn Cục */}
+            <header className="flex flex-col md:flex-row items-start sm:items-center justify-between gap-6 border-b border-slate-800/80 pb-8">
               <div className="flex items-center gap-5">
-                <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center border border-blue-500/30 shadow-[0_0_20px_rgba(37,99,235,0.2)]">
-                  <Zap className="w-9 h-9 text-blue-500" />
+                <div className="w-16 h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center shadow-[0_0_30px_-5px_rgba(37,99,235,0.4)] border border-blue-500/30 overflow-hidden">
+                  {logoUrl ? (
+                    <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                  ) : (
+                    <i className="fa-solid fa-bolt text-[36px] text-blue-500 drop-shadow-md"></i>
+                  )}
                 </div>
                 <div>
-                  <h1 className="text-3xl font-black text-white tracking-tighter uppercase">{t.title}</h1>
-                  <p className="text-blue-400 font-medium text-xs tracking-widest">{t.subtitle}</p>
+                  <h1 className="text-3xl font-black text-white tracking-tighter uppercase">DUSCU FLASHER</h1>
+                  <p className="text-blue-400 font-medium text-sm tracking-wide">Trình cài đặt Bruce Firmware 1-Click</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3">
-                 <button onClick={() => setShowDonate(true)} className="flex items-center gap-2 bg-gradient-to-br from-pink-600 to-rose-600 px-5 py-2.5 rounded-full font-bold text-white shadow-lg active:scale-95 transition-all">
-                    <Heart className="w-4 h-4 fill-white" />
-                    <span className="hidden sm:inline">{t.btnDonate}</span>
+                 <button 
+                    onClick={() => setShowDonateModal(true)}
+                    className="flex items-center gap-2 bg-gradient-to-br from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white px-5 py-2.5 rounded-full font-bold shadow-lg shadow-pink-900/20 transition-all hover:scale-105 active:scale-95"
+                  >
+                    <i className="fa-solid fa-heart text-white"></i>
+                    <span className="hidden sm:inline">Ủng hộ tác giả</span>
                   </button>
-                  <button onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')} className="w-11 h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors">
-                    <Globe className="w-5 h-5" />
+
+                  <button 
+                    onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}
+                    className="w-11 h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl"
+                  >
+                    <i className="fa-solid fa-globe text-lg text-slate-400"></i>
                   </button>
-                  <button onClick={() => isConnected ? handleDisconnect() : handleConnect()} className={`flex items-center gap-2 px-6 py-2.5 rounded-full font-bold transition-all shadow-lg active:scale-95 ${isConnected ? 'bg-slate-800 text-white' : 'bg-white text-black'}`}>
-                    {isConnected ? <Unplug className="w-4 h-4" /> : <Usb className="w-4 h-4" />}
-                    {isConnected ? t.btnDisconnect : t.btnConnect}
+
+                  <a 
+                    href={GITHUB_REPO_LINK} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="w-11 h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl"
+                  >
+                    <i className="fab fa-github text-lg text-slate-400"></i>
+                  </a>
+
+                  <button 
+                    onClick={() => isAdmin ? setIsAdmin(false) : setShowAdminModal(true)}
+                    className="w-11 h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl"
+                  >
+                    {isAdmin ? <i className="fa-solid fa-lock-open text-slate-400"></i> : <i className="fa-solid fa-lock text-slate-400"></i>}
                   </button>
               </div>
             </header>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Cột trái */}
               <div className="lg:col-span-5 space-y-6">
-                <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-6 rounded-3xl shadow-2xl space-y-6">
-                  <div className="flex items-center justify-between text-white font-bold">
-                    <div className="flex items-center gap-2">
-                      <Settings className="w-5 h-5 text-blue-500" />
-                      <h2>Cấu hình nạp</h2>
-                    </div>
-                    {!isAdmin && (
-                      <button onClick={() => setShowAdmin(true)} className="p-2 hover:bg-slate-800 rounded-lg text-slate-600">
-                        <ShieldCheck className="w-5 h-5" />
-                      </button>
-                    )}
+                {isAdmin ? AdminView : UserView}
+              </div>
+
+              {/* Cột phải: Terminal */}
+              <div className="lg:col-span-7 flex flex-col bg-slate-900/80 backdrop-blur-2xl border border-slate-800 rounded-3xl shadow-2xl h-[640px] overflow-hidden">
+                <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
+                  <div className="flex items-center gap-2 font-bold text-white text-sm">
+                    <i className="fa-solid fa-terminal text-lg text-blue-500"></i>
+                    <h2>Log Thiết Bị (Serial Monitor)</h2>
                   </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase mb-2 block tracking-widest">Loại thiết bị</label>
-                      <select value={selectedBoardId} onChange={(e) => setSelectedBoardId(e.target.value)} disabled={isConnected || isFlashing} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                        {boards.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label className="text-[10px] font-bold text-slate-500 uppercase mb-2 block tracking-widest">Tốc độ nạp (Baud)</label>
-                      <select value={baudRate} onChange={(e) => setBaudRate(e.target.value)} disabled={isConnected || isFlashing} className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-white outline-none focus:ring-2 focus:ring-blue-500 transition-all">
-                        {BAUDRATES.map(b => <option key={b} value={b}>{b}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                  <button onClick={handleFlash} disabled={!isConnected || isFlashing} className={`w-full flex items-center justify-center gap-3 py-5 rounded-2xl font-black text-lg transition-all relative overflow-hidden ${(!isConnected || isFlashing) ? 'bg-slate-800 text-slate-500' : 'bg-blue-600 text-white hover:bg-blue-500 shadow-xl'}`}>
-                    <Zap className={`w-6 h-6 ${isFlashing ? 'animate-pulse' : ''}`} />
-                    {isFlashing ? `${t.btnFlashing} ${progress}%` : t.btnFlash}
-                    {isFlashing && <div className="absolute bottom-0 left-0 h-1 bg-white/40 transition-all duration-300" style={{ width: `${progress}%` }} />}
+                  <button 
+                    onClick={() => setLogs([])}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-red-900/40 hover:text-red-400 text-xs font-bold rounded-lg transition-all"
+                  >
+                    <i className="fa-solid fa-trash-can text-sm"></i>
+                    Xóa Log
                   </button>
                 </div>
 
-                <div className="bg-slate-900/30 border border-slate-800/50 p-6 rounded-3xl space-y-3">
-                   <div className="flex items-center gap-3 text-emerald-500">
-                      <CloudDownload className="w-5 h-5" />
-                      <span className="font-bold text-slate-200">Trạng thái tệp</span>
-                   </div>
-                   <div className="p-3 bg-slate-950/50 rounded-xl border border-slate-800 text-[10px] font-mono break-all text-slate-500 italic">
-                      {GITHUB_BASE}{selectedBoard?.url}
-                   </div>
-                </div>
-              </div>
-
-              <div className="lg:col-span-7 flex flex-col bg-slate-900/80 backdrop-blur-2xl border border-slate-800 rounded-3xl shadow-2xl h-[600px] overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
-                  <div className="flex items-center gap-2 font-bold text-white text-sm">
-                    <LucideTerminal className="w-4 h-4 text-blue-500" />
-                    <h2>{t.logTitle}</h2>
-                  </div>
-                  <button onClick={() => setLogs([])} className="px-3 py-1 bg-slate-800 hover:bg-red-900/40 text-[10px] font-bold rounded-lg transition-all">{t.logClear}</button>
-                </div>
-                <div ref={terminalRef} className="flex-1 p-5 overflow-y-auto font-mono text-xs space-y-1 bg-[#050b14] custom-scrollbar select-text">
-                  {logs.length === 0 ? <div className="h-full flex items-center justify-center text-slate-700 italic">{t.logEmpty}</div> : logs.map((log, i) => (
-                    <div key={i} className="flex gap-3 leading-relaxed border-b border-slate-800/10 pb-0.5 animate-in fade-in duration-300">
-                      <span className="text-slate-600">[{log.time}]</span>
-                      <span className={`${log.type === 'error' ? 'text-red-400 font-bold' : ''} ${log.type === 'success' ? 'text-emerald-400 font-bold' : ''} ${log.type === 'device' ? 'text-slate-300' : 'text-blue-300/80 italic'}`}>{log.msg}</span>
+                <div 
+                  ref={terminalRef}
+                  className="flex-1 p-5 overflow-y-auto font-mono text-xs space-y-1.5 bg-[#050b14] custom-scrollbar select-text"
+                >
+                  {logs.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-slate-700 italic text-sm">
+                      Đang đợi kết nối thiết bị...
                     </div>
-                  ))}
+                  ) : (
+                    logs.map((log, i) => (
+                      <div key={i} className="flex gap-3 leading-relaxed border-b border-slate-800/20 pb-0.5 animate-in fade-in slide-in-from-left-2 duration-300">
+                        <span className="text-slate-600 shrink-0 select-none">[{log.time}]</span>
+                        <span className={`
+                          ${log.type === 'error' ? 'text-red-400 font-bold' : ''}
+                          ${log.type === 'success' ? 'text-emerald-400 font-bold' : ''}
+                          ${log.type === 'warning' ? 'text-blue-400' : ''}
+                          ${log.type === 'device' ? 'text-slate-300' : 'text-blue-300/80 italic'}
+                        `}>
+                          {log.msg}
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
-          {showDonate && (
+          {/* Modal Donate */}
+          {showDonateModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
               <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 text-center shadow-2xl relative">
-                <button onClick={() => setShowDonate(false)} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
-                  <Unplug className="w-6 h-6 rotate-45" />
+                <button onClick={() => setShowDonateModal(false)} className="absolute top-6 right-6 text-slate-500 hover:text-white transition-colors">
+                  <i className="fa-solid fa-xmark text-2xl"></i>
                 </button>
                 <div className="w-20 h-20 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Heart className="w-10 h-10 text-pink-500 fill-pink-500 animate-pulse" />
+                  <i className="fa-solid fa-heart text-4xl text-pink-500 animate-pulse"></i>
                 </div>
-                <h3 className="text-2xl font-black text-white mb-2">{t.donateTitle}</h3>
+                <h3 className="text-2xl font-black text-white mb-2">Ủng hộ tác giả</h3>
+                <p className="text-slate-400 text-sm mb-8 leading-relaxed">Nếu bạn yêu thích công cụ này, hãy mời mình một ly cà phê nhé. Cảm ơn sự đồng hành của bạn!</p>
                 <div className="bg-white p-3 rounded-3xl mb-8 shadow-xl">
-                  <img src={`https://quickchart.io/qr?size=300&text=${encodeURIComponent(DONATE_QR_STRING)}`} className="w-full h-auto" />
+                  <img src={`https://quickchart.io/qr?size=300&text=${encodeURIComponent(DONATE_QR_STRING)}`} className="w-full h-auto" alt="QR" />
                 </div>
-                <button onClick={() => { navigator.clipboard.writeText(DONATE_QR_STRING); addLog("Đã copy mã QR!", "success"); }} className="w-full py-4 rounded-2xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 active:scale-95">
-                  <Zap className="w-4 h-4" /> Copy chuỗi QR ngân hàng
+                <button onClick={() => {
+                  navigator.clipboard.writeText(DONATE_QR_STRING);
+                  addLog("Đã copy mã QR!", "success");
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }} className="w-full py-4 rounded-2xl bg-slate-800 text-white font-bold hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 active:scale-95">
+                  {copied ? <i className="fa-solid fa-circle-check text-2xl text-emerald-500 shrink-0"></i> : <i className="fa-solid fa-bolt text-base"></i>} 
+                  {copied ? "Đã sao chép!" : "Copy chuỗi QR ngân hàng"}
                 </button>
               </div>
             </div>
           )}
 
-          {showAdmin && (
+          {/* Modal Admin */}
+          {showAdminModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80">
               <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
-                <h3 className="text-xl font-bold text-white mb-6">Xác thực quyền</h3>
-                <form onSubmit={unlockAdmin} className="space-y-4">
-                  <input type="password" autoFocus placeholder="Mật khẩu..." value={passInput} onChange={e => {setPassInput(e.target.value); setLoginErr(false);}} className={`w-full bg-slate-950 border rounded-xl p-4 text-white outline-none focus:ring-2 transition-all ${loginErr ? 'border-red-500 ring-red-500/20' : 'border-slate-800 focus:ring-blue-500/20'}`} />
-                  {loginErr && <p className="text-red-500 text-[10px] font-bold text-center">Mật khẩu không chính xác!</p>}
-                  <div className="flex gap-3">
-                    <button type="button" onClick={() => setShowAdmin(false)} className="flex-1 py-3 text-slate-400 font-bold hover:text-white transition-colors">Hủy</button>
-                    <button type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 shadow-lg transition-all">Mở khóa</button>
+                <h3 className="text-xl font-bold text-white mb-2">Xác nhận quyền Quản trị</h3>
+                <p className="text-sm text-slate-400 mb-6">Nhập mật khẩu để cấu hình Firmware & Giao diện.</p>
+                <form onSubmit={handleAdminLogin} className="space-y-4">
+                  <input 
+                    type="password" 
+                    autoFocus
+                    placeholder="Mật khẩu..." 
+                    value={adminInput}
+                    onChange={e => {setAdminInput(e.target.value); setLoginError(false);}}
+                    className={`w-full bg-slate-950 border rounded-xl p-4 text-white outline-none focus:ring-2 transition-all ${loginError ? 'border-red-500 ring-red-500/20' : 'border-slate-800 focus:ring-blue-500/20'}`} 
+                  />
+                  {loginError && <p className="text-red-500 text-xs font-bold">Mật khẩu không chính xác!</p>}
+                  <div className="flex gap-3 pt-2">
+                    <button type="button" onClick={() => setShowAdminModal(false)} className="flex-1 py-3 text-slate-400 font-bold hover:text-white transition-colors">Hủy</button>
+                    <button type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 transition-colors shadow-lg shadow-blue-900/20">Mở khóa</button>
                   </div>
                 </form>
               </div>
@@ -396,24 +742,21 @@
           )}
 
           <style dangerouslySetInnerHTML={{__html: `
-            .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+            .custom-scrollbar::-webkit-scrollbar { width: 6px; }
             .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-            .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
-            .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #334155; }
+            .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; border: 2px solid #020617; }
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #475569; }
           `}} />
         </div>
       );
     }
 
-    // KHỞI TẠO ROOT VÀ RENDER (Đảm bảo chỉ gọi createRoot một lần)
-    const container = document.getElementById('root');
-    if (container && !container._reactRoot) {
-      const root = ReactDOM.createRoot(container);
-      container._reactRoot = root;
-      root.render(<App />);
-    } else if (container && container._reactRoot) {
-      container._reactRoot.render(<App />);
+    // RENDER REACT CHUẨN MỰC
+    const rootNode = document.getElementById('root');
+    if (!rootNode._reactRoot) {
+      rootNode._reactRoot = ReactDOM.createRoot(rootNode);
     }
+    rootNode._reactRoot.render(<App />);
   </script>
 </body>
 </html>
