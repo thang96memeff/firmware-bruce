@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DUSCU FLASHER - Web Installer</title>
   
-  <!-- CSS & UI Libraries (Chỉ dùng FontAwesome để độ ổn định đạt 100%, tuyệt đối không dùng Lucide) -->
+  <!-- CSS & UI Libraries (Sử dụng FontAwesome cho độ ổn định 100%) -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
@@ -14,10 +14,9 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- Tải Esptool bằng Module script chuẩn để không bị lỗi Babel -->
+  <!-- KỸ THUẬT CỦA SPACEHUHN: Tải Esptool qua Dynamic Import ở thẻ Head để qua mặt Babel -->
   <script type="module">
-    import * as esptooljs from 'https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm';
-    window.esptooljs = esptooljs;
+    window.esptoolPromise = import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm');
   </script>
 </head>
 <body class="bg-slate-950 m-0 p-0 overflow-x-hidden text-slate-300">
@@ -52,58 +51,7 @@
 
     const BAUDRATES = [115200, 460800, 921600];
 
-    const TRANSLATIONS = {
-      en: {
-        title: "DUSCU FLASHER", subtitle: "1-Click Firmware Installer", connected: "Connected", disconnected: "Not Connected",
-        selectDevice: "Select device to flash", boardType: "Board Type", fwStatus: "Firmware Status",
-        fwReady: "Ready to flash from Repo", fwNotConfigured: "Firmware Link not configured.",
-        localFileLabel: "Or flash directly from local .bin file:", statusReadyLocal: "Ready to flash local file",
-        btnConnect: "1. Connect USB Cable", btnDisconnect: "Disconnect", btnFlash: "2. FLASH FIRMWARE", btnFlashing: "FLASHING FIRMWARE...",
-        logsTitle: "Device Logs (Serial Monitor)", logsClear: "Clear Log", logsEmpty: "No data. Please connect and flash...",
-        adminTitle: "System Admin Panel", adminSave: "Save Settings", adminTabFw: "Firmware Links (.bin)", adminTabUi: "UI Settings",
-        adminGuide: "Guide: You can paste a direct URL OR just the filename (e.g. firmware.bin) if it's hosted in the same GitHub Repo.",
-        adminUiLogo: "Logo Configuration", adminUiLogoLabel: "Logo URL (Square)", adminUiBg: "Background Configuration", adminUiBgLabel: "Background URL", adminEx: "Example:",
-        modalTitle: "Admin Authentication", modalDesc: "Please enter the admin password.", modalInput: "Enter password...", modalCancel: "Cancel", modalUnlock: "Unlock",
-        alertSaved: "Settings saved locally!\nNote: To apply globally, update the 'INITIAL_BOARDS' in the source code on GitHub.", alertWrongPass: "Wrong password!",
-        browserErrTitle: "Browser not supported", browserErrDesc: "Please use Google Chrome or Edge on a PC to connect via USB.",
-        logInit: "Initializing esptool library...", logDL: "Downloading Firmware from Repo...", logReadLocal: "Reading local file:",
-        logDLDone: "Firmware loaded", logSync: "Connecting to ESP device...", logChip: "Chip detected:",
-        logErase: "Erasing Flash and starting to write...", logSuccess: "Firmware flashed SUCCESSFULLY! Rebooting...",
-        logFail: "Flashing failed:", logRestore: "Restoring Serial monitor...", logConnOk: "Connected successfully via Serial port",
-        logConnFail: "Connection failed:", logDisconn: "Disconnected.", logUnlock: "Admin Mode Unlocked.",
-        logMissingFw: "Error: Firmware not configured and no local file selected.", btnDonate: "Donate",
-        donateTitle: "Support the Developer", donateDesc: "If you find this tool helpful, please consider buying me a coffee. Your support is greatly appreciated!",
-        donateCopy: "Copy QR String", donateCopied: "Copied!"
-      },
-      vi: {
-        title: "DUSCU FLASHER", subtitle: "Trình cài đặt Firmware 1-Click", connected: "Đã kết nối", disconnected: "Chưa kết nối",
-        selectDevice: "Chọn thiết bị cần nạp", boardType: "Loại Bo Mạch", fwStatus: "Trạng thái Firmware",
-        fwReady: "Sẵn sàng nạp từ Kho GitHub", fwNotConfigured: "Chưa cấu hình File.",
-        localFileLabel: "Hoặc chọn File .bin trực tiếp từ máy tính:", statusReadyLocal: "Sẵn sàng nạp file từ máy",
-        btnConnect: "1. Kết nối cáp USB", btnDisconnect: "Ngắt kết nối", btnFlash: "2. NẠP FIRMWARE", btnFlashing: "ĐANG NẠP FIRMWARE...",
-        logsTitle: "Log Thiết Bị (Serial Monitor)", logsClear: "Xóa Log", logsEmpty: "Chưa có dữ liệu. Hãy kết nối và nạp firmware...",
-        adminTitle: "Bảng Quản Trị Hệ Thống", adminSave: "Lưu thiết lập", adminTabFw: "Link / Tên File (.bin)", adminTabUi: "Giao diện",
-        adminGuide: "Hướng dẫn: Bạn có thể dán Link đầy đủ HOẶC chỉ cần điền tên file (VD: firmware.bin) nếu file đã nằm chung thư mục trên GitHub.",
-        adminUiLogo: "Cấu hình Logo", adminUiLogoLabel: "Đường dẫn ảnh Logo (Vuông)", adminUiBg: "Cấu hình Hình Nền", adminUiBgLabel: "Đường dẫn Hình Nền (Background)", adminEx: "Ví dụ:",
-        modalTitle: "Xác thực Quản trị", modalDesc: "Vui lòng nhập mật khẩu quản trị hệ thống.", modalInput: "Nhập mật khẩu...", modalCancel: "Hủy", modalUnlock: "Mở khóa",
-        alertSaved: "Đã lưu thiết lập trên máy này!\nLưu ý: Để hiển thị cho người khác, bạn phải sửa biến INITIAL_BOARDS trong code và tải lên GitHub.", alertWrongPass: "Sai mật khẩu!",
-        browserErrTitle: "Trình duyệt không hỗ trợ", browserErrDesc: "Vui lòng sử dụng Google Chrome hoặc Edge trên máy tính để kết nối cáp USB.",
-        logInit: "Đang chuẩn bị trình nạp Flash...", logDL: "Đang tải Firmware từ Kho lưu trữ...", logReadLocal: "Đang đọc file từ ổ cứng:",
-        logDLDone: "Đã nạp xong dữ liệu file", logSync: "Đang kết nối cổng với thiết bị ESP...", logChip: "Phát hiện chip:",
-        logErase: "Đang xóa Flash và bắt đầu nạp...", logSuccess: "Nạp Firmware THÀNH CÔNG! Đang khởi động lại...",
-        logFail: "Nạp thất bại:", logRestore: "Khôi phục trình đọc Serial...", logConnOk: "Đã kết nối thành công qua cổng Serial",
-        logConnFail: "Kết nối thất bại:", logDisconn: "Đã ngắt kết nối.", logUnlock: "Đã mở khóa Chế độ Quản trị.",
-        logMissingFw: "Lỗi: Chưa có file nào được cấu hình hoặc chọn.", btnDonate: "Ủng hộ",
-        donateTitle: "Ủng hộ Tác giả", donateDesc: "Nếu bạn thấy công cụ này hữu ích, hãy ủng hộ mình một ly cà phê qua mã QR ngân hàng nhé. Cảm ơn bạn rất nhiều!",
-        donateCopy: "Copy chuỗi QR", donateCopied: "Đã copy!"
-      }
-    };
-
     function App() {
-      const [lang, setLang] = useState('vi'); 
-      const t = TRANSLATIONS[lang]; 
-      const langRef = useRef(lang); 
-
       const [isSupported, setIsSupported] = useState(true);
       const [port, setPort] = useState(null);
       const [isConnected, setIsConnected] = useState(false);
@@ -114,7 +62,6 @@
       const selectedBoard = boards.find(b => b.id === selectedBoardId);
 
       const [localFile, setLocalFile] = useState(null);
-
       const [bgUrl, setBgUrl] = useState("");
       const [logoUrl, setLogoUrl] = useState("");
 
@@ -127,23 +74,18 @@
       const [showDonateModal, setShowDonateModal] = useState(false);
       const [copied, setCopied] = useState(false);
 
-      // States Nạp Firmware
       const [logs, setLogs] = useState([]);
       const [isFlashing, setIsFlashing] = useState(false);
       const [progress, setProgress] = useState(0);
       
       const terminalRef = useRef(null);
-      const transportRef = useRef(null);
       const readerRef = useRef(null);
-      const keepReadingRef = useRef(true);
-
-      useEffect(() => {
-        langRef.current = lang;
-      }, [lang]);
+      const keepReadingRef = useRef(false);
+      const isReadingRef = useRef(false); // Biến cờ theo dõi trạng thái vòng lặp Log
 
       useEffect(() => {
         if (!('serial' in navigator)) setIsSupported(false);
-        const savedConfig = localStorage.getItem('duscu_flasher_config_v34');
+        const savedConfig = localStorage.getItem('duscu_flasher_config_v35');
         if (savedConfig) {
           try {
             const parsed = JSON.parse(savedConfig);
@@ -166,11 +108,12 @@
         setLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg, type }]);
       };
 
-      const startReadLoop = async (transport) => {
+      // VÒNG LẶP ĐỌC LOG AN TOÀN
+      const startReadLoop = async (currentPort) => {
         keepReadingRef.current = true;
-        const currentPort = transport.device;
-        while (currentPort.readable && keepReadingRef.current) {
-          try {
+        isReadingRef.current = true;
+        try {
+          while (currentPort.readable && keepReadingRef.current) {
             const reader = currentPort.readable.getReader();
             readerRef.current = reader;
             try {
@@ -183,35 +126,28 @@
                   if (line.trim()) addLog(line.trim(), 'device');
                 });
               }
+            } catch (error) {
+               // Bỏ qua lỗi ngắt kết nối chủ động
             } finally {
               reader.releaseLock();
               readerRef.current = null;
             }
-          } catch (e) { break; }
+          }
+        } finally {
+          isReadingRef.current = false; // Báo hiệu vòng lặp đã chết hoàn toàn
         }
       };
 
       const handleConnect = async () => {
         try {
-          if (!window.esptooljs) {
-            addLog("Đang tải thư viện hệ thống...", "info");
-            const module = await new Function("return import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm')")();
-            window.esptooljs = module;
-          }
-
           const selectedPort = await navigator.serial.requestPort();
-          const transport = new window.esptooljs.Transport(selectedPort);
-          
-          addLog(`Đang mở cổng Serial (${baudRate})...`, "warning");
-          await transport.connect(parseInt(baudRate)); 
-          
-          transportRef.current = transport;
+          await selectedPort.open({ baudRate: parseInt(baudRate) });
+          setPort(selectedPort);
           setIsConnected(true);
-          addLog("Kết nối thành công! Đang đọc Log...", "success");
-
-          startReadLoop(transport);
+          addLog(`Đã kết nối Serial (${baudRate}) để đọc Log...`, 'success');
+          startReadLoop(selectedPort);
         } catch (err) {
-          addLog(`Lỗi: ${err.message}`, "error");
+          addLog(`Lỗi kết nối: ${err.message}`, "error");
         }
       };
 
@@ -219,36 +155,61 @@
         keepReadingRef.current = false;
         if (readerRef.current) await readerRef.current.cancel().catch(()=>{});
         
-        let wait = 0;
-        while(readerRef.current && wait < 20) {
+        // Đợi vòng lặp read thoát hoàn toàn
+        while (isReadingRef.current) {
             await new Promise(r => setTimeout(r, 50));
-            wait++;
         }
 
-        if (transportRef.current) await transportRef.current.disconnect().catch(()=>{});
-        transportRef.current = null;
+        if (port) await port.close().catch(()=>{});
+        setPort(null);
         setIsConnected(false);
         addLog("Đã ngắt kết nối.", "warning");
       };
 
+      // ==============================================================
+      // LUỒNG NẠP CHUẨN ESPRESSIF (ĐẢM BẢO VÀO BOOTLOADER VÀ KHÔNG LỖI PORT)
+      // ==============================================================
       const handleFlash = async () => {
-        if (!selectedBoard?.url && !localFile) return addLog("Lỗi: Bo mạch chưa cấu hình file nạp.", "error");
+        if (!selectedBoard?.url && !localFile) return addLog("Lỗi: Chưa có file Firmware.", "error");
         
         setIsFlashing(true);
         setProgress(0);
-        const transport = transportRef.current;
 
         try {
-          keepReadingRef.current = false;
-          if (readerRef.current) await readerRef.current.cancel().catch(()=>{});
-          
-          let wait = 0;
-          while(readerRef.current && wait < 20) {
-              await new Promise(r => setTimeout(r, 50));
-              wait++;
-          }
-          await new Promise(r => setTimeout(r, 200));
+          addLog("Đang chuẩn bị trình nạp Flash...", 'info');
 
+          // 1. DỪNG VÀ ĐÓNG CỔNG SERIAL HIỆN TẠI (QUAN TRỌNG NHẤT)
+          keepReadingRef.current = false;
+          if (readerRef.current) {
+              await readerRef.current.cancel().catch(()=>{});
+          }
+          
+          // Chờ cho đến khi cờ isReadingRef báo false (Vòng lặp đã kết thúc)
+          addLog("Đang giải phóng cổng Serial Monitor...", "warning");
+          let waitTime = 0;
+          while (isReadingRef.current && waitTime < 40) {
+              await new Promise(r => setTimeout(r, 50));
+              waitTime++;
+          }
+
+          // CHÍNH THỨC ĐÓNG CỔNG ĐỂ NHƯỜNG CHO ESPTOOL
+          if (port && port.readable) {
+              try { 
+                  await port.close(); 
+              } catch(e) { 
+                  console.error("Lỗi đóng port:", e); 
+              }
+          }
+          
+          // Nghỉ 1 giây để Hệ điều hành Windows dọn dẹp khóa phần cứng
+          await new Promise(r => setTimeout(r, 1000)); 
+
+          // 2. KHỞI TẠO THƯ VIỆN ESPTOOL
+          const esptoolModule = await window.esptoolPromise;
+          if (!esptoolModule) throw new Error("Không thể tải thư viện nạp từ máy chủ.");
+          const { ESPLoader, Transport } = esptoolModule;
+
+          // 3. LẤY DỮ LIỆU FILE
           let firmwareData;
           if (localFile) {
              addLog(`Đang đọc file ${localFile.name}...`, 'warning');
@@ -256,33 +217,41 @@
              firmwareData = new Uint8Array(buffer);
              addLog(`Đã tải file (${(firmwareData.length/1024).toFixed(1)} KB)`, "success");
           } else {
-             addLog("Đang tải Firmware Bruce...", "warning");
+             addLog("Đang tải Firmware Bruce từ GitHub...", "warning");
              const fetchUrl = (selectedBoard.url.startsWith('http')) 
                               ? selectedBoard.url 
-                              : GITHUB_BASE + selectedBoard.url;
+                              : GITHUB_BASE + selectedBoard.url + '?t=' + new Date().getTime();
 
              const resp = await fetch(fetchUrl);
-             if (!resp.ok) throw new Error("Không thể tải file từ máy chủ.");
+             if (!resp.ok) throw new Error("Không tìm thấy file trên máy chủ.");
              const buffer = await resp.arrayBuffer();
              firmwareData = new Uint8Array(buffer);
              addLog(`Đã tải file (${(firmwareData.length/1024).toFixed(1)} KB)`, "success");
           }
 
-          const esploader = new window.esptooljs.ESPLoader({
-            transport: transport,
-            baudrate: parseInt(baudRate),
-            terminal: {
-              clean: () => {},
+          // 4. KẾT NỐI VÀ ÉP CHIP VÀO BOOTLOADER (DTR/RTS)
+          addLog("Đang kết nối Bootloader (Gửi tín hiệu Reset)...", "warning");
+          const transport = new Transport(port);
+          // Lệnh connect() này sẽ mở cổng và gạt chân DTR/RTS để vào chế độ nạp!
+          await transport.connect(parseInt(baudRate));
+          
+          const terminalParams = { 
+              clean: () => {}, 
               writeLine: (msg) => addLog(msg, "device"),
               write: (msg) => addLog(msg, "device")
-            }
+          };
+
+          // KHỞI TẠO TRÌNH NẠP BẰNG OBJECT (Đã Sửa lỗi getInfo)
+          const esploader = new ESPLoader({
+            transport: transport,
+            baudrate: parseInt(baudRate),
+            terminal: terminalParams
           });
 
-          addLog("Đang vào Bootloader...", "warning");
           const chipName = await esploader.main();
-          addLog(`Chip phát hiện: ${chipName}`, "success");
+          addLog(`Đã nhận diện chip: ${chipName}`, "success");
 
-          addLog("Đang xóa Flash và ghi dữ liệu mới...", "warning");
+          addLog("Đang xóa Flash và ghi dữ liệu mới...", "info");
           await esploader.writeFlash({
             fileArray: [{ data: firmwareData, address: 0x0 }],
             flashSize: 'keep',
@@ -292,20 +261,32 @@
           });
 
           addLog("NẠP THÀNH CÔNG! Thiết bị đang khởi động lại...", "success");
+          
+          // 5. RESET VÀ TRẢ LẠI CỔNG CHO TRÌNH DUYỆT
           await esploader.hardReset();
+          await transport.disconnect(); // Hàm này sẽ Đóng cổng USB an toàn
+          await new Promise(r => setTimeout(r, 1000)); // Đợi nhả cổng
 
-        } catch (err) {
-          addLog(`Nạp thất bại: ${err.message}`, "error");
+        } catch (error) {
+          addLog(`Nạp thất bại: ${error.message}`, "error");
+          console.error("Flash Error:", error);
         } finally {
           setIsFlashing(false);
           setProgress(0);
           
-          setTimeout(() => {
-            if (isConnected && transportRef.current) {
-              addLog("Khôi phục Log...", "info");
-              startReadLoop(transportRef.current);
-            }
-          }, 1000);
+          // 6. TỰ ĐỘNG KHÔI PHỤC LẠI SERIAL MONITOR
+          if (isConnected && port) {
+             setTimeout(async () => {
+               try {
+                   await port.open({ baudRate: parseInt(baudRate) });
+                   addLog("Khôi phục luồng đọc Log...", 'info');
+                   startReadLoop(port);
+               } catch (e) {
+                   addLog(`Không thể mở lại Log: ${e.message}. Vui lòng bấm Kết Nối lại.`, 'warning');
+                   setIsConnected(false);
+               }
+             }, 1000);
+          }
         }
       };
 
@@ -331,7 +312,7 @@
       };
 
       const saveAdminConfig = () => {
-        localStorage.setItem('duscu_flasher_config_v34', JSON.stringify({
+        localStorage.setItem('duscu_flasher_config_v35', JSON.stringify({
           boards: boards,
           settings: { bgUrl, logoUrl }
         }));
@@ -354,7 +335,7 @@
           <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6 text-center">
             <div className="max-w-md bg-slate-900 border border-red-500/50 p-8 rounded-3xl shadow-2xl">
               <i className="fa-solid fa-triangle-exclamation text-6xl text-red-500 mx-auto mb-4 block"></i>
-              <h2 className="text-2xl font-bold text-white mb-2">{t.browserErrTitle}</h2>
+              <h2 className="text-2xl font-bold text-white mb-2">Trình duyệt không hỗ trợ</h2>
               <p className="text-slate-400">Vui lòng sử dụng Google Chrome hoặc Microsoft Edge trên máy tính để sử dụng tính năng nạp USB.</p>
             </div>
           </div>
@@ -600,7 +581,7 @@
                 </div>
                 <div>
                   <h1 className="text-3xl font-black text-white tracking-tighter uppercase">
-                    DUSCU FLASHER <span className="text-sm font-bold text-slate-500 align-top ml-1">v34</span>
+                    DUSCU FLASHER <span className="text-sm font-bold text-slate-500 align-top ml-1">v35</span>
                   </h1>
                   <p className="text-blue-400 font-medium text-sm tracking-wide">Trình cài đặt Bruce Firmware 1-Click</p>
                 </div>
@@ -613,13 +594,6 @@
                   >
                     <i className="fa-solid fa-heart text-white"></i>
                     <span className="hidden sm:inline">Ủng hộ tác giả</span>
-                  </button>
-
-                  <button 
-                    onClick={() => setLang(lang === 'vi' ? 'en' : 'vi')}
-                    className="w-11 h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl"
-                  >
-                    <i className="fa-solid fa-globe text-lg text-slate-400"></i>
                   </button>
 
                   <a 
