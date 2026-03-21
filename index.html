@@ -24,9 +24,6 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // ==========================================
-    // TỪ ĐIỂN NGÔN NGỮ ĐẦY ĐỦ
-    // ==========================================
     const TRANSLATIONS = {
       en: {
         title: "DUSCU FLASHER",
@@ -183,7 +180,7 @@
 
       const [isSerialSupported, setIsSerialSupported] = useState(true);
       const [isConnected, setIsConnected] = useState(false);
-      const [baudRate, setBaudRate] = useState(921600);
+      const [baudRate, setBaudRate] = useState(921600); // 900k thoải mái
       
       const [boards, setBoards] = useState(INITIAL_BOARDS);
       const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
@@ -297,9 +294,6 @@
         addSysLog(msg);
       };
 
-      // =========================================================
-      // NÚT "1. CONNECT USB"
-      // =========================================================
       const handleConnect = async () => {
         if (!isSerialSupported) return;
         try {
@@ -343,9 +337,6 @@
         }
       };
 
-      // =========================================================
-      // NÚT "START MONITOR"
-      // =========================================================
       const toggleSerialMonitor = async () => {
         if (isMonitorRunning) {
           await stopMonitor();
@@ -405,23 +396,27 @@
           await stopMonitor();
           addSysLog(t("prepareFlash"), 'info');
 
-          // CÁCH XỬ LÝ FILE SIÊU MƯỢT VÀ CHUẨN XÁC DƯỚI DẠNG MẢNG RAW BYTES
-          let firmwareData;
+          // ĐỌC DƯỚI DẠNG BINARY STRING ĐỂ KHÔNG BỊ LỖI CHARCODEAT CỦA ESPTOOL
+          let firmwareString;
           if (localFile) {
              const reader = new FileReader();
-             firmwareData = await new Promise((res, rej) => {
-                 reader.onload = () => res(new Uint8Array(reader.result));
+             firmwareString = await new Promise((res, rej) => {
+                 reader.onload = () => res(reader.result);
                  reader.onerror = rej;
-                 // Dùng readAsArrayBuffer để bảo toàn 100% dữ liệu nhị phân nguyên gốc
-                 reader.readAsArrayBuffer(localFile);
+                 reader.readAsBinaryString(localFile);
              });
           } else {
              addSysLog(t("downloadingFw"), "warning");
              const fetchUrl = (selectedBoard.url.startsWith('http')) ? selectedBoard.url : GITHUB_BASE + selectedBoard.url + '?t=' + new Date().getTime();
              const resp = await fetch(fetchUrl);
              if (!resp.ok) throw new Error("File not found on Server");
-             const arrayBuf = await resp.arrayBuffer();
-             firmwareData = new Uint8Array(arrayBuf);
+             const blob = await resp.blob();
+             const reader = new FileReader();
+             firmwareString = await new Promise((res, rej) => {
+                 reader.onload = () => res(reader.result);
+                 reader.onerror = rej;
+                 reader.readAsBinaryString(blob);
+             });
           }
 
           const esploader = esploaderRef.current;
@@ -429,19 +424,26 @@
           addSysLog(t("startingFlash"), "info");
           
           await esploader.writeFlash({
-            fileArray: [{ data: firmwareData, address: 0x0 }], 
+            fileArray: [{ data: firmwareString, address: 0x0 }], 
             flashSize: 'keep',
-            eraseAll: false, 
+            eraseAll: false, // BẮT BUỘC FALSE ĐỂ KHÔNG BỊ TIMEOUT KHI ĐANG XÓA
             compress: true,
             reportProgress: (idx, written, total) => setProgress(Math.round((written/total)*100)),
-            // THUẬT TOÁN TÍNH MD5 MỚI: BỎ QUA HOÀN TOÀN STRING! 
-            // Dịch bit siêu tốc (Bitwise Shift) thẳng từ Uint8Array sang cấu trúc WordArray của CryptoJS.
+            // HÀM MD5 SIÊU TỐC: DÙNG DỊCH BIT TRỰC TIẾP
             calculateMD5Hash: (image) => {
-                const words = [];
-                for (let i = 0; i < image.length; i++) {
-                    words[i >>> 2] |= (image[i] & 0xff) << (24 - (i % 4) * 8);
+                let words = [];
+                let len = image.length;
+                // Hàm này có khả năng tự nhận diện kiểu chuỗi hoặc mảng byte để quét
+                if (typeof image === 'string') {
+                    for (let i = 0; i < len; i++) {
+                        words[i >>> 2] |= (image.charCodeAt(i) & 0xff) << (24 - (i % 4) * 8);
+                    }
+                } else {
+                    for (let i = 0; i < len; i++) {
+                        words[i >>> 2] |= (image[i] & 0xff) << (24 - (i % 4) * 8);
+                    }
                 }
-                const wordArray = CryptoJS.lib.WordArray.create(words, image.length);
+                const wordArray = CryptoJS.lib.WordArray.create(words, len);
                 return CryptoJS.MD5(wordArray).toString();
             }
           });
