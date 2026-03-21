@@ -7,13 +7,15 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="module">
-    window.esptoolPromise = import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm');
+    window.esptoolPromise = import('https://cdn.jsdelivr.net/npm/esptool-js@0.5.6/+esm');
   </script>
 </head>
 <body class="bg-slate-950 m-0 p-0 overflow-x-hidden text-slate-300">
@@ -22,6 +24,9 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
+    // ==========================================
+    // TỪ ĐIỂN NGÔN NGỮ ĐẦY ĐỦ
+    // ==========================================
     const TRANSLATIONS = {
       en: {
         title: "DUSCU FLASHER",
@@ -64,13 +69,13 @@
         cancel: "Cancel",
         unlock: "Unlock",
         loadingLibrary: "Loading Espressif library...",
-        portAuthorized: "Port authorized. Ready to flash.",
+        portAuthorized: "Port authorized.",
         connectError: "Connection error",
         monitorStopped: "Serial Monitor stopped.",
         monitorStarted: "Serial Monitor started.",
         errNoFile: "Error: No Firmware file.",
         prepareFlash: "Preparing to flash...",
-        chipDetected: "Chip detected successfully",
+        chipDetected: "Chip detected successfully. Ready to flash!",
         flashSuccess: "FLASH SUCCESSFUL!",
         flashFailed: "Flash failed",
         disconnected: "Disconnected.",
@@ -142,7 +147,7 @@
         erasing: "Đang xóa toàn bộ Flash... Vui lòng đợi!",
         erased: "Đã xóa sạch bộ nhớ!",
         startingFlash: "Bắt đầu ghi Firmware mới...",
-        resetting: "Đang kết nối và ép mạch vào chế độ Bootloader...",
+        resetting: "Đang kết nối và tự động ép vào Bootloader...",
         monitorError: "Lỗi mở Serial Monitor"
       }
     };
@@ -208,11 +213,12 @@
       const transportRef = useRef(null);
       const readerRef = useRef(null);
       const isReadingRef = useRef(false);
-      const esploaderRef = useRef(null); // Lưu trữ ESPLoader sau khi connect
+      const esploaderRef = useRef(null); 
 
       useEffect(() => {
         if (!('serial' in navigator)) setIsSerialSupported(false);
 
+        // Fetch IP Geolocation to auto-set language
         fetch('https://get.geojs.io/v1/ip/country.json')
           .then(res => res.json())
           .then(data => {
@@ -284,45 +290,27 @@
       };
 
       // =========================================================
-      // NÚT "1. CONNECT USB" -> VÀO BOOTLOADER VÀ NHẬN DIỆN CHIP
+      // NÚT "1. CONNECT USB" -> VÀO BOOTLOADER BẰNG BẢN 0.5.6
       // =========================================================
       const handleConnect = async () => {
         if (!isSerialSupported) return;
         try {
+          if (isMonitorRunning) await stopMonitor();
+
           if (!window.esptooljs) {
             addSysLog(t("loadingLibrary"), "info");
             window.esptooljs = await window.esptoolPromise;
           }
           
-          const selectedPort = await navigator.serial.requestPort();
-          portRef.current = selectedPort;
+          let selectedPort = portRef.current;
+          if (!selectedPort) {
+             selectedPort = await navigator.serial.requestPort();
+             portRef.current = selectedPort;
+          }
           
           addSysLog(t("resetting"), "info");
           const transport = new window.esptooljs.Transport(selectedPort);
           transportRef.current = transport;
-          
-          await transport.connect(115200);
-          
-          // Vũ điệu DTR/RTS ép Bootloader
-          await transport.setDTR(false);
-          await transport.setRTS(false);
-          await new Promise(r => setTimeout(r, 100));
-          await transport.setDTR(false);
-          await transport.setRTS(true); 
-          await new Promise(r => setTimeout(r, 100)); 
-          await transport.setDTR(true); 
-          await transport.setRTS(false); 
-          await new Promise(r => setTimeout(r, 50));
-          await transport.setDTR(false);
-          await transport.setRTS(false);
-          await new Promise(r => setTimeout(r, 500)); 
-
-          // Hack chống mở cổng 2 lần
-          const originalTransportConnect = transport.connect.bind(transport);
-          transport.connect = async (baud) => {
-            if (portRef.current && portRef.current.readable) return;
-            await originalTransportConnect(baud);
-          };
 
           const esploader = new window.esptooljs.ESPLoader({
             transport: transport,
@@ -331,13 +319,9 @@
             terminal: { clean: () => {}, writeLine: (msg) => addSysLog(msg), write: (msg) => addSysLog(msg) }
           });
 
-          try {
-            await esploader.main();
-          } finally {
-            transport.connect = originalTransportConnect;
-          }
+          // Bản 0.5.6 sẽ tự động mở cổng và tự động điều khiển DTR/RTS cực chuẩn
+          await esploader.main();
 
-          // Lưu esploader lại để Nút Flash dùng
           esploaderRef.current = esploader;
           setIsConnected(true);
           addSysLog(`${t("chipDetected")}`, "success");
@@ -346,6 +330,7 @@
           addSysLog(`${t("connectError")}: ${err.message}`, "error");
           if (transportRef.current) await transportRef.current.disconnect().catch(()=>{});
           portRef.current = null;
+          esploaderRef.current = null;
         }
       };
 
@@ -361,7 +346,6 @@
             if (!window.esptooljs) window.esptooljs = await window.esptoolPromise;
             
             let port = portRef.current;
-            // Nếu người dùng ấn thẳng vào Start Monitor mà chưa Connect, ta xin quyền mở Port
             if (!port) {
                port = await navigator.serial.requestPort();
                portRef.current = port;
@@ -370,10 +354,9 @@
             const transport = new window.esptooljs.Transport(port);
             transportRef.current = transport;
             
-            // Kết nối baudrate đọc log thông thường
             await transport.connect(115200); 
             
-            // Bắn tín hiệu Reset cứng để đảm bảo mạch khởi động vào App (thoát khỏi Bootloader nếu đang bị kẹt)
+            // Reset cứng một phát để mạch khởi động vào App (phòng trường hợp đang kẹt ở Bootloader)
             await transport.setDTR(false);
             await transport.setRTS(true);
             await new Promise(r => setTimeout(r, 100));
@@ -438,10 +421,12 @@
 
           const esploader = esploaderRef.current;
 
+          // XÓA FLASH
           addSysLog(t("erasing"), "warning");
           await esploader.eraseFlash();
           addSysLog(t("erased"), "success");
 
+          // NẠP FLASH
           addSysLog(t("startingFlash"), "info");
           await esploader.writeFlash({
             fileArray: [{ data: firmwareString, address: 0x0 }],
@@ -453,7 +438,7 @@
 
           addSysLog(t("flashSuccess"), "success");
           
-          // Khởi động lại mạch
+          // Khởi động lại mạch sau khi nạp xong
           const transport = transportRef.current;
           if (transport) {
               await transport.setDTR(false);
