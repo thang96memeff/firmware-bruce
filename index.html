@@ -85,7 +85,7 @@
         baudrateTooltip: "Change Baudrate only when disconnected",
         erasing: "Erasing flash memory... Please wait!",
         erased: "Flash memory erased!",
-        startingFlash: "Starting firmware write...",
+        startingFlash: "Erasing Flash and writing new Firmware...",
         resetting: "Connecting and syncing to Bootloader...",
         monitorError: "Monitor connection error",
         bootHint: "Hint: Hold the BOOT button, plug in the board, and try connecting again :))))"
@@ -147,7 +147,7 @@
         baudrateTooltip: "Chỉ đổi khi đã Ngắt Kết Nối",
         erasing: "Đang xóa toàn bộ Flash... Vui lòng đợi!",
         erased: "Đã xóa sạch bộ nhớ!",
-        startingFlash: "Bắt đầu ghi Firmware mới...",
+        startingFlash: "Đang xóa Flash và bắt đầu ghi Firmware...",
         resetting: "Đang kết nối và tự động ép vào Bootloader...",
         monitorError: "Lỗi mở Serial Monitor",
         bootHint: "Mẹo: ấn giữ nút BOOT sau đó cắm mạch và kết nối lại là đc :))))"
@@ -183,7 +183,7 @@
 
       const [isSerialSupported, setIsSerialSupported] = useState(true);
       const [isConnected, setIsConnected] = useState(false);
-      const [baudRate, setBaudRate] = useState(921600); 
+      const [baudRate, setBaudRate] = useState(460800); // Default xuống 460800 cho an toàn
       
       const [boards, setBoards] = useState(INITIAL_BOARDS);
       const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
@@ -396,7 +396,7 @@
       };
 
       // =========================================================
-      // NÚT "2. FLASH FIRMWARE" -> CHỈ TẢI FILE VÀ NẠP
+      // NÚT "2. FLASH FIRMWARE" -> GỘP CHUNG QUÁ TRÌNH XÓA VÀ NẠP
       // =========================================================
       const handleFlash = async () => {
         if (!selectedBoard?.url && !localFile) return addSysLog(t("errNoFile"), "error");
@@ -434,17 +434,13 @@
 
           const esploader = esploaderRef.current;
 
-          // XÓA FLASH
-          addSysLog(t("erasing"), "warning");
-          await esploader.eraseFlash();
-          addSysLog(t("erased"), "success");
-
-          // NẠP FLASH
+          // Bắt đầu nạp (thư viện sẽ TỰ ĐỘNG xóa trước khi nạp nhờ tham số eraseAll: true)
+          // Cách này giúp giữ connection không bị ngắt quãng gây lỗi Timeout
           addSysLog(t("startingFlash"), "info");
           await esploader.writeFlash({
             fileArray: [{ data: firmwareString, address: 0x0 }],
             flashSize: 'keep',
-            eraseAll: false,
+            eraseAll: true, // KÍCH HOẠT XÓA CHUNG VỚI NẠP
             compress: true,
             reportProgress: (idx, written, total) => setProgress(Math.round((written/total)*100))
           });
