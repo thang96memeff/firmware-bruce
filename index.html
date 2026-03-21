@@ -85,7 +85,7 @@
         baudrateTooltip: "Change Baudrate only when disconnected",
         erasing: "Erasing flash memory... Please wait!",
         erased: "Flash memory erased!",
-        startingFlash: "Erasing Flash and writing new Firmware...",
+        startingFlash: "Starting firmware write...",
         resetting: "Connecting and syncing to Bootloader...",
         monitorError: "Monitor connection error",
         bootHint: "Hint: Hold the BOOT button, plug in the board, and try connecting again :))))"
@@ -145,9 +145,9 @@
         downloadingFw: "Đang tải Firmware...",
         syncing: "Đồng bộ hóa...",
         baudrateTooltip: "Chỉ đổi khi đã Ngắt Kết Nối",
-        erasing: "Đang xóa toàn bộ Flash... Vui lòng đợi!",
-        erased: "Đã xóa sạch bộ nhớ!",
-        startingFlash: "Đang xóa Flash và bắt đầu ghi Firmware...",
+        erasing: "Đang xóa bộ nhớ Flash... Vui lòng đợi!",
+        erased: "Đã xóa xong!",
+        startingFlash: "Bắt đầu nạp Firmware (Đã bật MD5 verify)...",
         resetting: "Đang kết nối và tự động ép vào Bootloader...",
         monitorError: "Lỗi mở Serial Monitor",
         bootHint: "Mẹo: ấn giữ nút BOOT sau đó cắm mạch và kết nối lại là đc :))))"
@@ -183,7 +183,7 @@
 
       const [isSerialSupported, setIsSerialSupported] = useState(true);
       const [isConnected, setIsConnected] = useState(false);
-      const [baudRate, setBaudRate] = useState(460800); // Default xuống 460800 cho an toàn
+      const [baudRate, setBaudRate] = useState(921600); // Mặc định 921600 chạy tẹt ga
       
       const [boards, setBoards] = useState(INITIAL_BOARDS);
       const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
@@ -220,7 +220,6 @@
       useEffect(() => {
         if (!('serial' in navigator)) setIsSerialSupported(false);
 
-        // Fetch IP Geolocation to auto-set language
         fetch('https://get.geojs.io/v1/ip/country.json')
           .then(res => res.json())
           .then(data => {
@@ -291,7 +290,6 @@
         setIsMonitorRunning(false);
       };
 
-      // Bộ lọc log để ẩn đi 2 dòng phiền toái của esptool-js
       const filterEsptoolLog = (msg) => {
         if (typeof msg !== 'string') return;
         if (msg.includes('esptool.js')) return;
@@ -300,7 +298,7 @@
       };
 
       // =========================================================
-      // NÚT "1. CONNECT USB" -> VÀO BOOTLOADER BẰNG BẢN 0.5.6
+      // NÚT "1. CONNECT USB"
       // =========================================================
       const handleConnect = async () => {
         if (!isSerialSupported) return;
@@ -326,7 +324,6 @@
             transport: transport,
             baudrate: parseInt(baudRate),
             romBaudrate: 115200,
-            // Thay vì addSysLog trực tiếp, đẩy qua hàm lọc filterEsptoolLog
             terminal: { clean: () => {}, writeLine: filterEsptoolLog, write: filterEsptoolLog }
           });
 
@@ -338,7 +335,6 @@
 
         } catch (err) {
           addSysLog(`${t("connectError")}: ${err.message}`, "error");
-          // Hiển thị thêm mẹo khắc phục nếu kết nối xịt
           addSysLog(t("bootHint"), "warning");
 
           if (transportRef.current) await transportRef.current.disconnect().catch(()=>{});
@@ -348,7 +344,7 @@
       };
 
       // =========================================================
-      // NÚT "START MONITOR" -> KẾT NỐI BÌNH THƯỜNG (APP MODE)
+      // NÚT "START MONITOR"
       // =========================================================
       const toggleSerialMonitor = async () => {
         if (isMonitorRunning) {
@@ -369,7 +365,6 @@
             
             await transport.connect(115200); 
             
-            // Reset cứng một phát để mạch khởi động vào App (phòng trường hợp đang kẹt ở Bootloader)
             await transport.setDTR(false);
             await transport.setRTS(true);
             await new Promise(r => setTimeout(r, 100));
@@ -396,7 +391,7 @@
       };
 
       // =========================================================
-      // NÚT "2. FLASH FIRMWARE" -> GỘP CHUNG QUÁ TRÌNH XÓA VÀ NẠP
+      // NÚT "2. FLASH FIRMWARE" (FIX ĐỌC FILE ARRAYBUFFER VÀ THÊM MD5)
       // =========================================================
       const handleFlash = async () => {
         if (!selectedBoard?.url && !localFile) return addSysLog(t("errNoFile"), "error");
@@ -410,13 +405,14 @@
           await stopMonitor();
           addSysLog(t("prepareFlash"), 'info');
 
-          let firmwareString;
+          // ĐỌC FILE THÀNH MẢNG BYTE (UINT8ARRAY)
+          let firmwareData;
           if (localFile) {
              const reader = new FileReader();
-             firmwareString = await new Promise((res, rej) => {
-                 reader.onload = () => res(reader.result);
+             firmwareData = await new Promise((res, rej) => {
+                 reader.onload = () => res(new Uint8Array(reader.result));
                  reader.onerror = rej;
-                 reader.readAsBinaryString(localFile);
+                 reader.readAsArrayBuffer(localFile);
              });
           } else {
              addSysLog(t("downloadingFw"), "warning");
@@ -425,29 +421,32 @@
              if (!resp.ok) throw new Error("File not found on Server");
              const blob = await resp.blob();
              const reader = new FileReader();
-             firmwareString = await new Promise((res, rej) => {
-                 reader.onload = () => res(reader.result);
+             firmwareData = await new Promise((res, rej) => {
+                 reader.onload = () => res(new Uint8Array(reader.result));
                  reader.onerror = rej;
-                 reader.readAsBinaryString(blob);
+                 reader.readAsArrayBuffer(blob);
              });
           }
 
           const esploader = esploaderRef.current;
 
-          // Bắt đầu nạp (thư viện sẽ TỰ ĐỘNG xóa trước khi nạp nhờ tham số eraseAll: true)
-          // Cách này giúp giữ connection không bị ngắt quãng gây lỗi Timeout
           addSysLog(t("startingFlash"), "info");
+          
           await esploader.writeFlash({
-            fileArray: [{ data: firmwareString, address: 0x0 }],
+            fileArray: [{ data: firmwareData, address: 0x0 }], // Đẩy mảng Byte chuẩn vào
             flashSize: 'keep',
-            eraseAll: false, // KÍCH HOẠT XÓA CHUNG VỚI NẠP
+            eraseAll: false, // Để false chống timeout, esptool tự xóa vùng nhớ cần thiết
             compress: true,
-            reportProgress: (idx, written, total) => setProgress(Math.round((written/total)*100))
+            reportProgress: (idx, written, total) => setProgress(Math.round((written/total)*100)),
+            // HÀM TÍNH MD5 HASH: Giúp xác thực dữ liệu gửi đi, chống lỗi No serial data received
+            calculateMD5Hash: (image) => {
+                const latin1String = Array.from(image, (byte)=>String.fromCharCode(byte)).join("");
+                return CryptoJS.MD5(CryptoJS.enc.Latin1.parse(latin1String)).toString();
+            }
           });
 
           addSysLog(t("flashSuccess"), "success");
           
-          // Khởi động lại mạch sau khi nạp xong
           const transport = transportRef.current;
           if (transport) {
               await transport.setDTR(false);
