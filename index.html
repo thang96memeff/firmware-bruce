@@ -5,19 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DUSCU FLASHER - Web Installer</title>
   
-  <!-- CSS & UI Libraries -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- CryptoJS -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
-  <!-- React & Babel Standalone -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- KỸ THUẬT TẢI ESPTOOL -->
   <script type="module">
     window.esptoolPromise = import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm');
   </script>
@@ -56,10 +52,10 @@
         adminArea: "Admin Area",
         saveConfig: "Save Config",
         fwLink: "Firmware Link (.bin)",
-        uiConfig: "IMG_3027.jpeg",
+        uiConfig: "UI Configuration",
         adminGuide: "Guide: Paste direct link to merged .bin firmware.",
-        logoConfig: "IMG_4498.jpeg",
-        bgConfig: "Background Configuration",
+        logoConfig: "Logo URL (IMG_4498.jpeg)",
+        bgConfig: "Background URL (IMG_3027.jpeg)",
         browserNotSupported: "Flash not supported on mobile",
         browserNotSupportedDesc: "Web Serial API is only available on Desktop Chrome/Edge. You can still view the UI and configs.",
         donateTitle: "Support the Creator",
@@ -86,7 +82,11 @@
         readingFile: "Reading file",
         downloadingFw: "Downloading Firmware...",
         syncing: "Syncing...",
-        baudrateTooltip: "Change Baudrate only when disconnected"
+        baudrateTooltip: "Change Baudrate only when disconnected",
+        erasing: "Erasing flash memory... Please wait!",
+        erased: "Flash memory erased!",
+        startingFlash: "Starting firmware write...",
+        resetting: "Forcing DTR/RTS Bootloader reset..."
       },
       vi: {
         title: "DUSCU FLASHER",
@@ -114,8 +114,8 @@
         fwLink: "Link Firmware (.bin)",
         uiConfig: "Giao diện",
         adminGuide: "Hướng dẫn: Dán đường dẫn trực tiếp tới tệp firmware (.bin).",
-        logoConfig: "Cấu hình Logo",
-        bgConfig: "Cấu hình Hình Nền",
+        logoConfig: "Link Logo (IMG_4498.jpeg)",
+        bgConfig: "Link Hình Nền (IMG_3027.jpeg)",
         browserNotSupported: "Mobile không hỗ trợ nạp",
         browserNotSupportedDesc: "Web Serial chỉ hỗ trợ trên Chrome/Edge máy tính. Bạn vẫn có thể xem giao diện và cấu hình.",
         donateTitle: "Ủng hộ tác giả",
@@ -142,7 +142,11 @@
         readingFile: "Đang đọc file",
         downloadingFw: "Đang tải Firmware...",
         syncing: "Đồng bộ hóa...",
-        baudrateTooltip: "Chỉ đổi khi đã Ngắt Kết Nối"
+        baudrateTooltip: "Chỉ đổi khi đã Ngắt Kết Nối",
+        erasing: "Đang xóa toàn bộ Flash... Vui lòng đợi!",
+        erased: "Đã xóa sạch bộ nhớ!",
+        startingFlash: "Bắt đầu ghi Firmware mới...",
+        resetting: "Đang ép xung Reset (DTR/RTS) vào Bootloader..."
       }
     };
 
@@ -152,15 +156,11 @@
     const DONATE_QR_STRING = "00020101021138570010A000000727012700069704220113VQRQADXDU20070208QRIBFTTA53037045802VN62150107NPS6869080063042FC8";
 
     const INITIAL_BOARDS = [
-      { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: 'Bruce-CYD-2432S028.bin' },
-      { id: 'CYD-2USB', name: 'CYD-2USB', chip: 'ESP32', url: '' },
-      { id: 'CYD-2432W328C', name: 'CYD-2432W328C', chip: 'ESP32', url: '' },
-      { id: 'CYD-2432W328C_2', name: 'CYD-2432W328C_2', chip: 'ESP32', url: '' },
-      { id: 'CYD-2432W328R-or-S024R', name: 'CYD-2432W328R-or-S024R', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: 'Bruce-CYD-2432S028.bin' },,
       { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32', url: 'Bruce-lilygo-t-display-ttgo.bin' },
       { id: 'lilygo-t-embed-cc1101', name: 'Lilygo T-Embed CC1101', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-embed-cc1101.bin' },
       { id: 'lilygo-t-display-s3', name: 'Lyligo-T-Display-S3', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-display-s3.bin' },
-      { id: 'm5stack-cplus1_1', name: 'M5StickC Plus 1.1', chip: 'ESP32', url: '' },
+      { id: 'm5stack-cplus1_1', name: 'M5StickC Plus 1.1', chip: 'ESP32', url: 'Bruce-m5stack-cplus1_1.bin' },
       { id: 'm5stack-cplus2', name: 'M5StickC Plus 2', chip: 'ESP32', url: '' },
       { id: 'xingzhi-cube-s3', name: 'Xingzhi-Cube', chip: 'ESP32-S3', url: 'Bruce-xingzhi-cube-s3.bin' },
       { id: 'Launcher-xingzhi-cube-s3', name: 'Launcher-Xingzhi-Cube', chip: 'ESP32-S3', url: 'Launcher-xingzhi-cube-s3.bin' },
@@ -182,8 +182,9 @@
       const selectedBoard = boards.find(b => b.id === selectedBoardId);
 
       const [localFile, setLocalFile] = useState(null);
-      const [bgUrl, setBgUrl] = useState("");
-      const [logoUrl, setLogoUrl] = useState("");
+      // Gán thẳng URL mặc định là 2 ảnh trên Github của bạn
+      const [bgUrl, setBgUrl] = useState(GITHUB_BASE + "IMG_3027.jpeg");
+      const [logoUrl, setLogoUrl] = useState(GITHUB_BASE + "IMG_4498.jpeg");
 
       const [isAdmin, setIsAdmin] = useState(false);
       const [showAdminModal, setShowAdminModal] = useState(false);
@@ -210,14 +211,27 @@
 
       useEffect(() => {
         if (!('serial' in navigator)) setIsSerialSupported(false);
+
+        // Fetch IP Geolocation to auto-set language
+        fetch('https://get.geojs.io/v1/ip/country.json')
+          .then(res => res.json())
+          .then(data => {
+            if (data.country === 'VN') {
+              setLang('vi');
+            } else {
+              setLang('en');
+            }
+          })
+          .catch(error => console.log('Không check được IP, dùng mặc định:', error));
+
         const savedConfig = localStorage.getItem('duscu_flasher_config_v40');
         if (savedConfig) {
           try {
             const parsed = JSON.parse(savedConfig);
             if (parsed.boards) setBoards(parsed.boards);
             if (parsed.settings) {
-              setBgUrl(parsed.settings.bgUrl || "");
-              setLogoUrl(parsed.settings.logoUrl || "");
+              if (parsed.settings.bgUrl) setBgUrl(parsed.settings.bgUrl);
+              if (parsed.settings.logoUrl) setLogoUrl(parsed.settings.logoUrl);
             }
           } catch(e) {}
         }
@@ -350,6 +364,28 @@
 
           addSysLog(t("syncing"), "warning");
           const transport = new window.esptooljs.Transport(portRef.current);
+          
+          // Kết nối baudrate thấp
+          await transport.connect(115200);
+          
+          // Vũ điệu ép xung DTR/RTS
+          addSysLog(t("resetting"), "info");
+          await transport.setDTR(false);
+          await transport.setRTS(false);
+          await new Promise(r => setTimeout(r, 100));
+          
+          await transport.setDTR(false);
+          await transport.setRTS(true); 
+          await new Promise(r => setTimeout(r, 100)); 
+          
+          await transport.setDTR(true); 
+          await transport.setRTS(false); 
+          await new Promise(r => setTimeout(r, 50));
+          
+          await transport.setDTR(false);
+          await transport.setRTS(false);
+          await new Promise(r => setTimeout(r, 500)); 
+
           const esploader = new window.esptooljs.ESPLoader({
             transport: transport,
             baudrate: parseInt(baudRate),
@@ -360,6 +396,13 @@
           await esploader.main();
           addSysLog(`${t("chipDetected")}`, "success");
 
+          // Xóa Flash trước khi nạp
+          addSysLog(t("erasing"), "warning");
+          await esploader.eraseFlash();
+          addSysLog(t("erased"), "success");
+
+          // Tiến hành nạp
+          addSysLog(t("startingFlash"), "info");
           await esploader.writeFlash({
             fileArray: [{ data: firmwareString, address: 0x0 }],
             flashSize: 'keep',
@@ -369,7 +412,14 @@
           });
 
           addSysLog(t("flashSuccess"), "success");
-          await esploader.hardReset();
+          
+          // Khởi động lại mạch
+          await transport.setDTR(false);
+          await transport.setRTS(true);
+          await new Promise(r => setTimeout(r, 100));
+          await transport.setDTR(false);
+          await transport.setRTS(false);
+
           await transport.disconnect().catch(()=>{});
         } catch (error) {
           addSysLog(`${t("flashFailed")}: ${error.message}`, "error");
@@ -398,9 +448,9 @@
       };
 
       const UserView = (
-        <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-2xl">
+        <div className="bg-slate-900/90 backdrop-blur-md border border-pink-400/20 rounded-3xl p-6 shadow-2xl">
           <div className="flex items-center gap-2 mb-6 text-white font-semibold border-b border-slate-800 pb-4">
-            <i className="fa-solid fa-sliders text-xl text-blue-500"></i>
+            <i className="fa-solid fa-sliders text-xl text-pink-400"></i>
             <h2>{t('selectDevice')}</h2>
           </div>
           <div className="space-y-5">
@@ -410,7 +460,7 @@
                 value={selectedBoardId} 
                 onChange={(e) => setSelectedBoardId(e.target.value)}
                 disabled={isConnected || isFlashing}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50"
+                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-pink-400 outline-none transition-all disabled:opacity-50"
               >
                 {boards.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
@@ -427,7 +477,7 @@
               </div>
               <div className="border-t border-slate-800/50 pt-3">
                 <label className="block text-xs font-medium text-slate-400 mb-2">{t('orChooseLocal')}</label>
-                <input type="file" accept=".bin" onChange={(e) => setLocalFile(e.target.files[0])} disabled={isConnected || isFlashing} className="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-purple-500/10 file:text-purple-400 hover:file:bg-purple-500/20 cursor-pointer disabled:opacity-50" />
+                <input type="file" accept=".bin" onChange={(e) => setLocalFile(e.target.files[0])} disabled={isConnected || isFlashing} className="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-pink-400/10 file:text-pink-400 hover:file:bg-pink-400/20 cursor-pointer disabled:opacity-50" />
               </div>
             </div>
             <div className="pt-4 space-y-3">
@@ -438,9 +488,9 @@
               ) : (
                 <div className="flex gap-2">
                   <button onClick={handleDisconnect} disabled={isFlashing} className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 border border-slate-700 shadow-lg">
-                    <i className="fa-solid fa-plug-circle-xmark text-xl"></i>{t('disconnect')}
+                    <i className="fa-solid fa-plug-circle-xmark text-xl text-pink-400"></i>{t('disconnect')}
                   </button>
-                  <select value={baudRate} onChange={(e) => setBaudRate(e.target.value)} disabled={isConnected || isFlashing} className="bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm text-slate-300 outline-none w-32 shadow-lg disabled:opacity-50">
+                  <select value={baudRate} onChange={(e) => setBaudRate(e.target.value)} disabled={isConnected || isFlashing} className="bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm text-slate-300 outline-none w-32 shadow-lg disabled:opacity-50 focus:border-pink-400">
                     <option value="115200">115200</option>
                     <option value="460800">460800</option>
                     <option value="921600">921600</option>
@@ -453,7 +503,7 @@
                 className={`w-full flex items-center justify-center gap-2 font-bold py-4 px-4 rounded-xl transition-all duration-300 relative overflow-hidden shadow-xl ${
                   (!isConnected || isFlashing || (!selectedBoard?.url && !localFile))
                     ? 'bg-slate-800 text-slate-500' 
-                    : 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)] border border-blue-500'
+                    : 'bg-pink-500 text-white hover:bg-pink-400 shadow-[0_0_20px_rgba(236,72,153,0.4)] border border-pink-400'
                 }`}
               >
                 <i className={`fa-solid fa-play text-xl ${isFlashing ? 'animate-pulse' : ''}`}></i>
@@ -466,13 +516,13 @@
       );
 
       const AdminView = (
-        <div className="bg-slate-900/95 backdrop-blur-md border border-purple-500/50 rounded-3xl shadow-2xl flex flex-col max-h-[700px] overflow-hidden">
+        <div className="bg-slate-900/95 backdrop-blur-md border border-pink-500/50 rounded-3xl shadow-2xl flex flex-col max-h-[700px] overflow-hidden">
           <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-900 shrink-0">
-            <div className="flex items-center gap-2 text-purple-400 font-bold"><i className="fa-solid fa-lock text-lg"></i><h2>{t('adminArea')}</h2></div>
-            <button onClick={saveAdminConfig} className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-purple-900/50"><i className="fa-solid fa-floppy-disk mr-2"></i>{t('saveConfig')}</button>
+            <div className="flex items-center gap-2 text-pink-400 font-bold"><i className="fa-solid fa-lock text-lg"></i><h2>{t('adminArea')}</h2></div>
+            <button onClick={saveAdminConfig} className="bg-pink-600 hover:bg-pink-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-pink-900/50"><i className="fa-solid fa-floppy-disk mr-2"></i>{t('saveConfig')}</button>
           </div>
           <div className="flex border-b border-slate-800 shrink-0 bg-slate-950/50 text-xs sm:text-sm font-medium">
-            <button onClick={() => setAdminTab('firmware')} className={`flex-1 py-3 transition-colors ${adminTab === 'firmware' ? 'bg-slate-800 text-purple-400 border-b-2 border-purple-500' : 'text-slate-400'}`}>{t('fwLink')}</button>
+            <button onClick={() => setAdminTab('firmware')} className={`flex-1 py-3 transition-colors ${adminTab === 'firmware' ? 'bg-slate-800 text-pink-400 border-b-2 border-pink-500' : 'text-slate-400'}`}>{t('fwLink')}</button>
             <button onClick={() => setAdminTab('ui')} className={`flex-1 py-3 transition-colors ${adminTab === 'ui' ? 'bg-slate-800 text-pink-400 border-b-2 border-pink-500' : 'text-slate-400'}`}>{t('uiConfig')}</button>
           </div>
           <div className="overflow-y-auto p-5 custom-scrollbar flex-1 bg-slate-900/50">
@@ -481,14 +531,14 @@
                 {boards.map(board => (
                   <div key={board.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col gap-2">
                     <div className="flex justify-between items-center"><p className="text-sm font-bold text-slate-200">{board.name}</p><p className="text-[10px] text-slate-500">Chip: {board.chip}</p></div>
-                    <input type="text" placeholder="https://..." value={board.url} onChange={(e) => setBoards(boards.map(b => b.id === board.id ? {...b, url: e.target.value} : b))} className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2 outline-none focus:border-purple-500" />
+                    <input type="text" placeholder="https://..." value={board.url} onChange={(e) => setBoards(boards.map(b => b.id === board.id ? {...b, url: e.target.value} : b))} className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2 outline-none focus:border-pink-400" />
                   </div>
                 ))}
               </div>
             ) : (
               <div className="space-y-6">
-                <div><label className="block text-xs font-medium text-slate-400 mb-2">{t('logoConfig')}</label><input type="text" placeholder="URL..." value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 outline-none focus:border-pink-500" /></div>
-                <div><label className="block text-xs font-medium text-slate-400 mb-2">{t('bgConfig')}</label><input type="text" placeholder="URL..." value={bgUrl} onChange={(e) => setBgUrl(e.target.value)} className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 outline-none focus:border-pink-500" /></div>
+                <div><label className="block text-xs font-medium text-slate-400 mb-2">{t('logoConfig')}</label><input type="text" placeholder="URL..." value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 outline-none focus:border-pink-400" /></div>
+                <div><label className="block text-xs font-medium text-slate-400 mb-2">{t('bgConfig')}</label><input type="text" placeholder="URL..." value={bgUrl} onChange={(e) => setBgUrl(e.target.value)} className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 outline-none focus:border-pink-400" /></div>
               </div>
             )}
           </div>
@@ -518,22 +568,22 @@
             )}
 
             {/* Header */}
-            <header className="flex flex-col md:flex-row items-start sm:items-center justify-between gap-6 border-b border-slate-800/80 pb-8">
+            <header className="flex flex-col md:flex-row items-start sm:items-center justify-between gap-6 border-b border-pink-400/20 pb-8">
               <div className="flex items-center gap-5">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center shadow-lg border border-blue-500/30 overflow-hidden shrink-0">
-                  {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : <i className="fa-solid fa-bolt text-[24px] sm:text-[36px] text-blue-500 drop-shadow-md"></i>}
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-pink-500/20 rounded-2xl flex items-center justify-center shadow-[0_0_15px_rgba(236,72,153,0.2)] border border-pink-400/30 overflow-hidden shrink-0">
+                  {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : <i className="fa-solid fa-bolt text-[24px] sm:text-[36px] text-pink-400 drop-shadow-md"></i>}
                 </div>
                 <div>
-                  <h1 className="text-xl sm:text-3xl font-black text-white tracking-tighter uppercase">{t('title')} <span className="text-[10px] sm:text-sm font-bold text-slate-500 align-top ml-1">v40</span></h1>
-                  <p className="text-blue-400 font-medium text-[10px] sm:text-sm tracking-wide uppercase">{t('subtitle')}</p>
+                  <h1 className="text-xl sm:text-3xl font-black text-white tracking-tighter uppercase">{t('title')}</h1>
+                  <p className="text-pink-300 font-medium text-[10px] sm:text-sm tracking-wide uppercase">{t('subtitle')}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto overflow-x-auto no-scrollbar pb-2 sm:pb-0">
-                  <button onClick={() => setLang(lang === 'en' ? 'vi' : 'en')} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-full font-bold shadow-lg transition-colors border border-slate-700 text-xs shrink-0"><i className="fa-solid fa-language"></i>{lang === 'en' ? 'VI' : 'EN'}</button>
-                  <button onClick={() => setShowDonateModal(true)} className="flex items-center gap-2 bg-gradient-to-br from-pink-600 to-rose-600 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95 text-xs shrink-0"><i className="fa-solid fa-heart"></i>{t('donate')}</button>
-                  <a href={GITHUB_REPO_LINK} target="_blank" rel="noopener noreferrer" className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl shrink-0"><i className="fab fa-github text-slate-400"></i></a>
-                  <button onClick={() => isAdmin ? setIsAdmin(false) : setShowAdminModal(true)} className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl shrink-0"><i className={`fa-solid ${isAdmin ? 'fa-lock-open' : 'fa-lock'} text-slate-400`}></i></button>
+                  <button onClick={() => setLang(lang === 'en' ? 'vi' : 'en')} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-full font-bold shadow-lg transition-colors border border-slate-700 text-xs shrink-0"><i className="fa-solid fa-language text-pink-300"></i>{lang === 'en' ? 'VI' : 'EN'}</button>
+                  <button onClick={() => setShowDonateModal(true)} className="flex items-center gap-2 bg-gradient-to-br from-pink-500 to-rose-400 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95 text-xs shrink-0"><i className="fa-solid fa-heart"></i>{t('donate')}</button>
+                  <a href={GITHUB_REPO_LINK} target="_blank" rel="noopener noreferrer" className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl shrink-0"><i className="fab fa-github text-slate-400 hover:text-pink-300 transition-colors"></i></a>
+                  <button onClick={() => isAdmin ? setIsAdmin(false) : setShowAdminModal(true)} className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl shrink-0"><i className={`fa-solid ${isAdmin ? 'fa-lock-open' : 'fa-lock'} text-slate-400 hover:text-pink-300 transition-colors`}></i></button>
               </div>
             </header>
 
@@ -542,8 +592,8 @@
               <div className="lg:col-span-7 flex flex-col bg-slate-900/80 backdrop-blur-2xl border border-slate-800 rounded-3xl shadow-2xl h-[400px] sm:h-[640px] overflow-hidden">
                 <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
                   <div className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar">
-                    <button onClick={() => setLogTab('system')} className={`font-bold text-[10px] sm:text-sm transition-colors border-b-2 pb-1 shrink-0 ${logTab === 'system' ? 'text-blue-500 border-blue-500' : 'text-slate-500 border-transparent'}`}>{t('sysLogsTab')}</button>
-                    <button onClick={() => setLogTab('device')} className={`font-bold text-[10px] sm:text-sm transition-colors border-b-2 pb-1 shrink-0 ${logTab === 'device' ? 'text-purple-500 border-purple-500' : 'text-slate-500 border-transparent'}`}>{t('devLogsTab')}</button>
+                    <button onClick={() => setLogTab('system')} className={`font-bold text-[10px] sm:text-sm transition-colors border-b-2 pb-1 shrink-0 ${logTab === 'system' ? 'text-pink-400 border-pink-400' : 'text-slate-500 border-transparent'}`}>{t('sysLogsTab')}</button>
+                    <button onClick={() => setLogTab('device')} className={`font-bold text-[10px] sm:text-sm transition-colors border-b-2 pb-1 shrink-0 ${logTab === 'device' ? 'text-pink-400 border-pink-400' : 'text-slate-500 border-transparent'}`}>{t('devLogsTab')}</button>
                   </div>
                   <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                     {logTab === 'device' && (
@@ -561,7 +611,7 @@
                     currentLogs.map((log, i) => (
                       <div key={i} className="flex gap-3 leading-relaxed border-b border-slate-800/20 pb-0.5 animate-in fade-in duration-300">
                         <span className="text-slate-600 shrink-0 select-none">[{log.time}]</span>
-                        <span className={`${log.type === 'error' ? 'text-red-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : log.type === 'warning' ? 'text-blue-400' : 'text-slate-300'}`}>{log.msg}</span>
+                        <span className={`${log.type === 'error' ? 'text-red-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : log.type === 'warning' ? 'text-pink-300' : 'text-slate-300'}`}>{log.msg}</span>
                       </div>
                     ))
                   )}
@@ -575,11 +625,11 @@
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
               <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2.5rem] p-6 sm:p-8 text-center shadow-2xl relative">
                 <button onClick={() => setShowDonateModal(false)} className="absolute top-6 right-6 text-slate-500 hover:text-white"><i className="fa-solid fa-xmark text-2xl"></i></button>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6"><i className="fa-solid fa-heart text-3xl sm:text-4xl text-pink-500 animate-pulse"></i></div>
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6"><i className="fa-solid fa-heart text-3xl sm:text-4xl text-pink-400 animate-pulse"></i></div>
                 <h3 className="text-xl sm:text-2xl font-black text-white mb-2">{t('donateTitle')}</h3>
                 <p className="text-slate-400 text-xs sm:text-sm mb-6 leading-relaxed">{t('donateDesc')}</p>
                 <div className="bg-white p-3 rounded-3xl mb-6 shadow-xl"><img src={`https://quickchart.io/qr?size=300&text=${encodeURIComponent(DONATE_QR_STRING)}`} alt="Donate QR" className="w-full h-full object-contain" /></div>
-                <button onClick={() => { navigator.clipboard.writeText(DONATE_QR_STRING); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="w-full py-3 rounded-xl font-medium text-pink-400 bg-pink-500/10 hover:bg-pink-500/20 transition-colors border border-pink-500/30 flex items-center justify-center gap-2 active:scale-95">{copied ? <i className="fa-solid fa-circle-check text-emerald-500"></i> : <i className="fa-solid fa-bolt"></i>}{copied ? t('copied') : t('copyQr')}</button>
+                <button onClick={() => { navigator.clipboard.writeText(DONATE_QR_STRING); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="w-full py-3 rounded-xl font-medium text-pink-300 bg-pink-500/10 hover:bg-pink-500/20 transition-colors border border-pink-500/30 flex items-center justify-center gap-2 active:scale-95">{copied ? <i className="fa-solid fa-circle-check text-emerald-500"></i> : <i className="fa-solid fa-bolt"></i>}{copied ? t('copied') : t('copyQr')}</button>
               </div>
             </div>
           )}
@@ -591,11 +641,11 @@
                 <h3 className="text-lg sm:text-xl font-bold text-white mb-2">{t('adminConfirm')}</h3>
                 <p className="text-xs sm:text-sm text-slate-400 mb-6">{t('adminDesc')}</p>
                 <form onSubmit={handleAdminLogin} className="space-y-4">
-                  <input type="password" autoFocus placeholder={t('password')} value={adminInput} onChange={e => {setAdminInput(e.target.value); setLoginError(false);}} className={`w-full bg-slate-950 border rounded-xl p-4 text-white outline-none focus:ring-2 transition-all text-sm ${loginError ? 'border-red-500 ring-red-500/20' : 'border-slate-800 focus:ring-blue-500/20'}`} />
+                  <input type="password" autoFocus placeholder={t('password')} value={adminInput} onChange={e => {setAdminInput(e.target.value); setLoginError(false);}} className={`w-full bg-slate-950 border rounded-xl p-4 text-white outline-none focus:ring-2 transition-all text-sm ${loginError ? 'border-red-500 ring-red-500/20' : 'border-slate-800 focus:ring-pink-400/20'}`} />
                   {loginError && <p className="text-red-500 text-[10px] font-bold uppercase">{t('wrongPassword')}</p>}
                   <div className="flex gap-3 pt-2">
                     <button type="button" onClick={() => setShowAdminModal(false)} className="flex-1 py-3 text-slate-400 font-bold hover:text-white text-xs">{t('cancel')}</button>
-                    <button type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 text-xs">{t('unlock')}</button>
+                    <button type="submit" className="flex-1 py-3 bg-pink-500 text-white font-bold rounded-xl hover:bg-pink-400 shadow-lg shadow-pink-500/30 text-xs">{t('unlock')}</button>
                   </div>
                 </form>
               </div>
@@ -604,7 +654,7 @@
 
           <style dangerouslySetInnerHTML={{__html: `
             .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-            .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+            .custom-scrollbar::-webkit-scrollbar-thumb { background: #f472b6; border-radius: 10px; }
             .no-scrollbar::-webkit-scrollbar { display: none; }
             .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
           `}} />
@@ -618,6 +668,3 @@
   </script>
 </body>
 </html>
-
-
-
