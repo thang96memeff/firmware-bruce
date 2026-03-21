@@ -440,7 +440,7 @@
           await esploader.writeFlash({
             fileArray: [{ data: firmwareString, address: 0x0 }],
             flashSize: 'keep',
-            eraseAll: true, // KÍCH HOẠT XÓA CHUNG VỚI NẠP
+            eraseAll: false, // KÍCH HOẠT XÓA CHUNG VỚI NẠP
             compress: true,
             reportProgress: (idx, written, total) => setProgress(Math.round((written/total)*100))
           });
