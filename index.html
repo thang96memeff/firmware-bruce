@@ -7,9 +7,7 @@
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -24,9 +22,6 @@
   <script type="text/babel">
     const { useState, useEffect, useRef } = React;
 
-    // ==========================================
-    // TỪ ĐIỂN NGÔN NGỮ ĐẦY ĐỦ
-    // ==========================================
     const TRANSLATIONS = {
       en: {
         title: "DUSCU FLASHER",
@@ -86,7 +81,8 @@
         erasing: "Erasing flash memory... Please wait!",
         erased: "Flash memory erased!",
         startingFlash: "Starting firmware write...",
-        resetting: "Forcing DTR/RTS Bootloader reset..."
+        resetting: "Connecting and syncing to Bootloader...",
+        monitorError: "Monitor connection error"
       },
       vi: {
         title: "DUSCU FLASHER",
@@ -129,13 +125,13 @@
         cancel: "Hủy",
         unlock: "Mở khóa",
         loadingLibrary: "Đang tải thư viện...",
-        portAuthorized: "Đã cấp quyền cổng. Sẵn sàng nạp.",
+        portAuthorized: "Đã cấp quyền cổng.",
         connectError: "Lỗi kết nối",
         monitorStopped: "Đã dừng Serial Monitor.",
         monitorStarted: "Đã bật Serial Monitor.",
         errNoFile: "Lỗi: Chưa có file Firmware.",
-        prepareFlash: "Chuẩn bị quá trình nạp...",
-        chipDetected: "Nhận diện thành công chip",
+        prepareFlash: "Chuẩn bị tải file...",
+        chipDetected: "Nhận diện chip thành công. Đã sẵn sàng nạp!",
         flashSuccess: "NẠP THÀNH CÔNG!",
         flashFailed: "Nạp thất bại",
         disconnected: "Đã ngắt kết nối.",
@@ -146,7 +142,8 @@
         erasing: "Đang xóa toàn bộ Flash... Vui lòng đợi!",
         erased: "Đã xóa sạch bộ nhớ!",
         startingFlash: "Bắt đầu ghi Firmware mới...",
-        resetting: "Đang ép xung Reset (DTR/RTS) vào Bootloader..."
+        resetting: "Đang kết nối và ép mạch vào chế độ Bootloader...",
+        monitorError: "Lỗi mở Serial Monitor"
       }
     };
 
@@ -156,11 +153,15 @@
     const DONATE_QR_STRING = "00020101021138570010A000000727012700069704220113VQRQADXDU20070208QRIBFTTA53037045802VN62150107NPS6869080063042FC8";
 
     const INITIAL_BOARDS = [
-      { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: 'Bruce-CYD-2432S028.bin' },,
+      { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: 'Bruce-CYD-2432S028.bin' },
+      { id: 'CYD-2USB', name: 'CYD-2USB', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432W328C', name: 'CYD-2432W328C', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432W328C_2', name: 'CYD-2432W328C_2', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432W328R-or-S024R', name: 'CYD-2432W328R-or-S024R', chip: 'ESP32', url: '' },
       { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32', url: 'Bruce-lilygo-t-display-ttgo.bin' },
       { id: 'lilygo-t-embed-cc1101', name: 'Lilygo T-Embed CC1101', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-embed-cc1101.bin' },
       { id: 'lilygo-t-display-s3', name: 'Lyligo-T-Display-S3', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-display-s3.bin' },
-      { id: 'm5stack-cplus1_1', name: 'M5StickC Plus 1.1', chip: 'ESP32', url: 'Bruce-m5stack-cplus1_1.bin' },
+      { id: 'm5stack-cplus1_1', name: 'M5StickC Plus 1.1', chip: 'ESP32', url: '' },
       { id: 'm5stack-cplus2', name: 'M5StickC Plus 2', chip: 'ESP32', url: '' },
       { id: 'xingzhi-cube-s3', name: 'Xingzhi-Cube', chip: 'ESP32-S3', url: 'Bruce-xingzhi-cube-s3.bin' },
       { id: 'Launcher-xingzhi-cube-s3', name: 'Launcher-Xingzhi-Cube', chip: 'ESP32-S3', url: 'Launcher-xingzhi-cube-s3.bin' },
@@ -182,7 +183,6 @@
       const selectedBoard = boards.find(b => b.id === selectedBoardId);
 
       const [localFile, setLocalFile] = useState(null);
-      // Gán thẳng URL mặc định là 2 ảnh trên Github của bạn
       const [bgUrl, setBgUrl] = useState(GITHUB_BASE + "IMG_3027.jpeg");
       const [logoUrl, setLogoUrl] = useState(GITHUB_BASE + "IMG_4498.jpeg");
 
@@ -208,19 +208,16 @@
       const transportRef = useRef(null);
       const readerRef = useRef(null);
       const isReadingRef = useRef(false);
+      const esploaderRef = useRef(null); // Lưu trữ ESPLoader sau khi connect
 
       useEffect(() => {
         if (!('serial' in navigator)) setIsSerialSupported(false);
 
-        // Fetch IP Geolocation to auto-set language
         fetch('https://get.geojs.io/v1/ip/country.json')
           .then(res => res.json())
           .then(data => {
-            if (data.country === 'VN') {
-              setLang('vi');
-            } else {
-              setLang('en');
-            }
+            if (data.country === 'VN') setLang('vi');
+            else setLang('en');
           })
           .catch(error => console.log('Không check được IP, dùng mặc định:', error));
 
@@ -276,22 +273,6 @@
         }
       };
 
-      const handleConnect = async () => {
-        if (!isSerialSupported) return;
-        try {
-          if (!window.esptooljs) {
-            addSysLog(t("loadingLibrary"), "info");
-            window.esptooljs = await window.esptoolPromise;
-          }
-          const selectedPort = await navigator.serial.requestPort();
-          portRef.current = selectedPort;
-          setIsConnected(true);
-          addSysLog(t("portAuthorized"), "success");
-        } catch (err) {
-          addSysLog(`${t("connectError")}: ${err.message}`, "error");
-        }
-      };
-
       const stopMonitor = async () => {
         if (readerRef.current) await readerRef.current.cancel().catch(()=>{});
         while (isReadingRef.current) await new Promise(r => setTimeout(r, 50));
@@ -302,16 +283,104 @@
         setIsMonitorRunning(false);
       };
 
+      // =========================================================
+      // NÚT "1. CONNECT USB" -> VÀO BOOTLOADER VÀ NHẬN DIỆN CHIP
+      // =========================================================
+      const handleConnect = async () => {
+        if (!isSerialSupported) return;
+        try {
+          if (!window.esptooljs) {
+            addSysLog(t("loadingLibrary"), "info");
+            window.esptooljs = await window.esptoolPromise;
+          }
+          
+          const selectedPort = await navigator.serial.requestPort();
+          portRef.current = selectedPort;
+          
+          addSysLog(t("resetting"), "info");
+          const transport = new window.esptooljs.Transport(selectedPort);
+          transportRef.current = transport;
+          
+          await transport.connect(115200);
+          
+          // Vũ điệu DTR/RTS ép Bootloader
+          await transport.setDTR(false);
+          await transport.setRTS(false);
+          await new Promise(r => setTimeout(r, 100));
+          await transport.setDTR(false);
+          await transport.setRTS(true); 
+          await new Promise(r => setTimeout(r, 100)); 
+          await transport.setDTR(true); 
+          await transport.setRTS(false); 
+          await new Promise(r => setTimeout(r, 50));
+          await transport.setDTR(false);
+          await transport.setRTS(false);
+          await new Promise(r => setTimeout(r, 500)); 
+
+          // Hack chống mở cổng 2 lần
+          const originalTransportConnect = transport.connect.bind(transport);
+          transport.connect = async (baud) => {
+            if (portRef.current && portRef.current.readable) return;
+            await originalTransportConnect(baud);
+          };
+
+          const esploader = new window.esptooljs.ESPLoader({
+            transport: transport,
+            baudrate: parseInt(baudRate),
+            romBaudrate: 115200,
+            terminal: { clean: () => {}, writeLine: (msg) => addSysLog(msg), write: (msg) => addSysLog(msg) }
+          });
+
+          try {
+            await esploader.main();
+          } finally {
+            transport.connect = originalTransportConnect;
+          }
+
+          // Lưu esploader lại để Nút Flash dùng
+          esploaderRef.current = esploader;
+          setIsConnected(true);
+          addSysLog(`${t("chipDetected")}`, "success");
+
+        } catch (err) {
+          addSysLog(`${t("connectError")}: ${err.message}`, "error");
+          if (transportRef.current) await transportRef.current.disconnect().catch(()=>{});
+          portRef.current = null;
+        }
+      };
+
+      // =========================================================
+      // NÚT "START MONITOR" -> KẾT NỐI BÌNH THƯỜNG (APP MODE)
+      // =========================================================
       const toggleSerialMonitor = async () => {
         if (isMonitorRunning) {
           await stopMonitor();
           addSysLog(t("monitorStopped"), "warning");
         } else {
           try {
-            if (!portRef.current) return;
-            const transport = new window.esptooljs.Transport(portRef.current);
+            if (!window.esptooljs) window.esptooljs = await window.esptoolPromise;
+            
+            let port = portRef.current;
+            // Nếu người dùng ấn thẳng vào Start Monitor mà chưa Connect, ta xin quyền mở Port
+            if (!port) {
+               port = await navigator.serial.requestPort();
+               portRef.current = port;
+            }
+            
+            const transport = new window.esptooljs.Transport(port);
             transportRef.current = transport;
+            
+            // Kết nối baudrate đọc log thông thường
             await transport.connect(115200); 
+            
+            // Bắn tín hiệu Reset cứng để đảm bảo mạch khởi động vào App (thoát khỏi Bootloader nếu đang bị kẹt)
+            await transport.setDTR(false);
+            await transport.setRTS(true);
+            await new Promise(r => setTimeout(r, 100));
+            await transport.setDTR(false);
+            await transport.setRTS(false);
+            await new Promise(r => setTimeout(r, 500)); 
+
             setIsMonitorRunning(true);
             setLogTab('device');
             addSysLog(t("monitorStarted"), "success");
@@ -325,19 +394,24 @@
       const handleDisconnect = async () => {
         await stopMonitor();
         portRef.current = null;
+        esploaderRef.current = null;
         setIsConnected(false);
         addSysLog(t("disconnected"), "warning");
       };
 
+      // =========================================================
+      // NÚT "2. FLASH FIRMWARE" -> CHỈ TẢI FILE VÀ NẠP
+      // =========================================================
       const handleFlash = async () => {
         if (!selectedBoard?.url && !localFile) return addSysLog(t("errNoFile"), "error");
+        if (!esploaderRef.current) return addSysLog("Lỗi: Bạn chưa Connect USB", "error");
+
         setIsFlashing(true);
         setProgress(0);
         setLogTab('system'); 
 
         try {
           await stopMonitor();
-          await new Promise(r => setTimeout(r, 500));
           addSysLog(t("prepareFlash"), 'info');
 
           let firmwareString;
@@ -352,7 +426,7 @@
              addSysLog(t("downloadingFw"), "warning");
              const fetchUrl = (selectedBoard.url.startsWith('http')) ? selectedBoard.url : GITHUB_BASE + selectedBoard.url + '?t=' + new Date().getTime();
              const resp = await fetch(fetchUrl);
-             if (!resp.ok) throw new Error(t("notFoundOnServer"));
+             if (!resp.ok) throw new Error("File not found on Server");
              const blob = await resp.blob();
              const reader = new FileReader();
              firmwareString = await new Promise((res, rej) => {
@@ -362,46 +436,12 @@
              });
           }
 
-          addSysLog(t("syncing"), "warning");
-          const transport = new window.esptooljs.Transport(portRef.current);
-          
-          // Kết nối baudrate thấp
-          await transport.connect(115200);
-          
-          // Vũ điệu ép xung DTR/RTS
-          addSysLog(t("resetting"), "info");
-          await transport.setDTR(false);
-          await transport.setRTS(false);
-          await new Promise(r => setTimeout(r, 100));
-          
-          await transport.setDTR(false);
-          await transport.setRTS(true); 
-          await new Promise(r => setTimeout(r, 100)); 
-          
-          await transport.setDTR(true); 
-          await transport.setRTS(false); 
-          await new Promise(r => setTimeout(r, 50));
-          
-          await transport.setDTR(false);
-          await transport.setRTS(false);
-          await new Promise(r => setTimeout(r, 500)); 
+          const esploader = esploaderRef.current;
 
-          const esploader = new window.esptooljs.ESPLoader({
-            transport: transport,
-            baudrate: parseInt(baudRate),
-            romBaudrate: 115200,
-            terminal: { clean: () => {}, writeLine: (msg) => addSysLog(msg), write: (msg) => addSysLog(msg) }
-          });
-
-          await esploader.main();
-          addSysLog(`${t("chipDetected")}`, "success");
-
-          // Xóa Flash trước khi nạp
           addSysLog(t("erasing"), "warning");
           await esploader.eraseFlash();
           addSysLog(t("erased"), "success");
 
-          // Tiến hành nạp
           addSysLog(t("startingFlash"), "info");
           await esploader.writeFlash({
             fileArray: [{ data: firmwareString, address: 0x0 }],
@@ -414,13 +454,19 @@
           addSysLog(t("flashSuccess"), "success");
           
           // Khởi động lại mạch
-          await transport.setDTR(false);
-          await transport.setRTS(true);
-          await new Promise(r => setTimeout(r, 100));
-          await transport.setDTR(false);
-          await transport.setRTS(false);
-
-          await transport.disconnect().catch(()=>{});
+          const transport = transportRef.current;
+          if (transport) {
+              await transport.setDTR(false);
+              await transport.setRTS(true);
+              await new Promise(r => setTimeout(r, 100));
+              await transport.setDTR(false);
+              await transport.setRTS(false);
+              await transport.disconnect().catch(()=>{});
+          }
+          
+          setIsConnected(false);
+          portRef.current = null;
+          esploaderRef.current = null;
         } catch (error) {
           addSysLog(`${t("flashFailed")}: ${error.message}`, "error");
         } finally {
@@ -556,7 +602,6 @@
 
           <div className="max-w-6xl mx-auto space-y-6 relative z-10 p-4 md:p-8">
             
-            {/* Mobile Support Warning Banner */}
             {!isSerialSupported && (
               <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-2xl flex items-center gap-3 animate-pulse">
                 <i className="fa-solid fa-mobile-screen text-amber-500"></i>
@@ -567,7 +612,6 @@
               </div>
             )}
 
-            {/* Header */}
             <header className="flex flex-col md:flex-row items-start sm:items-center justify-between gap-6 border-b border-pink-400/20 pb-8">
               <div className="flex items-center gap-5">
                 <div className="w-12 h-12 sm:w-16 sm:h-16 bg-pink-500/20 rounded-2xl flex items-center justify-center shadow-[0_0_15px_rgba(236,72,153,0.2)] border border-pink-400/30 overflow-hidden shrink-0">
@@ -597,7 +641,7 @@
                   </div>
                   <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                     {logTab === 'device' && (
-                      <button onClick={toggleSerialMonitor} disabled={!isConnected || isFlashing} className={`flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-bold rounded-lg transition-all ${isMonitorRunning ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'} disabled:opacity-50`}>
+                      <button onClick={toggleSerialMonitor} disabled={isFlashing} className={`flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-bold rounded-lg transition-all ${isMonitorRunning ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'} disabled:opacity-50`}>
                         <i className={`fa-solid ${isMonitorRunning ? 'fa-stop' : 'fa-play'}`}></i><span className="hidden sm:inline ml-1">{isMonitorRunning ? t('stopMonitor') : t('startMonitor')}</span>
                       </button>
                     )}
@@ -620,7 +664,6 @@
             </div>
           </div>
 
-          {/* Modal Donate */}
           {showDonateModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
               <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2.5rem] p-6 sm:p-8 text-center shadow-2xl relative">
@@ -634,7 +677,6 @@
             </div>
           )}
 
-          {/* Modal Admin Login */}
           {showAdminModal && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
               <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
