@@ -87,7 +87,8 @@
         erased: "Flash memory erased!",
         startingFlash: "Starting firmware write...",
         resetting: "Connecting and syncing to Bootloader...",
-        monitorError: "Monitor connection error"
+        monitorError: "Monitor connection error",
+        bootHint: "Hint: Hold the BOOT button, plug in the board, and try connecting again :))))"
       },
       vi: {
         title: "DUSCU FLASHER",
@@ -148,7 +149,8 @@
         erased: "Đã xóa sạch bộ nhớ!",
         startingFlash: "Bắt đầu ghi Firmware mới...",
         resetting: "Đang kết nối và tự động ép vào Bootloader...",
-        monitorError: "Lỗi mở Serial Monitor"
+        monitorError: "Lỗi mở Serial Monitor",
+        bootHint: "Mẹo: ấn giữ nút BOOT sau đó cắm mạch và kết nối lại là đc :))))"
       }
     };
 
@@ -289,6 +291,14 @@
         setIsMonitorRunning(false);
       };
 
+      // Bộ lọc log để ẩn đi 2 dòng phiền toái của esptool-js
+      const filterEsptoolLog = (msg) => {
+        if (typeof msg !== 'string') return;
+        if (msg.includes('esptool.js')) return;
+        if (msg.includes('Serial port WebSerial')) return;
+        addSysLog(msg);
+      };
+
       // =========================================================
       // NÚT "1. CONNECT USB" -> VÀO BOOTLOADER BẰNG BẢN 0.5.6
       // =========================================================
@@ -316,10 +326,10 @@
             transport: transport,
             baudrate: parseInt(baudRate),
             romBaudrate: 115200,
-            terminal: { clean: () => {}, writeLine: (msg) => addSysLog(msg), write: (msg) => addSysLog(msg) }
+            // Thay vì addSysLog trực tiếp, đẩy qua hàm lọc filterEsptoolLog
+            terminal: { clean: () => {}, writeLine: filterEsptoolLog, write: filterEsptoolLog }
           });
 
-          // Bản 0.5.6 sẽ tự động mở cổng và tự động điều khiển DTR/RTS cực chuẩn
           await esploader.main();
 
           esploaderRef.current = esploader;
@@ -328,6 +338,9 @@
 
         } catch (err) {
           addSysLog(`${t("connectError")}: ${err.message}`, "error");
+          // Hiển thị thêm mẹo khắc phục nếu kết nối xịt
+          addSysLog(t("bootHint"), "warning");
+
           if (transportRef.current) await transportRef.current.disconnect().catch(()=>{});
           portRef.current = null;
           esploaderRef.current = null;
