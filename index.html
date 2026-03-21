@@ -85,7 +85,7 @@
         baudrateTooltip: "Change Baudrate only when disconnected",
         erasing: "Erasing flash memory... Please wait!",
         erased: "Flash memory erased!",
-        startingFlash: "Starting firmware write...",
+        startingFlash: "Writing Firmware (MD5 verify enabled)...",
         resetting: "Connecting and syncing to Bootloader...",
         monitorError: "Monitor connection error",
         bootHint: "Hint: Hold the BOOT button, plug in the board, and try connecting again :))))"
@@ -183,7 +183,7 @@
 
       const [isSerialSupported, setIsSerialSupported] = useState(true);
       const [isConnected, setIsConnected] = useState(false);
-      const [baudRate, setBaudRate] = useState(921600); // Mặc định 921600 chạy tẹt ga
+      const [baudRate, setBaudRate] = useState(921600); // Tốc độ bàn thờ vẫn mượt
       
       const [boards, setBoards] = useState(INITIAL_BOARDS);
       const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
@@ -391,7 +391,7 @@
       };
 
       // =========================================================
-      // NÚT "2. FLASH FIRMWARE" (FIX ĐỌC FILE ARRAYBUFFER VÀ THÊM MD5)
+      // NÚT "2. FLASH FIRMWARE" -> CHUẨN BINARY STRING + MD5
       // =========================================================
       const handleFlash = async () => {
         if (!selectedBoard?.url && !localFile) return addSysLog(t("errNoFile"), "error");
@@ -405,14 +405,14 @@
           await stopMonitor();
           addSysLog(t("prepareFlash"), 'info');
 
-          // ĐỌC FILE THÀNH MẢNG BYTE (UINT8ARRAY)
-          let firmwareData;
+          // ĐỌC LẠI DƯỚI DẠNG BINARY STRING CHO KHỎI LỖI CHARCODEAT
+          let firmwareString;
           if (localFile) {
              const reader = new FileReader();
-             firmwareData = await new Promise((res, rej) => {
-                 reader.onload = () => res(new Uint8Array(reader.result));
+             firmwareString = await new Promise((res, rej) => {
+                 reader.onload = () => res(reader.result);
                  reader.onerror = rej;
-                 reader.readAsArrayBuffer(localFile);
+                 reader.readAsBinaryString(localFile);
              });
           } else {
              addSysLog(t("downloadingFw"), "warning");
@@ -421,10 +421,10 @@
              if (!resp.ok) throw new Error("File not found on Server");
              const blob = await resp.blob();
              const reader = new FileReader();
-             firmwareData = await new Promise((res, rej) => {
-                 reader.onload = () => res(new Uint8Array(reader.result));
+             firmwareString = await new Promise((res, rej) => {
+                 reader.onload = () => res(reader.result);
                  reader.onerror = rej;
-                 reader.readAsArrayBuffer(blob);
+                 reader.readAsBinaryString(blob);
              });
           }
 
@@ -433,15 +433,15 @@
           addSysLog(t("startingFlash"), "info");
           
           await esploader.writeFlash({
-            fileArray: [{ data: firmwareData, address: 0x0 }], // Đẩy mảng Byte chuẩn vào
+            fileArray: [{ data: firmwareString, address: 0x0 }], // Truyền chuỗi nhị phân chuẩn
             flashSize: 'keep',
-            eraseAll: false, // Để false chống timeout, esptool tự xóa vùng nhớ cần thiết
+            eraseAll: false, // TUYỆT ĐỐI KHÔNG ĐỂ TRUE NẾU KHÔNG MUỐN TIMEOUT
             compress: true,
             reportProgress: (idx, written, total) => setProgress(Math.round((written/total)*100)),
-            // HÀM TÍNH MD5 HASH: Giúp xác thực dữ liệu gửi đi, chống lỗi No serial data received
+            // Hàm MD5 thông minh
             calculateMD5Hash: (image) => {
-                const latin1String = Array.from(image, (byte)=>String.fromCharCode(byte)).join("");
-                return CryptoJS.MD5(CryptoJS.enc.Latin1.parse(latin1String)).toString();
+                const str = typeof image === 'string' ? image : Array.from(image, (byte) => String.fromCharCode(byte)).join("");
+                return CryptoJS.MD5(CryptoJS.enc.Latin1.parse(str)).toString();
             }
           });
 
