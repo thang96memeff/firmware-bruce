@@ -183,7 +183,7 @@
 
       const [isSerialSupported, setIsSerialSupported] = useState(true);
       const [isConnected, setIsConnected] = useState(false);
-      const [baudRate, setBaudRate] = useState(921600); // Tốc độ bàn thờ vẫn mượt
+      const [baudRate, setBaudRate] = useState(921600);
       
       const [boards, setBoards] = useState(INITIAL_BOARDS);
       const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
@@ -391,7 +391,7 @@
       };
 
       // =========================================================
-      // NÚT "2. FLASH FIRMWARE" -> CHUẨN BINARY STRING + MD5
+      // NÚT "2. FLASH FIRMWARE" 
       // =========================================================
       const handleFlash = async () => {
         if (!selectedBoard?.url && !localFile) return addSysLog(t("errNoFile"), "error");
@@ -405,27 +405,23 @@
           await stopMonitor();
           addSysLog(t("prepareFlash"), 'info');
 
-          // ĐỌC LẠI DƯỚI DẠNG BINARY STRING CHO KHỎI LỖI CHARCODEAT
-          let firmwareString;
+          // CÁCH XỬ LÝ FILE SIÊU MƯỢT VÀ CHUẨN XÁC DƯỚI DẠNG MẢNG RAW BYTES
+          let firmwareData;
           if (localFile) {
              const reader = new FileReader();
-             firmwareString = await new Promise((res, rej) => {
-                 reader.onload = () => res(reader.result);
+             firmwareData = await new Promise((res, rej) => {
+                 reader.onload = () => res(new Uint8Array(reader.result));
                  reader.onerror = rej;
-                 reader.readAsBinaryString(localFile);
+                 // Dùng readAsArrayBuffer để bảo toàn 100% dữ liệu nhị phân nguyên gốc
+                 reader.readAsArrayBuffer(localFile);
              });
           } else {
              addSysLog(t("downloadingFw"), "warning");
              const fetchUrl = (selectedBoard.url.startsWith('http')) ? selectedBoard.url : GITHUB_BASE + selectedBoard.url + '?t=' + new Date().getTime();
              const resp = await fetch(fetchUrl);
              if (!resp.ok) throw new Error("File not found on Server");
-             const blob = await resp.blob();
-             const reader = new FileReader();
-             firmwareString = await new Promise((res, rej) => {
-                 reader.onload = () => res(reader.result);
-                 reader.onerror = rej;
-                 reader.readAsBinaryString(blob);
-             });
+             const arrayBuf = await resp.arrayBuffer();
+             firmwareData = new Uint8Array(arrayBuf);
           }
 
           const esploader = esploaderRef.current;
@@ -433,15 +429,20 @@
           addSysLog(t("startingFlash"), "info");
           
           await esploader.writeFlash({
-            fileArray: [{ data: firmwareString, address: 0x0 }], // Truyền chuỗi nhị phân chuẩn
+            fileArray: [{ data: firmwareData, address: 0x0 }], 
             flashSize: 'keep',
-            eraseAll: false, // TUYỆT ĐỐI KHÔNG ĐỂ TRUE NẾU KHÔNG MUỐN TIMEOUT
+            eraseAll: false, 
             compress: true,
             reportProgress: (idx, written, total) => setProgress(Math.round((written/total)*100)),
-            // Hàm MD5 thông minh
+            // THUẬT TOÁN TÍNH MD5 MỚI: BỎ QUA HOÀN TOÀN STRING! 
+            // Dịch bit siêu tốc (Bitwise Shift) thẳng từ Uint8Array sang cấu trúc WordArray của CryptoJS.
             calculateMD5Hash: (image) => {
-                const str = typeof image === 'string' ? image : Array.from(image, (byte) => String.fromCharCode(byte)).join("");
-                return CryptoJS.MD5(CryptoJS.enc.Latin1.parse(str)).toString();
+                const words = [];
+                for (let i = 0; i < image.length; i++) {
+                    words[i >>> 2] |= (image[i] & 0xff) << (24 - (i % 4) * 8);
+                }
+                const wordArray = CryptoJS.lib.WordArray.create(words, image.length);
+                return CryptoJS.MD5(wordArray).toString();
             }
           });
 
