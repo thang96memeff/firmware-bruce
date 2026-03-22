@@ -1,620 +1,623 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DUSCU FLASHER - Web Installer</title>
-  
-  <!-- CSS & UI Libraries -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- CryptoJS -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DUSCU FLASHER - Web Installer</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 
-  <!-- React & Babel Standalone -->
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- KỸ THUẬT TẢI ESPTOOL -->
-  <script type="module">
-    window.esptoolPromise = import('https://cdn.jsdelivr.net/npm/esptool-js@0.4.4/+esm');
-  </script>
+  <script type="module">
+    window.esptoolPromise = import('https://cdn.jsdelivr.net/npm/esptool-js@0.5.6/+esm');
+  </script>
 </head>
 <body class="bg-slate-950 m-0 p-0 overflow-x-hidden text-slate-300">
-  <div id="root"></div>
+  <div id="root"></div>
 
-  <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
 
-    // ==========================================
-    // TỪ ĐIỂN NGÔN NGỮ ĐẦY ĐỦ
-    // ==========================================
-    const TRANSLATIONS = {
-      en: {
-        title: "DUSCU FLASHER",
-        subtitle: "1-Click Bruce Firmware Installer",
-        donate: "Donate",
-        selectDevice: "Select device to flash",
-        boardType: "Board Type",
-        fwStatus: "Firmware Status",
-        readyLocal: "Ready (Local file)",
-        readyOnline: "Ready (Online)",
-        notConfigured: "Not configured",
-        orChooseLocal: "Or choose local .bin file:",
-        connectUsb: "1. Connect USB",
-        disconnect: "Disconnect",
-        flash: "2. FLASH FIRMWARE",
-        flashing: "FLASHING...",
-        sysLogsTab: "System Logs",
-        devLogsTab: "Serial Monitor",
-        clearLogs: "Clear",
-        waitingDevice: "Waiting for connection...",
-        startMonitor: "Start Monitor",
-        stopMonitor: "Stop Monitor",
-        adminArea: "Admin Area",
-        saveConfig: "Save Config",
-        fwLink: "Firmware Link (.bin)",
-        uiConfig: "IMG_3027.jpeg",
-        adminGuide: "Guide: Paste direct link to merged .bin firmware.",
-        logoConfig: "IMG_4498.jpeg",
-        bgConfig: "Background Configuration",
-        browserNotSupported: "Flash not supported on mobile",
-        browserNotSupportedDesc: "Web Serial API is only available on Desktop Chrome/Edge. You can still view the UI and configs.",
-        donateTitle: "Support the Creator",
-        donateDesc: "If you like this tool, buy me a coffee. Thank you!",
-        copied: "Copied!",
-        copyQr: "Copy QR string",
-        adminConfirm: "Admin Confirmation",
-        adminDesc: "Enter password to configure Firmware & UI.",
-        password: "Password...",
-        wrongPassword: "Incorrect password!",
-        cancel: "Cancel",
-        unlock: "Unlock",
-        loadingLibrary: "Loading Espressif library...",
-        portAuthorized: "Port authorized. Ready to flash.",
-        connectError: "Connection error",
-        monitorStopped: "Serial Monitor stopped.",
-        monitorStarted: "Serial Monitor started.",
-        errNoFile: "Error: No Firmware file.",
-        prepareFlash: "Preparing to flash...",
-        chipDetected: "Chip detected successfully",
-        flashSuccess: "FLASH SUCCESSFUL!",
-        flashFailed: "Flash failed",
-        disconnected: "Disconnected.",
-        readingFile: "Reading file",
-        downloadingFw: "Downloading Firmware...",
-        syncing: "Syncing...",
-        baudrateTooltip: "Change Baudrate only when disconnected"
-      },
-      vi: {
-        title: "DUSCU FLASHER",
-        subtitle: "Trình cài đặt Bruce Firmware 1-Click",
-        donate: "Ủng hộ",
-        selectDevice: "Chọn thiết bị cần nạp",
-        boardType: "Loại Bo Mạch",
-        fwStatus: "Trạng thái Firmware",
-        readyLocal: "Sẵn sàng (File máy)",
-        readyOnline: "Sẵn sàng (Trực tuyến)",
-        notConfigured: "Chưa cấu hình",
-        orChooseLocal: "Chọn File .bin từ máy tính:",
-        connectUsb: "1. Kết nối USB",
-        disconnect: "Ngắt kết nối",
-        flash: "2. NẠP FIRMWARE",
-        flashing: "ĐANG NẠP...",
-        sysLogsTab: "Log Hệ Thống",
-        devLogsTab: "Serial Monitor",
-        clearLogs: "Xóa",
-        waitingDevice: "Đang đợi kết nối...",
-        startMonitor: "Mở Monitor",
-        stopMonitor: "Dừng Monitor",
-        adminArea: "Khu vực Quản trị",
-        saveConfig: "Lưu thiết lập",
-        fwLink: "Link Firmware (.bin)",
-        uiConfig: "Giao diện",
-        adminGuide: "Hướng dẫn: Dán đường dẫn trực tiếp tới tệp firmware (.bin).",
-        logoConfig: "Cấu hình Logo",
-        bgConfig: "Cấu hình Hình Nền",
-        browserNotSupported: "Mobile không hỗ trợ nạp",
-        browserNotSupportedDesc: "Web Serial chỉ hỗ trợ trên Chrome/Edge máy tính. Bạn vẫn có thể xem giao diện và cấu hình.",
-        donateTitle: "Ủng hộ tác giả",
-        donateDesc: "Nếu bạn yêu thích công cụ này, hãy mời mình một ly cà phê nhé. Cảm ơn!",
-        copied: "Đã sao chép!",
-        copyQr: "Copy chuỗi QR ngân hàng",
-        adminConfirm: "Xác nhận quyền Quản trị",
-        adminDesc: "Nhập mật khẩu để cấu hình Firmware & Giao diện.",
-        password: "Mật khẩu...",
-        wrongPassword: "Mật khẩu không chính xác!",
-        cancel: "Hủy",
-        unlock: "Mở khóa",
-        loadingLibrary: "Đang tải thư viện...",
-        portAuthorized: "Đã cấp quyền cổng. Sẵn sàng nạp.",
-        connectError: "Lỗi kết nối",
-        monitorStopped: "Đã dừng Serial Monitor.",
-        monitorStarted: "Đã bật Serial Monitor.",
-        errNoFile: "Lỗi: Chưa có file Firmware.",
-        prepareFlash: "Chuẩn bị quá trình nạp...",
-        chipDetected: "Nhận diện thành công chip",
-        flashSuccess: "NẠP THÀNH CÔNG!",
-        flashFailed: "Nạp thất bại",
-        disconnected: "Đã ngắt kết nối.",
-        readingFile: "Đang đọc file",
-        downloadingFw: "Đang tải Firmware...",
-        syncing: "Đồng bộ hóa...",
-        baudrateTooltip: "Chỉ đổi khi đã Ngắt Kết Nối"
-      }
-    };
+    // ==========================================
+    // TỪ ĐIỂN NGÔN NGỮ
+    // ==========================================
+    const TRANSLATIONS = {
+      en: {
+        title: "DUSCU FLASHER",
+        subtitle: "1-Click Bruce Firmware Installer",
+        donate: "Donate",
+        selectDevice: "Select device to flash",
+        boardType: "Board Type",
+        fwStatus: "Firmware Status",
+        readyLocal: "Ready (Local file)",
+        readyOnline: "Ready (Online)",
+        notConfigured: "Not configured",
+        orChooseLocal: "Or choose local .bin file:",
+        connectUsb: "1. Connect USB",
+        disconnect: "Disconnect",
+        flash: "2. FLASH FIRMWARE",
+        flashing: "FLASHING...",
+        sysLogsTab: "System Logs",
+        devLogsTab: "Serial Monitor",
+        clearLogs: "Clear",
+        waitingDevice: "Waiting for connection...",
+        startMonitor: "Start Monitor",
+        stopMonitor: "Stop Monitor",
+        adminArea: "Admin Area",
+        saveConfig: "Save Config",
+        fwLink: "Firmware Link (.bin)",
+        uiConfig: "UI Configuration",
+        adminGuide: "Guide: Paste direct link to merged .bin firmware.",
+        logoConfig: "Logo URL (IMG_4498.jpeg)",
+        bgConfig: "Background URL (IMG_3027.jpeg)",
+        browserNotSupported: "Flash not supported on mobile",
+        browserNotSupportedDesc: "Web Serial API is only available on Desktop Chrome/Edge. You can still view the UI and configs.",
+        donateTitle: "Support the Creator",
+        donateDesc: "If you like this tool, buy me a coffee. Thank you!",
+        copied: "Copied!",
+        copyQr: "Copy QR string",
+        adminConfirm: "Admin Confirmation",
+        adminDesc: "Enter password to configure Firmware & UI.",
+        password: "Password...",
+        wrongPassword: "Incorrect password!",
+        cancel: "Cancel",
+        unlock: "Unlock",
+        loadingLibrary: "Loading Espressif library...",
+        portAuthorized: "Port authorized.",
+        connectError: "Connection error",
+        monitorStopped: "Serial Monitor stopped.",
+        monitorStarted: "Serial Monitor started.",
+        errNoFile: "Error: No Firmware file.",
+        prepareFlash: "Preparing file for flashing...",
+        chipDetected: "Chip detected successfully. Ready to flash!",
+        flashSuccess: "FLASH SUCCESSFUL!",
+        flashFailed: "Flash failed",
+        disconnected: "Disconnected.",
+        downloadingFw: "Downloading Firmware...",
+        syncing: "Syncing...",
+        startingFlash: "Writing Firmware (MD5 verify enabled)...",
+        resetting: "Connecting and syncing to Bootloader...",
+        monitorError: "Monitor connection error",
+        bootHint: "Hint: Hold the BOOT button, plug in the board, and try connecting again :))))"
+      },
+      vi: {
+        title: "DUSCU FLASHER",
+        subtitle: "Trình cài đặt Bruce Firmware 1-Click",
+        donate: "Ủng hộ",
+        selectDevice: "Chọn thiết bị cần nạp",
+        boardType: "Loại Bo Mạch",
+        fwStatus: "Trạng thái Firmware",
+        readyLocal: "Sẵn sàng (File máy)",
+        readyOnline: "Sẵn sàng (Trực tuyến)",
+        notConfigured: "Chưa cấu hình",
+        orChooseLocal: "Chọn File .bin từ máy tính:",
+        connectUsb: "1. Kết nối USB",
+        disconnect: "Ngắt kết nối",
+        flash: "2. NẠP FIRMWARE",
+        flashing: "ĐANG NẠP...",
+        sysLogsTab: "Log Hệ Thống",
+        devLogsTab: "Serial Monitor",
+        clearLogs: "Xóa",
+        waitingDevice: "Đang đợi kết nối...",
+        startMonitor: "Mở Monitor",
+        stopMonitor: "Dừng Monitor",
+        adminArea: "Khu vực Quản trị",
+        saveConfig: "Lưu thiết lập",
+        fwLink: "Link Firmware (.bin)",
+        uiConfig: "Giao diện",
+        adminGuide: "Hướng dẫn: Dán đường dẫn trực tiếp tới tệp firmware (.bin).",
+        logoConfig: "Link Logo (IMG_4498.jpeg)",
+        bgConfig: "Link Hình Nền (IMG_3027.jpeg)",
+        browserNotSupported: "Mobile không hỗ trợ nạp",
+        browserNotSupportedDesc: "Web Serial chỉ hỗ trợ trên Chrome/Edge máy tính. Bạn vẫn có thể xem giao diện và cấu hình.",
+        donateTitle: "Ủng hộ tác giả",
+        donateDesc: "Nếu bạn yêu thích công cụ này, hãy mời mình một ly cà phê nhé. Cảm ơn!",
+        copied: "Đã sao chép!",
+        copyQr: "Copy chuỗi QR ngân hàng",
+        adminConfirm: "Xác nhận quyền Quản trị",
+        adminDesc: "Nhập mật khẩu để cấu hình Firmware & Giao diện.",
+        password: "Mật khẩu...",
+        wrongPassword: "Mật khẩu không chính xác!",
+        cancel: "Hủy",
+        unlock: "Mở khóa",
+        loadingLibrary: "Đang tải thư viện...",
+        portAuthorized: "Đã cấp quyền cổng.",
+        connectError: "Lỗi kết nối",
+        monitorStopped: "Đã dừng Serial Monitor.",
+        monitorStarted: "Đã bật Serial Monitor.",
+        errNoFile: "Lỗi: Chưa có file Firmware.",
+        prepareFlash: "Chuẩn bị tải file...",
+        chipDetected: "Nhận diện chip thành công. Đã sẵn sàng nạp!",
+        flashSuccess: "NẠP THÀNH CÔNG!",
+        flashFailed: "Nạp thất bại",
+        disconnected: "Đã ngắt kết nối.",
+        downloadingFw: "Đang tải Firmware...",
+        syncing: "Đồng bộ hóa...",
+        startingFlash: "Đang tiến hành ghi Firmware...",
+        resetting: "Đang kết nối và tự động ép vào Bootloader...",
+        monitorError: "Lỗi mở Serial Monitor",
+        bootHint: "Mẹo: ấn giữ nút BOOT sau đó cắm mạch và kết nối lại là đc :))))"
+      }
+    };
 
-    const ADMIN_PASSWORD_HASH = "bb84f53ce294e2c3a185586e1414a48e76f85bd594c0879a57ae8f9af8e8a903"; 
-    const GITHUB_BASE = "https://thang96memeff.github.io/firmware-bruce/"; 
-    const GITHUB_REPO_LINK = "https://github.com/thang96memeff/firmware-bruce";
-    const DONATE_QR_STRING = "00020101021138570010A000000727012700069704220113VQRQADXDU20070208QRIBFTTA53037045802VN62150107NPS6869080063042FC8";
+    const ADMIN_PASSWORD_HASH = "bb84f53ce294e2c3a185586e1414a48e76f85bd594c0879a57ae8f9af8e8a903"; 
+    const GITHUB_BASE = "https://thang96memeff.github.io/firmware-bruce/"; 
+    const GITHUB_REPO_LINK = "https://github.com/thang96memeff/firmware-bruce";
+    const DONATE_QR_STRING = "00020101021138570010A000000727012700069704220113VQRQADXDU20070208QRIBFTTA53037045802VN62150107NPS6869080063042FC8";
 
-    const INITIAL_BOARDS = [
-      { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: 'Bruce-CYD-2432S028.bin' },
-      { id: 'CYD-2USB', name: 'CYD-2USB', chip: 'ESP32', url: '' },
-      { id: 'CYD-2432W328C', name: 'CYD-2432W328C', chip: 'ESP32', url: '' },
-      { id: 'CYD-2432W328C_2', name: 'CYD-2432W328C_2', chip: 'ESP32', url: '' },
-      { id: 'CYD-2432W328R-or-S024R', name: 'CYD-2432W328R-or-S024R', chip: 'ESP32', url: '' },
-      { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32', url: 'Bruce-lilygo-t-display-ttgo.bin' },
-      { id: 'lilygo-t-embed-cc1101', name: 'Lilygo T-Embed CC1101', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-embed-cc1101.bin' },
-      { id: 'lilygo-t-display-s3', name: 'Lyligo-T-Display-S3', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-display-s3.bin' },
-      { id: 'm5stack-cplus1_1', name: 'M5StickC Plus 1.1', chip: 'ESP32', url: '' },
-      { id: 'm5stack-cplus2', name: 'M5StickC Plus 2', chip: 'ESP32', url: '' },
-      { id: 'xingzhi-cube-s3', name: 'Xingzhi-Cube', chip: 'ESP32-S3', url: 'Bruce-xingzhi-cube-s3.bin' },
-      { id: 'Launcher-xingzhi-cube-s3', name: 'Launcher-Xingzhi-Cube', chip: 'ESP32-S3', url: 'Launcher-xingzhi-cube-s3.bin' },
-      { id: 'smoochiee-board', name: 'Smoochiee Board', chip: 'ESP32', url: 'Bruce-smoochiee-board.bin' },
-      { id: 'm5stack-cardputer', name: 'M5Stack Cardputer', chip: 'ESP32-S3', url: '' },
-      { id: 'esp32-c5-tft', name: 'ESP32-C5', chip: 'ESP32-C5', url: '' },
-    ];
+    const INITIAL_BOARDS = [
+      { id: 'CYD-2432S028', name: 'CYD-2432S028', chip: 'ESP32', url: 'Bruce-CYD-2432S028.bin' },
+      { id: 'CYD-2USB', name: 'CYD-2USB', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432W328C', name: 'CYD-2432W328C', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432W328C_2', name: 'CYD-2432W328C_2', chip: 'ESP32', url: '' },
+      { id: 'CYD-2432W328R-or-S024R', name: 'CYD-2432W328R-or-S024R', chip: 'ESP32', url: '' },
+      { id: 'lilygo-t-display-ttgo', name: 'Lilygo T-Display TTGO', chip: 'ESP32', url: 'Bruce-lilygo-t-display-ttgo.bin' },
+      { id: 'lilygo-t-embed-cc1101', name: 'Lilygo T-Embed CC1101', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-embed-cc1101.bin' },
+      { id: 'lilygo-t-display-s3', name: 'Lyligo-T-Display-S3', chip: 'ESP32-S3', url: 'Bruce-lilygo-t-display-s3.bin' },
+      { id: 'm5stack-cplus1_1', name: 'M5StickC Plus 1.1', chip: 'ESP32', url: '' },
+      { id: 'm5stack-cplus2', name: 'M5StickC Plus 2', chip: 'ESP32', url: '' },
+      { id: 'xingzhi-cube-s3', name: 'Xingzhi-Cube', chip: 'ESP32-S3', url: 'Bruce-xingzhi-cube-s3.bin' },
+      { id: 'Launcher-xingzhi-cube-s3', name: 'Launcher-Xingzhi-Cube', chip: 'ESP32-S3', url: 'Launcher-xingzhi-cube-s3.bin' },
+      { id: 'smoochiee-board', name: 'Smoochiee Board', chip: 'ESP32', url: 'Bruce-smoochiee-board.bin' },
+      { id: 'm5stack-cardputer', name: 'M5Stack Cardputer', chip: 'ESP32-S3', url: '' },
+      { id: 'esp32-c5-tft', name: 'ESP32-C5', chip: 'ESP32-C5', url: '' },
+    ];
 
-    function App() {
-      const [lang, setLang] = useState('en');
-      const t = (key) => TRANSLATIONS[lang][key] || key;
+    function App() {
+      const [lang, setLang] = useState('en');
+      const t = (key) => TRANSLATIONS[lang][key] || key;
 
-      const [isSerialSupported, setIsSerialSupported] = useState(true);
-      const [isConnected, setIsConnected] = useState(false);
-      const [baudRate, setBaudRate] = useState(921600); 
-      
-      const [boards, setBoards] = useState(INITIAL_BOARDS);
-      const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
-      const selectedBoard = boards.find(b => b.id === selectedBoardId);
+      const [isSerialSupported, setIsSerialSupported] = useState(true);
+      const [isConnected, setIsConnected] = useState(false);
+      const [baudRate, setBaudRate] = useState(921600);
+      
+      const [boards, setBoards] = useState(INITIAL_BOARDS);
+      const [selectedBoardId, setSelectedBoardId] = useState(INITIAL_BOARDS[0].id);
+      const selectedBoard = boards.find(b => b.id === selectedBoardId);
 
-      const [localFile, setLocalFile] = useState(null);
-      const [bgUrl, setBgUrl] = useState("");
-      const [logoUrl, setLogoUrl] = useState("");
+      const [localFile, setLocalFile] = useState(null);
+      const [bgUrl, setBgUrl] = useState(GITHUB_BASE + "IMG_3027.jpeg");
+      const [logoUrl, setLogoUrl] = useState(GITHUB_BASE + "IMG_4498.jpeg");
 
-      const [isAdmin, setIsAdmin] = useState(false);
-      const [showAdminModal, setShowAdminModal] = useState(false);
-      const [adminInput, setAdminInput] = useState("");
-      const [adminTab, setAdminTab] = useState('firmware');
-      const [loginError, setLoginError] = useState(false);
+      const [isAdmin, setIsAdmin] = useState(false);
+      const [showAdminModal, setShowAdminModal] = useState(false);
+      const [adminInput, setAdminInput] = useState("");
+      const [adminTab, setAdminTab] = useState('firmware');
+      const [loginError, setLoginError] = useState(false);
 
-      const [showDonateModal, setShowDonateModal] = useState(false);
-      const [copied, setCopied] = useState(false);
+      const [showDonateModal, setShowDonateModal] = useState(false);
+      const [copied, setCopied] = useState(false);
 
-      const [logTab, setLogTab] = useState('system');
-      const [sysLogs, setSysLogs] = useState([]);
-      const [devLogs, setDevLogs] = useState([]);
+      const [logTab, setLogTab] = useState('system');
+      const [sysLogs, setSysLogs] = useState([]);
+      const [devLogs, setDevLogs] = useState([]);
 
-      const [isMonitorRunning, setIsMonitorRunning] = useState(false);
-      const [isFlashing, setIsFlashing] = useState(false);
-      const [progress, setProgress] = useState(0);
-      
-      const terminalRef = useRef(null);
-      const portRef = useRef(null);
-      const transportRef = useRef(null);
-      const readerRef = useRef(null);
-      const isReadingRef = useRef(false);
+      const [isMonitorRunning, setIsMonitorRunning] = useState(false);
+      const [isFlashing, setIsFlashing] = useState(false);
+      const [progress, setProgress] = useState(0);
+      
+      const terminalRef = useRef(null);
+      const portRef = useRef(null);
+      const transportRef = useRef(null);
+      const readerRef = useRef(null);
+      const isReadingRef = useRef(false);
+      const esploaderRef = useRef(null); 
 
-      useEffect(() => {
-        if (!('serial' in navigator)) setIsSerialSupported(false);
-        const savedConfig = localStorage.getItem('duscu_flasher_config_v40');
-        if (savedConfig) {
-          try {
-            const parsed = JSON.parse(savedConfig);
-            if (parsed.boards) setBoards(parsed.boards);
-            if (parsed.settings) {
-              setBgUrl(parsed.settings.bgUrl || "");
-              setLogoUrl(parsed.settings.logoUrl || "");
-            }
-          } catch(e) {}
-        }
-      }, []);
+      useEffect(() => {
+        if (!('serial' in navigator)) setIsSerialSupported(false);
 
-      useEffect(() => {
-        if (terminalRef.current) {
-          terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-        }
-      }, [sysLogs, devLogs, logTab]);
+        fetch('https://get.geojs.io/v1/ip/country.json')
+          .then(res => res.json())
+          .then(data => {
+            if (data.country === 'VN') setLang('vi');
+            else setLang('en');
+          })
+          .catch(error => console.log('IP check fallback to en'));
 
-      const addSysLog = (msg, type = 'info') => {
-        setSysLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg, type }]);
-      };
-      const addDevLog = (msg) => {
-        setDevLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg, type: 'device' }]);
-      };
+        const savedConfig = localStorage.getItem('duscu_flasher_config_v40');
+        if (savedConfig) {
+          try {
+            const parsed = JSON.parse(savedConfig);
+            if (parsed.boards) setBoards(parsed.boards);
+            if (parsed.settings) {
+              if (parsed.settings.bgUrl) setBgUrl(parsed.settings.bgUrl);
+              if (parsed.settings.logoUrl) setLogoUrl(parsed.settings.logoUrl);
+            }
+          } catch(e) {}
+        }
+      }, []);
 
-      const startReadLoop = async (transport) => {
-        isReadingRef.current = true;
-        const currentPort = transport.device;
-        try {
-          while (currentPort.readable) {
-            const reader = currentPort.readable.getReader();
-            readerRef.current = reader;
-            try {
-              while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                const text = new TextDecoder().decode(value);
-                const lines = text.split('\n');
-                lines.forEach(line => { if (line.trim()) addDevLog(line.trim()); });
-              }
-            } catch (error) { break; } 
-            finally {
-              reader.releaseLock();
-              readerRef.current = null;
-            }
-          }
-        } finally {
-          isReadingRef.current = false;
-        }
-      };
+      useEffect(() => {
+        if (terminalRef.current) {
+          terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+        }
+      }, [sysLogs, devLogs, logTab]);
 
-      const handleConnect = async () => {
-        if (!isSerialSupported) return;
-        try {
-          if (!window.esptooljs) {
-            addSysLog(t("loadingLibrary"), "info");
-            window.esptooljs = await window.esptoolPromise;
-          }
-          const selectedPort = await navigator.serial.requestPort();
-          portRef.current = selectedPort;
-          setIsConnected(true);
-          addSysLog(t("portAuthorized"), "success");
-        } catch (err) {
-          addSysLog(`${t("connectError")}: ${err.message}`, "error");
-        }
-      };
+      const addSysLog = (msg, type = 'info') => {
+        setSysLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg, type }]);
+      };
+      const addDevLog = (msg) => {
+        setDevLogs(prev => [...prev, { time: new Date().toLocaleTimeString(), msg, type: 'device' }]);
+      };
 
-      const stopMonitor = async () => {
-        if (readerRef.current) await readerRef.current.cancel().catch(()=>{});
-        while (isReadingRef.current) await new Promise(r => setTimeout(r, 50));
-        if (transportRef.current) {
-          await transportRef.current.disconnect().catch(()=>{});
-          transportRef.current = null;
-        }
-        setIsMonitorRunning(false);
-      };
+      const startReadLoop = async (transport) => {
+        isReadingRef.current = true;
+        const currentPort = transport.device;
+        try {
+          while (currentPort.readable) {
+            const reader = currentPort.readable.getReader();
+            readerRef.current = reader;
+            try {
+              while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                const text = new TextDecoder().decode(value);
+                const lines = text.split('\n');
+                lines.forEach(line => { if (line.trim()) addDevLog(line.trim()); });
+              }
+            } catch (error) { break; } 
+            finally {
+              reader.releaseLock();
+              readerRef.current = null;
+            }
+          }
+        } finally {
+          isReadingRef.current = false;
+        }
+      };
 
-      const toggleSerialMonitor = async () => {
-        if (isMonitorRunning) {
-          await stopMonitor();
-          addSysLog(t("monitorStopped"), "warning");
-        } else {
-          try {
-            if (!portRef.current) return;
-            const transport = new window.esptooljs.Transport(portRef.current);
-            transportRef.current = transport;
-            await transport.connect(115200); 
-            setIsMonitorRunning(true);
-            setLogTab('device');
-            addSysLog(t("monitorStarted"), "success");
-            startReadLoop(transport);
-          } catch (err) {
-            addSysLog(`${t("monitorError")}: ${err.message}`, "error");
-          }
-        }
-      };
+      const stopMonitor = async () => {
+        if (readerRef.current) await readerRef.current.cancel().catch(()=>{});
+        while (isReadingRef.current) await new Promise(r => setTimeout(r, 50));
+        if (transportRef.current) {
+          await transportRef.current.disconnect().catch(()=>{});
+          transportRef.current = null;
+        }
+        setIsMonitorRunning(false);
+      };
 
-      const handleDisconnect = async () => {
-        await stopMonitor();
-        portRef.current = null;
-        setIsConnected(false);
-        addSysLog(t("disconnected"), "warning");
-      };
+      const filterEsptoolLog = (msg) => {
+        if (typeof msg !== 'string') return;
+        if (msg.includes('esptool.js') || msg.includes('Serial port WebSerial')) return;
+        addSysLog(msg);
+      };
 
-      const handleFlash = async () => {
-        if (!selectedBoard?.url && !localFile) return addSysLog(t("errNoFile"), "error");
-        setIsFlashing(true);
-        setProgress(0);
-        setLogTab('system'); 
+      const handleConnect = async () => {
+        if (!isSerialSupported) return;
+        try {
+          if (isMonitorRunning) await stopMonitor();
 
-        try {
-          await stopMonitor();
-          await new Promise(r => setTimeout(r, 500));
-          addSysLog(t("prepareFlash"), 'info');
+          if (!window.esptooljs) {
+            addSysLog(t("loadingLibrary"), "info");
+            window.esptooljs = await window.esptoolPromise;
+          }
+          
+          let selectedPort = portRef.current;
+          if (!selectedPort) {
+             selectedPort = await navigator.serial.requestPort();
+             portRef.current = selectedPort;
+          }
+          
+          addSysLog(t("resetting"), "info");
+          const transport = new window.esptooljs.Transport(selectedPort);
+          transportRef.current = transport;
 
-          let firmwareString;
-          if (localFile) {
-             const reader = new FileReader();
-             firmwareString = await new Promise((res, rej) => {
-                 reader.onload = () => res(reader.result);
-                 reader.onerror = rej;
-                 reader.readAsBinaryString(localFile);
-             });
-          } else {
-             addSysLog(t("downloadingFw"), "warning");
-             const fetchUrl = (selectedBoard.url.startsWith('http')) ? selectedBoard.url : GITHUB_BASE + selectedBoard.url + '?t=' + new Date().getTime();
-             const resp = await fetch(fetchUrl);
-             if (!resp.ok) throw new Error(t("notFoundOnServer"));
-             const blob = await resp.blob();
-             const reader = new FileReader();
-             firmwareString = await new Promise((res, rej) => {
-                 reader.onload = () => res(reader.result);
-                 reader.onerror = rej;
-                 reader.readAsBinaryString(blob);
-             });
-          }
+          const esploader = new window.esptooljs.ESPLoader({
+            transport: transport,
+            baudrate: parseInt(baudRate),
+            romBaudrate: 115200,
+            terminal: { clean: () => {}, writeLine: filterEsptoolLog, write: filterEsptoolLog }
+          });
 
-          addSysLog(t("syncing"), "warning");
-          const transport = new window.esptooljs.Transport(portRef.current);
-          const esploader = new window.esptooljs.ESPLoader({
-            transport: transport,
-            baudrate: parseInt(baudRate),
-            romBaudrate: 115200,
-            terminal: { clean: () => {}, writeLine: (msg) => addSysLog(msg), write: (msg) => addSysLog(msg) }
-          });
+          await esploader.main();
 
-          await esploader.main();
-          addSysLog(`${t("chipDetected")}`, "success");
+          esploaderRef.current = esploader;
+          setIsConnected(true);
+          addSysLog(`${t("chipDetected")}`, "success");
 
-          await esploader.writeFlash({
-            fileArray: [{ data: firmwareString, address: 0x0 }],
-            flashSize: 'keep',
-            eraseAll: false,
-            compress: true,
-            reportProgress: (idx, written, total) => setProgress(Math.round((written/total)*100))
-          });
+        } catch (err) {
+          addSysLog(`${t("connectError")}: ${err.message}`, "error");
+          addSysLog(t("bootHint"), "warning");
 
-          addSysLog(t("flashSuccess"), "success");
-          await esploader.hardReset();
-          await transport.disconnect().catch(()=>{});
-        } catch (error) {
-          addSysLog(`${t("flashFailed")}: ${error.message}`, "error");
-        } finally {
-          setIsFlashing(false);
-          setProgress(0);
-        }
-      };
+          if (transportRef.current) await transportRef.current.disconnect().catch(()=>{});
+          portRef.current = null;
+          esploaderRef.current = null;
+        }
+      };
 
-      const handleAdminLogin = async (e) => {
-        e.preventDefault();
-        setLoginError(false);
-        try {
-          const msgBuffer = new TextEncoder().encode(adminInput);
-          const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-          const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
-          if (hashHex === ADMIN_PASSWORD_HASH) {
-            setIsAdmin(true); setShowAdminModal(false); setAdminInput("");
-          } else setLoginError(true);
-        } catch (error) {}
-      };
+      const toggleSerialMonitor = async () => {
+        if (isMonitorRunning) {
+          await stopMonitor();
+          addSysLog(t("monitorStopped"), "warning");
+        } else {
+          try {
+            if (!window.esptooljs) window.esptooljs = await window.esptoolPromise;
+            
+            let port = portRef.current || await navigator.serial.requestPort();
+            portRef.current = port;
+            
+            const transport = new window.esptooljs.Transport(port);
+            transportRef.current = transport;
+            
+            await transport.connect(115200); 
+            await transport.setDTR(false);
+            await transport.setRTS(true);
+            await new Promise(r => setTimeout(r, 100));
+            await transport.setDTR(false);
+            await transport.setRTS(false);
+            
+            setIsMonitorRunning(true);
+            setLogTab('device');
+            addSysLog(t("monitorStarted"), "success");
+            startReadLoop(transport);
+          } catch (err) {
+            addSysLog(`${t("monitorError")}: ${err.message}`, "error");
+          }
+        }
+      };
 
-      const saveAdminConfig = () => {
-        localStorage.setItem('duscu_flasher_config_v40', JSON.stringify({ boards, settings: { bgUrl, logoUrl } }));
-        alert("Saved!"); setIsAdmin(false);
-      };
+      const handleDisconnect = async () => {
+        await stopMonitor();
+        portRef.current = null;
+        esploaderRef.current = null;
+        setIsConnected(false);
+        addSysLog(t("disconnected"), "warning");
+      };
 
-      const UserView = (
-        <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 rounded-3xl p-6 shadow-2xl">
-          <div className="flex items-center gap-2 mb-6 text-white font-semibold border-b border-slate-800 pb-4">
-            <i className="fa-solid fa-sliders text-xl text-blue-500"></i>
-            <h2>{t('selectDevice')}</h2>
-          </div>
-          <div className="space-y-5">
-            <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-widest">{t('boardType')}</label>
-              <select 
-                value={selectedBoardId} 
-                onChange={(e) => setSelectedBoardId(e.target.value)}
-                disabled={isConnected || isFlashing}
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50"
-              >
-                {boards.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-              </select>
-            </div>
-            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <i className={`fa-solid ${localFile || (selectedBoard && selectedBoard.url) ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-rose-500'} text-2xl shrink-0`}></i>
-                <div>
-                  <p className="text-sm font-medium text-slate-200">{t('fwStatus')}</p>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {localFile ? `${t('readyLocal')} (${localFile.name})` : (selectedBoard && selectedBoard.url) ? t('readyOnline') : t('notConfigured')}
-                  </p>
-                </div>
-              </div>
-              <div className="border-t border-slate-800/50 pt-3">
-                <label className="block text-xs font-medium text-slate-400 mb-2">{t('orChooseLocal')}</label>
-                <input type="file" accept=".bin" onChange={(e) => setLocalFile(e.target.files[0])} disabled={isConnected || isFlashing} className="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-purple-500/10 file:text-purple-400 hover:file:bg-purple-500/20 cursor-pointer disabled:opacity-50" />
-              </div>
-            </div>
-            <div className="pt-4 space-y-3">
-              {!isConnected ? (
-                <button onClick={handleConnect} disabled={!isSerialSupported} className={`w-full flex items-center justify-center gap-2 font-medium py-3 px-4 rounded-xl transition-colors border shadow-lg ${isSerialSupported ? 'bg-slate-800 hover:bg-slate-700 text-white border-slate-700' : 'bg-slate-900 text-slate-600 border-slate-800 cursor-not-allowed'}`}>
-                  <i className="fab fa-usb text-xl"></i>{t('connectUsb')}
-                </button>
-              ) : (
-                <div className="flex gap-2">
-                  <button onClick={handleDisconnect} disabled={isFlashing} className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 border border-slate-700 shadow-lg">
-                    <i className="fa-solid fa-plug-circle-xmark text-xl"></i>{t('disconnect')}
-                  </button>
-                  <select value={baudRate} onChange={(e) => setBaudRate(e.target.value)} disabled={isConnected || isFlashing} className="bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm text-slate-300 outline-none w-32 shadow-lg disabled:opacity-50">
-                    <option value="115200">115200</option>
-                    <option value="460800">460800</option>
-                    <option value="921600">921600</option>
-                  </select>
-                </div>
-              )}
-              <button 
-                onClick={handleFlash}
-                disabled={!isConnected || isFlashing || (!selectedBoard?.url && !localFile) || !isSerialSupported}
-                className={`w-full flex items-center justify-center gap-2 font-bold py-4 px-4 rounded-xl transition-all duration-300 relative overflow-hidden shadow-xl ${
-                  (!isConnected || isFlashing || (!selectedBoard?.url && !localFile))
-                    ? 'bg-slate-800 text-slate-500' 
-                    : 'bg-blue-600 text-white hover:bg-blue-500 shadow-[0_0_20px_rgba(37,99,235,0.4)] border border-blue-500'
-                }`}
-              >
-                <i className={`fa-solid fa-play text-xl ${isFlashing ? 'animate-pulse' : ''}`}></i>
-                {isFlashing ? `${t('flashing')} ${progress}%` : t('flash')}
-                {isFlashing && <div className="absolute left-0 bottom-0 top-0 bg-white/20 transition-all duration-300 pointer-events-none" style={{ width: `${progress}%` }} />}
-              </button>
-            </div>
-          </div>
-        </div>
-      );
+      // =========================================================
+      // NÚT "2. FLASH FIRMWARE" 
+      // =========================================================
+      const handleFlash = async () => {
+        if (!selectedBoard?.url && !localFile) return addSysLog(t("errNoFile"), "error");
+        if (!esploaderRef.current) return addSysLog("Error: Not connected", "error");
 
-      const AdminView = (
-        <div className="bg-slate-900/95 backdrop-blur-md border border-purple-500/50 rounded-3xl shadow-2xl flex flex-col max-h-[700px] overflow-hidden">
-          <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-900 shrink-0">
-            <div className="flex items-center gap-2 text-purple-400 font-bold"><i className="fa-solid fa-lock text-lg"></i><h2>{t('adminArea')}</h2></div>
-            <button onClick={saveAdminConfig} className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-lg shadow-purple-900/50"><i className="fa-solid fa-floppy-disk mr-2"></i>{t('saveConfig')}</button>
-          </div>
-          <div className="flex border-b border-slate-800 shrink-0 bg-slate-950/50 text-xs sm:text-sm font-medium">
-            <button onClick={() => setAdminTab('firmware')} className={`flex-1 py-3 transition-colors ${adminTab === 'firmware' ? 'bg-slate-800 text-purple-400 border-b-2 border-purple-500' : 'text-slate-400'}`}>{t('fwLink')}</button>
-            <button onClick={() => setAdminTab('ui')} className={`flex-1 py-3 transition-colors ${adminTab === 'ui' ? 'bg-slate-800 text-pink-400 border-b-2 border-pink-500' : 'text-slate-400'}`}>{t('uiConfig')}</button>
-          </div>
-          <div className="overflow-y-auto p-5 custom-scrollbar flex-1 bg-slate-900/50">
-            {adminTab === 'firmware' ? (
-              <div className="space-y-3">
-                {boards.map(board => (
-                  <div key={board.id} className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col gap-2">
-                    <div className="flex justify-between items-center"><p className="text-sm font-bold text-slate-200">{board.name}</p><p className="text-[10px] text-slate-500">Chip: {board.chip}</p></div>
-                    <input type="text" placeholder="https://..." value={board.url} onChange={(e) => setBoards(boards.map(b => b.id === board.id ? {...b, url: e.target.value} : b))} className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2 outline-none focus:border-purple-500" />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="space-y-6">
-                <div><label className="block text-xs font-medium text-slate-400 mb-2">{t('logoConfig')}</label><input type="text" placeholder="URL..." value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 outline-none focus:border-pink-500" /></div>
-                <div><label className="block text-xs font-medium text-slate-400 mb-2">{t('bgConfig')}</label><input type="text" placeholder="URL..." value={bgUrl} onChange={(e) => setBgUrl(e.target.value)} className="w-full bg-slate-900 border border-slate-700 text-slate-300 text-sm rounded-lg px-3 py-2.5 outline-none focus:border-pink-500" /></div>
-              </div>
-            )}
-          </div>
-        </div>
-      );
+        setIsFlashing(true);
+        setProgress(0);
+        setLogTab('system'); 
 
-      const currentLogs = logTab === 'system' ? sysLogs : devLogs;
+        try {
+          await stopMonitor();
+          addSysLog(t("prepareFlash"), 'info');
 
-      return (
-        <div 
-          className="min-h-screen bg-[#020617] text-slate-300 font-sans relative transition-all duration-500"
-          style={{ backgroundImage: bgUrl ? `url(${bgUrl})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}
-        >
-          <div className={`absolute inset-0 z-0 pointer-events-none transition-colors duration-500 ${bgUrl ? 'bg-slate-950/85 backdrop-blur-sm' : 'bg-transparent'}`}></div>
+          // Đọc file dưới dạng chuỗi nhị phân (Binary String)
+          let firmwareString;
+          if (localFile) {
+             const reader = new FileReader();
+             firmwareString = await new Promise((res, rej) => {
+                 reader.onload = () => res(reader.result);
+                 reader.onerror = rej;
+                 reader.readAsBinaryString(localFile);
+             });
+          } else {
+             addSysLog(t("downloadingFw"), "warning");
+             const resp = await fetch(selectedBoard.url.startsWith('http') ? selectedBoard.url : GITHUB_BASE + selectedBoard.url + '?t=' + Date.now());
+             if (!resp.ok) throw new Error("File not found");
+             const blob = await resp.blob();
+             const reader = new FileReader();
+             firmwareString = await new Promise((res, rej) => {
+                 reader.onload = () => res(reader.result);
+                 reader.onerror = rej;
+                 reader.readAsBinaryString(blob);
+             });
+          }
 
-          <div className="max-w-6xl mx-auto space-y-6 relative z-10 p-4 md:p-8">
-            
-            {/* Mobile Support Warning Banner */}
-            {!isSerialSupported && (
-              <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-2xl flex items-center gap-3 animate-pulse">
-                <i className="fa-solid fa-mobile-screen text-amber-500"></i>
-                <div className="text-[11px] sm:text-xs text-amber-200">
-                  <p className="font-bold">{t('browserNotSupported')}</p>
-                  <p className="opacity-80">{t('browserNotSupportedDesc')}</p>
-                </div>
-              </div>
-            )}
+          const esploader = esploaderRef.current;
 
-            {/* Header */}
-            <header className="flex flex-col md:flex-row items-start sm:items-center justify-between gap-6 border-b border-slate-800/80 pb-8">
-              <div className="flex items-center gap-5">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-600/20 rounded-2xl flex items-center justify-center shadow-lg border border-blue-500/30 overflow-hidden shrink-0">
-                  {logoUrl ? <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" /> : <i className="fa-solid fa-bolt text-[24px] sm:text-[36px] text-blue-500 drop-shadow-md"></i>}
-                </div>
-                <div>
-                  <h1 className="text-xl sm:text-3xl font-black text-white tracking-tighter uppercase">{t('title')} <span className="text-[10px] sm:text-sm font-bold text-slate-500 align-top ml-1">v40</span></h1>
-                  <p className="text-blue-400 font-medium text-[10px] sm:text-sm tracking-wide uppercase">{t('subtitle')}</p>
-                </div>
-              </div>
+          addSysLog(t("startingFlash"), "info");
+          
+          await esploader.writeFlash({
+            fileArray: [{ data: firmwareString, address: 0x0 }], 
+            flashSize: 'keep',
+            eraseAll: false,  // TUYỆT ĐỐI KHÔNG ĐỔI THÀNH TRUE
+            compress: true,
+            reportProgress: (idx, written, total) => setProgress(Math.round((written/total)*100)),
+            // Tính MD5 siêu tốc bằng Bitwise Shift
+            calculateMD5Hash: (image) => {
+                let words = [];
+                let len = image.length;
+                for (let i = 0; i < len; i++) {
+                    words[i >>> 2] |= (image.charCodeAt(i) & 0xff) << (24 - (i % 4) * 8);
+                }
+                return CryptoJS.MD5(CryptoJS.lib.WordArray.create(words, len)).toString();
+            }
+          });
 
-              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto overflow-x-auto no-scrollbar pb-2 sm:pb-0">
-                  <button onClick={() => setLang(lang === 'en' ? 'vi' : 'en')} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-full font-bold shadow-lg transition-colors border border-slate-700 text-xs shrink-0"><i className="fa-solid fa-language"></i>{lang === 'en' ? 'VI' : 'EN'}</button>
-                  <button onClick={() => setShowDonateModal(true)} className="flex items-center gap-2 bg-gradient-to-br from-pink-600 to-rose-600 text-white px-4 py-2 rounded-full font-bold shadow-lg transition-transform hover:scale-105 active:scale-95 text-xs shrink-0"><i className="fa-solid fa-heart"></i>{t('donate')}</button>
-                  <a href={GITHUB_REPO_LINK} target="_blank" rel="noopener noreferrer" className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl shrink-0"><i className="fab fa-github text-slate-400"></i></a>
-                  <button onClick={() => isAdmin ? setIsAdmin(false) : setShowAdminModal(true)} className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl shrink-0"><i className={`fa-solid ${isAdmin ? 'fa-lock-open' : 'fa-lock'} text-slate-400`}></i></button>
-              </div>
-            </header>
+          addSysLog(t("flashSuccess"), "success");
+          
+          const transport = transportRef.current;
+          if (transport) {
+              await transport.setDTR(false);
+              await transport.setRTS(true);
+              await new Promise(r => setTimeout(r, 100));
+              await transport.setDTR(false);
+              await transport.setRTS(false);
+              await transport.disconnect().catch(()=>{});
+          }
+          
+          setIsConnected(false);
+          portRef.current = null;
+          esploaderRef.current = null;
+        } catch (error) {
+          addSysLog(`${t("flashFailed")}: ${error.message}`, "error");
+        } finally {
+          setIsFlashing(false);
+          setProgress(0);
+        }
+      };
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              <div className="lg:col-span-5 space-y-6">{isAdmin ? AdminView : UserView}</div>
-              <div className="lg:col-span-7 flex flex-col bg-slate-900/80 backdrop-blur-2xl border border-slate-800 rounded-3xl shadow-2xl h-[400px] sm:h-[640px] overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
-                  <div className="flex gap-3 sm:gap-4 overflow-x-auto no-scrollbar">
-                    <button onClick={() => setLogTab('system')} className={`font-bold text-[10px] sm:text-sm transition-colors border-b-2 pb-1 shrink-0 ${logTab === 'system' ? 'text-blue-500 border-blue-500' : 'text-slate-500 border-transparent'}`}>{t('sysLogsTab')}</button>
-                    <button onClick={() => setLogTab('device')} className={`font-bold text-[10px] sm:text-sm transition-colors border-b-2 pb-1 shrink-0 ${logTab === 'device' ? 'text-purple-500 border-purple-500' : 'text-slate-500 border-transparent'}`}>{t('devLogsTab')}</button>
-                  </div>
-                  <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                    {logTab === 'device' && (
-                      <button onClick={toggleSerialMonitor} disabled={!isConnected || isFlashing} className={`flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-bold rounded-lg transition-all ${isMonitorRunning ? 'bg-rose-500/10 text-rose-500 hover:bg-rose-500/20' : 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20'} disabled:opacity-50`}>
-                        <i className={`fa-solid ${isMonitorRunning ? 'fa-stop' : 'fa-play'}`}></i><span className="hidden sm:inline ml-1">{isMonitorRunning ? t('stopMonitor') : t('startMonitor')}</span>
-                      </button>
-                    )}
-                    <button onClick={() => logTab === 'system' ? setSysLogs([]) : setDevLogs([])} className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-slate-800 hover:bg-red-900/40 hover:text-red-400 text-[10px] sm:text-xs font-bold rounded-lg transition-all"><i className="fa-solid fa-trash-can"></i><span className="hidden sm:inline ml-1">{t('clearLogs')}</span></button>
-                  </div>
-                </div>
-                <div ref={terminalRef} className="flex-1 p-5 overflow-y-auto font-mono text-[10px] sm:text-xs space-y-1.5 bg-[#050b14] custom-scrollbar select-text">
-                  {currentLogs.length === 0 ? (
-                    <div className="h-full flex items-center justify-center text-slate-700 italic">{t('waitingDevice')}</div>
-                  ) : (
-                    currentLogs.map((log, i) => (
-                      <div key={i} className="flex gap-3 leading-relaxed border-b border-slate-800/20 pb-0.5 animate-in fade-in duration-300">
-                        <span className="text-slate-600 shrink-0 select-none">[{log.time}]</span>
-                        <span className={`${log.type === 'error' ? 'text-red-400 font-bold' : log.type === 'success' ? 'text-emerald-400 font-bold' : log.type === 'warning' ? 'text-blue-400' : 'text-slate-300'}`}>{log.msg}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+      const handleAdminLogin = async (e) => {
+        e.preventDefault();
+        const msgBuffer = new TextEncoder().encode(adminInput);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashHex = Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        if (hashHex === ADMIN_PASSWORD_HASH) {
+          setIsAdmin(true); setShowAdminModal(false); setAdminInput("");
+        } else setLoginError(true);
+      };
 
-          {/* Modal Donate */}
-          {showDonateModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-              <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2.5rem] p-6 sm:p-8 text-center shadow-2xl relative">
-                <button onClick={() => setShowDonateModal(false)} className="absolute top-6 right-6 text-slate-500 hover:text-white"><i className="fa-solid fa-xmark text-2xl"></i></button>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6"><i className="fa-solid fa-heart text-3xl sm:text-4xl text-pink-500 animate-pulse"></i></div>
-                <h3 className="text-xl sm:text-2xl font-black text-white mb-2">{t('donateTitle')}</h3>
-                <p className="text-slate-400 text-xs sm:text-sm mb-6 leading-relaxed">{t('donateDesc')}</p>
-                <div className="bg-white p-3 rounded-3xl mb-6 shadow-xl"><img src={`https://quickchart.io/qr?size=300&text=${encodeURIComponent(DONATE_QR_STRING)}`} alt="Donate QR" className="w-full h-full object-contain" /></div>
-                <button onClick={() => { navigator.clipboard.writeText(DONATE_QR_STRING); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="w-full py-3 rounded-xl font-medium text-pink-400 bg-pink-500/10 hover:bg-pink-500/20 transition-colors border border-pink-500/30 flex items-center justify-center gap-2 active:scale-95">{copied ? <i className="fa-solid fa-circle-check text-emerald-500"></i> : <i className="fa-solid fa-bolt"></i>}{copied ? t('copied') : t('copyQr')}</button>
-              </div>
-            </div>
-          )}
+      const saveAdminConfig = () => {
+        localStorage.setItem('duscu_flasher_config_v40', JSON.stringify({ boards, settings: { bgUrl, logoUrl } }));
+        alert("Saved!"); setIsAdmin(false);
+      };
 
-          {/* Modal Admin Login */}
-          {showAdminModal && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-              <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
-                <h3 className="text-lg sm:text-xl font-bold text-white mb-2">{t('adminConfirm')}</h3>
-                <p className="text-xs sm:text-sm text-slate-400 mb-6">{t('adminDesc')}</p>
-                <form onSubmit={handleAdminLogin} className="space-y-4">
-                  <input type="password" autoFocus placeholder={t('password')} value={adminInput} onChange={e => {setAdminInput(e.target.value); setLoginError(false);}} className={`w-full bg-slate-950 border rounded-xl p-4 text-white outline-none focus:ring-2 transition-all text-sm ${loginError ? 'border-red-500 ring-red-500/20' : 'border-slate-800 focus:ring-blue-500/20'}`} />
-                  {loginError && <p className="text-red-500 text-[10px] font-bold uppercase">{t('wrongPassword')}</p>}
-                  <div className="flex gap-3 pt-2">
-                    <button type="button" onClick={() => setShowAdminModal(false)} className="flex-1 py-3 text-slate-400 font-bold hover:text-white text-xs">{t('cancel')}</button>
-                    <button type="submit" className="flex-1 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-500 text-xs">{t('unlock')}</button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
+      const UserView = (
+        <div className="bg-slate-900/90 backdrop-blur-md border border-pink-400/20 rounded-3xl p-6 shadow-2xl">
+          <div className="flex items-center gap-2 mb-6 text-white font-semibold border-b border-slate-800 pb-4">
+            <i className="fa-solid fa-sliders text-xl text-pink-400"></i>
+            <h2>{t('selectDevice')}</h2>
+          </div>
+          <div className="space-y-5">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-widest">{t('boardType')}</label>
+              <select value={selectedBoardId} onChange={(e) => setSelectedBoardId(e.target.value)} disabled={isConnected || isFlashing} className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white focus:ring-2 focus:ring-pink-400 outline-none transition-all disabled:opacity-50">
+                {boards.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+            </div>
+            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800/50 flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <i className={`fa-solid ${localFile || (selectedBoard && selectedBoard.url) ? 'fa-circle-check text-emerald-500' : 'fa-circle-xmark text-rose-500'} text-2xl shrink-0`}></i>
+                <div>
+                  <p className="text-sm font-medium text-slate-200">{t('fwStatus')}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {localFile ? `${t('readyLocal')} (${localFile.name})` : (selectedBoard && selectedBoard.url) ? t('readyOnline') : t('notConfigured')}
+                  </p>
+                </div>
+              </div>
+              <div className="border-t border-slate-800/50 pt-3">
+                <label className="block text-xs font-medium text-slate-400 mb-2">{t('orChooseLocal')}</label>
+                <input type="file" accept=".bin" onChange={(e) => setLocalFile(e.target.files[0])} disabled={isConnected || isFlashing} className="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-pink-400/10 file:text-pink-400 hover:file:bg-pink-400/20 cursor-pointer disabled:opacity-50" />
+              </div>
+            </div>
+            <div className="pt-4 space-y-3">
+              {!isConnected ? (
+                <button onClick={handleConnect} disabled={!isSerialSupported} className="w-full flex items-center justify-center gap-2 font-medium py-3 px-4 rounded-xl transition-colors border shadow-lg bg-slate-800 hover:bg-slate-700 text-white border-slate-700">
+                  <i className="fab fa-usb text-xl"></i>{t('connectUsb')}
+                </button>
+              ) : (
+                <div className="flex gap-2">
+                  <button onClick={toggleSerialMonitor} disabled={isFlashing} className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-xl transition-colors border border-slate-700 shadow-lg">
+                    <i className="fa-solid fa-plug-circle-xmark text-xl text-pink-400"></i>{t('disconnect')}
+                  </button>
+                  <select value={baudRate} onChange={(e) => setBaudRate(e.target.value)} disabled={isConnected || isFlashing} className="bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm text-slate-300 outline-none w-32 shadow-lg focus:border-pink-400">
+                    <option value="115200">115200</option>
+                    <option value="460800">460800</option>
+                    <option value="921600">921600</option>
+                  </select>
+                </div>
+              )}
+              <button onClick={handleFlash} disabled={!isConnected || isFlashing || (!selectedBoard?.url && !localFile) || !isSerialSupported} className={`w-full flex items-center justify-center gap-2 font-bold py-4 px-4 rounded-xl transition-all duration-300 relative overflow-hidden shadow-xl ${(!isConnected || isFlashing || (!selectedBoard?.url && !localFile)) ? 'bg-slate-800 text-slate-500' : 'bg-pink-500 text-white hover:bg-pink-400 shadow-[0_0_20px_rgba(236,72,153,0.4)] border border-pink-400'}`}>
+                <i className={`fa-solid fa-play text-xl ${isFlashing ? 'animate-pulse' : ''}`}></i>
+                {isFlashing ? `${t('flashing')} ${progress}%` : t('flash')}
+                {isFlashing && <div className="absolute left-0 bottom-0 top-0 bg-white/20 transition-all duration-300 pointer-events-none" style={{ width: `${progress}%` }} />}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
 
-          <style dangerouslySetInnerHTML={{__html: `
-            .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-            .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
-            .no-scrollbar::-webkit-scrollbar { display: none; }
-            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-          `}} />
-        </div>
-      );
-    }
-
-    const rootNode = document.getElementById('root');
-    if (!rootNode._reactRoot) { rootNode._reactRoot = ReactDOM.createRoot(rootNode); }
-    rootNode._reactRoot.render(<App />);
-  </script>
+      return (
+        <div className="min-h-screen bg-[#020617] text-slate-300 font-sans relative transition-all duration-500" style={{ backgroundImage: bgUrl ? `url(${bgUrl})` : 'none', backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }}>
+          <div className={`absolute inset-0 z-0 pointer-events-none transition-colors duration-500 ${bgUrl ? 'bg-slate-950/85 backdrop-blur-sm' : 'bg-transparent'}`}></div>
+          <div className="max-w-6xl mx-auto space-y-6 relative z-10 p-4 md:p-8">
+            <header className="flex flex-col md:flex-row items-start sm:items-center justify-between gap-6 border-b border-pink-400/20 pb-8">
+              <div className="flex items-center gap-5">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-pink-500/20 rounded-2xl flex items-center justify-center shadow-lg border border-pink-400/30 overflow-hidden shrink-0">
+                  <img src={logoUrl} alt="Logo" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h1 className="text-xl sm:text-3xl font-black text-white tracking-tighter uppercase">{t('title')}</h1>
+                  <p className="text-pink-300 font-medium text-[10px] sm:text-sm tracking-wide uppercase">{t('subtitle')}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto overflow-x-auto no-scrollbar pb-2 sm:pb-0">
+                  <button onClick={() => setLang(lang === 'en' ? 'vi' : 'en')} className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded-full font-bold shadow-lg text-xs shrink-0"><i className="fa-solid fa-language text-pink-300"></i>{lang === 'en' ? 'VI' : 'EN'}</button>
+                  <button onClick={() => setShowDonateModal(true)} className="flex items-center gap-2 bg-gradient-to-br from-pink-500 to-rose-400 text-white px-4 py-2 rounded-full font-bold shadow-lg text-xs shrink-0"><i className="fa-solid fa-heart"></i>{t('donate')}</button>
+                  <a href={GITHUB_REPO_LINK} target="_blank" rel="noopener noreferrer" className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl shrink-0"><i className="fab fa-github text-slate-400 hover:text-pink-300"></i></a>
+                  <button onClick={() => isAdmin ? setIsAdmin(false) : setShowAdminModal(true)} className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-slate-900 rounded-full border border-slate-700 hover:bg-slate-800 transition-colors shadow-xl shrink-0"><i className={`fa-solid ${isAdmin ? 'fa-lock-open' : 'fa-lock'} text-slate-400 hover:text-pink-300`}></i></button>
+              </div>
+            </header>
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-5 space-y-6">{isAdmin ? (
+                <div className="bg-slate-900/95 border border-pink-500/50 rounded-3xl p-5 shadow-2xl flex flex-col">
+                  <div className="flex justify-between items-center mb-4"><h2 className="text-pink-400 font-bold">{t('adminArea')}</h2><button onClick={saveAdminConfig} className="bg-pink-600 px-3 py-1 rounded text-white text-xs">Save</button></div>
+                  <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    {boards.map(b => (
+                      <div key={b.id} className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                        <p className="text-xs font-bold text-slate-400 mb-1">{b.name}</p>
+                        <input type="text" value={b.url} onChange={(e)=>setBoards(boards.map(x=>x.id===b.id?{...x,url:e.target.value}:x))} className="w-full bg-slate-900 border border-slate-700 rounded p-1.5 text-xs text-white outline-none focus:border-pink-500" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : UserView}</div>
+              <div className="lg:col-span-7 flex flex-col bg-slate-900/80 backdrop-blur-2xl border border-slate-800 rounded-3xl shadow-2xl h-[400px] sm:h-[640px] overflow-hidden">
+                <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/50">
+                  <div className="flex gap-4">
+                    <button onClick={() => setLogTab('system')} className={`font-bold text-xs transition-colors border-b-2 pb-1 ${logTab === 'system' ? 'text-pink-400 border-pink-400' : 'text-slate-500 border-transparent'}`}>{t('sysLogsTab')}</button>
+                    <button onClick={() => setLogTab('device')} className={`font-bold text-xs transition-colors border-b-2 pb-1 ${logTab === 'device' ? 'text-pink-400 border-pink-400' : 'text-slate-500 border-transparent'}`}>{t('devLogsTab')}</button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {logTab === 'device' && (
+                      <button onClick={toggleSerialMonitor} disabled={isFlashing} className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${isMonitorRunning ? 'bg-rose-500/10 text-rose-500' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                        <i className={`fa-solid ${isMonitorRunning ? 'fa-stop' : 'fa-play'}`}></i><span>{isMonitorRunning ? t('stopMonitor') : t('startMonitor')}</span>
+                      </button>
+                    )}
+                    <button onClick={() => logTab === 'system' ? setSysLogs([]) : setDevLogs([])} className="px-2 py-1.5 bg-slate-800 hover:bg-red-900/40 text-xs font-bold rounded-lg"><i className="fa-solid fa-trash-can"></i></button>
+                  </div>
+                </div>
+                <div ref={terminalRef} className="flex-1 p-5 overflow-y-auto font-mono text-[11px] bg-[#050b14] custom-scrollbar select-text">
+                  {(logTab === 'system' ? sysLogs : devLogs).map((log, i) => (
+                    <div key={i} className="flex gap-3 leading-relaxed border-b border-slate-800/10 pb-0.5">
+                      <span className="text-slate-600">[{log.time}]</span>
+                      <span className={`${log.type === 'error' ? 'text-red-400' : log.type === 'success' ? 'text-emerald-400' : log.type === 'warning' ? 'text-pink-300' : 'text-slate-300'}`}>{log.msg}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          {showDonateModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+              <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2.5rem] p-8 text-center shadow-2xl relative">
+                <button onClick={() => setShowDonateModal(false)} className="absolute top-6 right-6 text-slate-500 hover:text-white text-2xl">×</button>
+                <div className="w-16 h-16 bg-pink-500/20 rounded-full flex items-center justify-center mx-auto mb-6"><i className="fa-solid fa-heart text-3xl text-pink-400 animate-pulse"></i></div>
+                <h3 className="text-xl font-black text-white mb-2">{t('donateTitle')}</h3>
+                <p className="text-slate-400 text-sm mb-6">{t('donateDesc')}</p>
+                <div className="bg-white p-3 rounded-3xl mb-6"><img src={`https://quickchart.io/qr?size=300&text=${encodeURIComponent(DONATE_QR_STRING)}`} alt="Donate QR" className="w-full h-full object-contain" /></div>
+                <button onClick={() => { navigator.clipboard.writeText(DONATE_QR_STRING); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="w-full py-3 rounded-xl font-medium text-pink-300 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/30 flex items-center justify-center gap-2">{copied ? "Copied!" : "Copy QR string"}</button>
+              </div>
+            </div>
+          )}
+          {showAdminModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+              <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+                <h3 className="text-lg font-bold text-white mb-2">{t('adminConfirm')}</h3>
+                <form onSubmit={handleAdminLogin} className="space-y-4">
+                  <input type="password" autoFocus placeholder={t('password')} value={adminInput} onChange={e => setAdminInput(e.target.value)} className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-white outline-none focus:ring-2 focus:ring-pink-400/20" />
+                  <div className="flex gap-3">
+                    <button type="button" onClick={() => setShowAdminModal(false)} className="flex-1 py-3 text-slate-400 font-bold">Cancel</button>
+                    <button type="submit" className="flex-1 py-3 bg-pink-500 text-white font-bold rounded-xl">Unlock</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+          <style dangerouslySetInnerHTML={{__html: `
+            .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+            .custom-scrollbar::-webkit-scrollbar-thumb { background: #f472b6; border-radius: 10px; }
+            .no-scrollbar::-webkit-scrollbar { display: none; }
+          `}} />
+        </div>
+      );
+    }
+    const rootNode = document.getElementById('root');
+    ReactDOM.createRoot(rootNode).render(<App />);
+  </script>
 </body>
 </html>
