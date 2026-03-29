@@ -328,7 +328,7 @@
       };
 
       // =========================================================
-      // NÚT "2. FLASH FIRMWARE" THEO ĐÚNG BẢN GỐC (Bản 0.4.4, readAsBinaryString, ko MD5)
+      // NÚT "2. FLASH FIRMWARE" THEO ĐÚNG BẢN GỐC
       // =========================================================
       const handleFlash = async () => {
         if (!selectedBoard?.url && !localFile) return addSysLog(t("errNoFile"), "error");
@@ -447,18 +447,29 @@
             </div>
             <div className="pt-4 space-y-3">
               {!isConnected ? (
-                <button onClick={handleConnect} disabled={!isSerialSupported} className={`w-full flex items-center justify-center gap-2 font-medium py-3 px-4 rounded-xl transition-colors border shadow-lg ${isSerialSupported ? 'bg-slate-800 hover:bg-slate-700 text-white border-slate-700' : 'bg-slate-900 text-slate-600 border-slate-800 cursor-not-allowed'}`}>
-                  <i className="fab fa-usb text-xl"></i>{t('connectUsb')}
-                </button>
+                <div className="flex gap-2">
+                  <button onClick={handleConnect} disabled={!isSerialSupported} className={`flex-1 flex items-center justify-center gap-2 font-medium py-3 px-4 rounded-xl transition-colors border shadow-lg ${isSerialSupported ? 'bg-slate-800 hover:bg-slate-700 text-white border-slate-700' : 'bg-slate-900 text-slate-600 border-slate-800 cursor-not-allowed'}`}>
+                    <i className="fab fa-usb text-xl"></i>{t('connectUsb')}
+                  </button>
+                  <select value={baudRate} onChange={(e) => setBaudRate(e.target.value)} disabled={isFlashing} className="bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm text-slate-300 outline-none w-32 shadow-lg disabled:opacity-50 focus:border-pink-400">
+                    <option value="115200">115200</option>
+                    <option value="230400">230400</option>
+                    <option value="460800">460800</option>
+                    <option value="921600">921600</option>
+                    <option value="1500000">1500000</option>
+                  </select>
+                </div>
               ) : (
                 <div className="flex gap-2">
                   <button onClick={handleDisconnect} disabled={isFlashing} className="flex-1 flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white font-medium py-3 px-4 rounded-xl transition-colors disabled:opacity-50 border border-slate-700 shadow-lg">
                     <i className="fa-solid fa-plug-circle-xmark text-xl text-pink-400"></i>{t('disconnect')}
                   </button>
-                  <select value={baudRate} onChange={(e) => setBaudRate(e.target.value)} disabled={isConnected || isFlashing} className="bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm text-slate-300 outline-none w-32 shadow-lg disabled:opacity-50 focus:border-pink-400">
+                  <select value={baudRate} onChange={(e) => setBaudRate(e.target.value)} disabled={isFlashing} className="bg-slate-950 border border-slate-700 rounded-xl px-3 text-sm text-slate-300 outline-none w-32 shadow-lg disabled:opacity-50 focus:border-pink-400">
                     <option value="115200">115200</option>
+                    <option value="230400">230400</option>
                     <option value="460800">460800</option>
                     <option value="921600">921600</option>
+                    <option value="1500000">1500000</option>
                   </select>
                 </div>
               )}
