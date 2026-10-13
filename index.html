@@ -491,6 +491,40 @@
       const portRef = useRef(null);
       const transportRef = useRef(null);
       const readerRef = useRef(null);
+      const activeTransportRef = useRef(null);
+
+      // Đảm bảo đóng và giải phóng hoàn toàn cổng Serial
+      const releaseAndClosePort = async (port) => {
+        if (!port) return;
+        if (activeTransportRef.current) {
+          try {
+            await activeTransportRef.current.disconnect();
+          } catch(e) {}
+          activeTransportRef.current = null;
+        }
+        if (transportRef.current) {
+          try {
+            await transportRef.current.disconnect();
+          } catch(e) {}
+          transportRef.current = null;
+        }
+        if (readerRef.current) {
+          try {
+            await readerRef.current.cancel();
+          } catch(e) {}
+          try {
+            readerRef.current.releaseLock();
+          } catch(e) {}
+          readerRef.current = null;
+        }
+        if (port.readable) {
+          try {
+            await port.close();
+          } catch(e) {
+            console.warn("close port warning:", e);
+          }
+        }
+      };
 
       // Log utilities
       const logSys = (msg, type = 'info') => {
@@ -565,6 +599,19 @@
       }, []);
 
       useEffect(() => {
+        const handleUsbDisconnect = (e) => {
+          if (portRef.current && e.target === portRef.current) {
+            disconnectPort();
+            logSys("[PORT] Thiết bị ngắt kết nối vật lý (USB cable unplugged).", "warning");
+          }
+        };
+        if ('serial' in navigator) {
+          navigator.serial.addEventListener('disconnect', handleUsbDisconnect);
+          return () => navigator.serial.removeEventListener('disconnect', handleUsbDisconnect);
+        }
+      }, []);
+
+      useEffect(() => {
         if (termRef.current) termRef.current.scrollTop = termRef.current.scrollHeight;
       }, [sysLogs, devLogs, logTab]);
 
@@ -578,15 +625,18 @@
             throw new Error(t.logNoEsptool);
           }
           const port = await navigator.serial.requestPort();
+          await releaseAndClosePort(port);
           portRef.current = port;
           setIsConnected(true);
           logSys(t.logPortSuccess, "success");
 
           // Tự động nhận diện Chip
+          let probeTransport = null;
           try {
-            const transport = new window.ESP_TOOLS.Transport(port);
+            probeTransport = new window.ESP_TOOLS.Transport(port);
+            activeTransportRef.current = probeTransport;
             const esploader = new window.ESP_TOOLS.ESPLoader({
-              transport,
+              transport: probeTransport,
               baudrate: 115200,
               terminal: { clean: ()=>{}, writeLine: ()=>{}, write: ()=>{} }
             });
@@ -595,8 +645,16 @@
             const macStr = esploader.macAddr ? esploader.macAddr().map(b => b.toString(16).padStart(2,'0')).join(':').toUpperCase() : 'N/A';
             setChipInfo({ chip: chipDesc, mac: macStr });
             logSys(`[CHIP] Model: ${chipDesc} | MAC: ${macStr}`, "success");
-            await transport.disconnect().catch(()=>{});
-          } catch(e) {}
+          } catch(e) {
+            console.warn("Probe chip warning:", e);
+          } finally {
+            if (probeTransport) {
+              await probeTransport.disconnect().catch(()=>{});
+              probeTransport = null;
+              activeTransportRef.current = null;
+            }
+            await releaseAndClosePort(port);
+          }
 
         } catch (err) {
           logSys(t.logPortErr(err.message), "error");
@@ -606,6 +664,7 @@
       const disconnectPort = async () => {
         await stopMonitor();
         if (portRef.current) {
+          await releaseAndClosePort(portRef.current);
           portRef.current = null;
         }
         setIsConnected(false);
@@ -617,8 +676,13 @@
       const startMonitor = async () => {
         try {
           if (!portRef.current) return;
+          await stopMonitor();
+          await releaseAndClosePort(portRef.current);
+          await new Promise(r => setTimeout(r, 100));
+
           const transport = new window.ESP_TOOLS.Transport(portRef.current);
           transportRef.current = transport;
+          activeTransportRef.current = transport;
           await transport.connect(parseInt(monitorBaud));
           setIsMonitor(true);
           setLogTab('dev');
@@ -644,10 +708,17 @@
       };
 
       const stopMonitor = async () => {
-        if (readerRef.current) await readerRef.current.cancel().catch(()=>{});
+        if (readerRef.current) {
+          await readerRef.current.cancel().catch(()=>{});
+          readerRef.current = null;
+        }
         if (transportRef.current) {
           await transportRef.current.disconnect().catch(()=>{});
           transportRef.current = null;
+          activeTransportRef.current = null;
+        }
+        if (portRef.current) {
+          await releaseAndClosePort(portRef.current);
         }
         setIsMonitor(false);
       };
@@ -661,13 +732,16 @@
         setLogTab('sys');
         logSys(t.logEraseStart, "warning");
 
+        let eraseTransport = null;
         try {
           await stopMonitor();
+          await releaseAndClosePort(portRef.current);
           await new Promise(r => setTimeout(r, 200));
 
-          const transport = new window.ESP_TOOLS.Transport(portRef.current);
+          eraseTransport = new window.ESP_TOOLS.Transport(portRef.current);
+          activeTransportRef.current = eraseTransport;
           const esploader = new window.ESP_TOOLS.ESPLoader({
-            transport,
+            transport: eraseTransport,
             baudrate: parseInt(baudRate),
             terminal: { clean: ()=>{}, writeLine: (msg)=>logSys(msg, 'info'), write: (msg)=>logSys(msg, 'info') }
           });
@@ -675,11 +749,18 @@
           logSys(t.logEraseExec, "info");
           await esploader.eraseFlash();
           logSys(t.logEraseSuccess, "success");
-          await esploader.hardReset();
-          await transport.disconnect().catch(()=>{});
+          await esploader.hardReset().catch(()=>{});
         } catch (err) {
           logSys(t.logEraseFail(err.message), "error");
         } finally {
+          if (eraseTransport) {
+            try {
+              await eraseTransport.disconnect();
+            } catch(e) {}
+            eraseTransport = null;
+            activeTransportRef.current = null;
+          }
+          await releaseAndClosePort(portRef.current);
           setIsErasingOnly(false);
         }
       };
@@ -691,58 +772,52 @@
         if (!localFile && !board?.url) {
           return logSys(t.logNoTarget, "error");
         }
+        if (!portRef.current) {
+          return logSys(t.logPortErr("Chưa kết nối cổng Serial!"), "error");
+        }
 
         setIsFlashing(true);
         setProgress(0);
         setLogTab('sys');
 
+        let flashTransport = null;
         try {
           await stopMonitor();
+          await releaseAndClosePort(portRef.current);
           await new Promise(r => setTimeout(r, 200));
 
-          let fwBinaryString;
+          let fwData = null;
           if (localFile) {
             logSys(t.logLocalFile(localFile.name, (localFile.size / 1048576).toFixed(2)), "info");
-            fwBinaryString = await new Promise((res, rej) => {
-              const fr = new FileReader();
-              fr.onload = () => res(fr.result);
-              fr.onerror = rej;
-              fr.readAsBinaryString(localFile);
-            });
+            const buf = await localFile.arrayBuffer();
+            fwData = new Uint8Array(buf);
           } else {
             const remoteFile = board.url;
             logSys(t.logFetching(remoteFile), "info");
             const fetchUrl = GITHUB_RAW_BASE + remoteFile + '?t=' + Date.now();
-            const resp = await fetch(fetchUrl);
+            let resp = await fetch(fetchUrl);
             if (!resp.ok) {
               if (githubFiles[remoteFile]?.download_url) {
-                const fallbackResp = await fetch(githubFiles[remoteFile].download_url);
-                if (!fallbackResp.ok) throw new Error(`HTTP ${resp.status}`);
-                const blob = await fallbackResp.blob();
-                fwBinaryString = await new Promise((res, rej) => {
-                  const fr = new FileReader();
-                  fr.onload = () => res(fr.result);
-                  fr.onerror = rej;
-                  fr.readAsBinaryString(blob);
-                });
+                resp = await fetch(githubFiles[remoteFile].download_url);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
               } else {
                 throw new Error(t.logFetchFail(remoteFile));
               }
-            } else {
-              const blob = await resp.blob();
-              fwBinaryString = await new Promise((res, rej) => {
-                const fr = new FileReader();
-                fr.onload = () => res(fr.result);
-                fr.onerror = rej;
-                fr.readAsBinaryString(blob);
-              });
             }
+            const buf = await resp.arrayBuffer();
+            fwData = new Uint8Array(buf);
+          }
+
+          if (!fwData || !(fwData instanceof Uint8Array) || fwData.length === 0) {
+            throw new Error("Không thể tải nội dung firmware (Dữ liệu rỗng hoặc sai định dạng).");
           }
 
           logSys(t.logSyncBootloader(baudRate), "info");
-          const transport = new window.ESP_TOOLS.Transport(portRef.current);
+          flashTransport = new window.ESP_TOOLS.Transport(portRef.current);
+          activeTransportRef.current = flashTransport;
+
           const esploader = new window.ESP_TOOLS.ESPLoader({
-            transport,
+            transport: flashTransport,
             baudrate: parseInt(baudRate),
             terminal: { clean: ()=>{}, writeLine: (msg) => logSys(msg, 'info'), write: (msg) => logSys(msg, 'info') }
           });
@@ -754,7 +829,7 @@
           logSys(t.logWriteFlash(writeOffset.toString(16).toUpperCase(), eraseFlash), "info");
 
           await esploader.writeFlash({
-            fileArray: [{ data: fwBinaryString, address: writeOffset }],
+            fileArray: [{ data: fwData, address: writeOffset }],
             flashSize: 'keep',
             eraseAll: eraseFlash,
             compress: true,
@@ -769,11 +844,18 @@
           logSys(t.logReboot, "info");
           logSys("----------------------------------------", "success");
 
-          await esploader.hardReset();
-          await transport.disconnect().catch(()=>{});
+          await esploader.hardReset().catch(()=>{});
         } catch (err) {
           logSys(t.logFlashFail(err.message), "error");
         } finally {
+          if (flashTransport) {
+            try {
+              await flashTransport.disconnect();
+            } catch(e) {}
+            flashTransport = null;
+            activeTransportRef.current = null;
+          }
+          await releaseAndClosePort(portRef.current);
           setIsFlashing(false);
           setProgress(0);
         }
