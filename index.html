@@ -38,8 +38,46 @@
 
   <!-- ESPTOOL-JS v0.7.0 (Hỗ trợ ESP32, ESP32-S3, ESP32-C3, ESP32-C5, ESP32-C6...) -->
   <script type="module">
-    import { Transport, ESPLoader } from 'https://cdn.jsdelivr.net/npm/esptool-js@0.7.0/+esm';
-    window.ESP_TOOLS = { Transport, ESPLoader };
+    import { Transport, ESPLoader, bstrToUi8 } from 'https://cdn.jsdelivr.net/npm/esptool-js@0.7.0/+esm';
+
+    // Helper tạo Uint8Array đồng bộ chính xác với Realm / Scope của ESPLoader module
+    const toModuleUint8Array = (input) => {
+      if (!input) return new Uint8Array(0);
+      if (input instanceof Uint8Array) {
+        return new Uint8Array(input.buffer, input.byteOffset, input.byteLength);
+      }
+      if (input instanceof ArrayBuffer) {
+        return new Uint8Array(input);
+      }
+      if (input.buffer && input.buffer instanceof ArrayBuffer) {
+        return new Uint8Array(input.buffer, input.byteOffset || 0, input.byteLength || input.buffer.byteLength);
+      }
+      if (typeof input === 'string') {
+        return bstrToUi8 ? bstrToUi8(input) : new TextEncoder().encode(input);
+      }
+      return new Uint8Array(input);
+    };
+
+    // Monkey-patch writeFlash prototype để bảo đảm cross-realm compatibility với Babel Standalone
+    const origWriteFlash = ESPLoader.prototype.writeFlash;
+    ESPLoader.prototype.writeFlash = async function(options) {
+      if (options && Array.isArray(options.fileArray)) {
+        for (let i = 0; i < options.fileArray.length; i++) {
+          const item = options.fileArray[i];
+          if (item && item.data !== undefined) {
+            item.data = toModuleUint8Array(item.data);
+          }
+        }
+      }
+      return await origWriteFlash.call(this, options);
+    };
+
+    window.ESP_TOOLS = {
+      Transport,
+      ESPLoader,
+      bstrToUi8,
+      toUint8Array: toModuleUint8Array
+    };
     window.dispatchEvent(new Event('esptool_ready'));
   </script>
 
@@ -749,7 +787,13 @@
           logSys(t.logEraseExec, "info");
           await esploader.eraseFlash();
           logSys(t.logEraseSuccess, "success");
-          await esploader.hardReset().catch(()=>{});
+          try {
+            if (typeof esploader.after === 'function') {
+              await esploader.after("hard_reset");
+            } else if (typeof esploader.hardReset === 'function') {
+              await esploader.hardReset();
+            }
+          } catch(e) {}
         } catch (err) {
           logSys(t.logEraseFail(err.message), "error");
         } finally {
@@ -790,7 +834,7 @@
           if (localFile) {
             logSys(t.logLocalFile(localFile.name, (localFile.size / 1048576).toFixed(2)), "info");
             const buf = await localFile.arrayBuffer();
-            fwData = new Uint8Array(buf);
+            fwData = window.ESP_TOOLS?.toUint8Array ? window.ESP_TOOLS.toUint8Array(buf) : new Uint8Array(buf);
           } else {
             const remoteFile = board.url;
             logSys(t.logFetching(remoteFile), "info");
@@ -805,10 +849,10 @@
               }
             }
             const buf = await resp.arrayBuffer();
-            fwData = new Uint8Array(buf);
+            fwData = window.ESP_TOOLS?.toUint8Array ? window.ESP_TOOLS.toUint8Array(buf) : new Uint8Array(buf);
           }
 
-          if (!fwData || !(fwData instanceof Uint8Array) || fwData.length === 0) {
+          if (!fwData || (fwData.length === 0 && fwData.byteLength === 0)) {
             throw new Error("Không thể tải nội dung firmware (Dữ liệu rỗng hoặc sai định dạng).");
           }
 
@@ -844,7 +888,13 @@
           logSys(t.logReboot, "info");
           logSys("----------------------------------------", "success");
 
-          await esploader.hardReset().catch(()=>{});
+          try {
+            if (typeof esploader.after === 'function') {
+              await esploader.after("hard_reset");
+            } else if (typeof esploader.hardReset === 'function') {
+              await esploader.hardReset();
+            }
+          } catch(e) {}
         } catch (err) {
           logSys(t.logFlashFail(err.message), "error");
         } finally {
