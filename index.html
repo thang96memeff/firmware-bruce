@@ -304,6 +304,15 @@
         icon: 'fa-bolt'
       },
       { 
+        id: 'mywatch-c5', 
+        name: 'MyWatch C5 (ESP32-C5 N16R8)', 
+        chip: 'ESP32-C5', 
+        category: 'c5', 
+        desc: 'ST7789 240x296, CST816S Pro Touch UI, RISC-V Dual-Band WiFi 6, 16MB Flash + 8MB PSRAM.',
+        url: 'Bruce-mywatch-c5.bin',
+        icon: 'fa-stopwatch'
+      },
+      { 
         id: 'ESP32-C5-tft', 
         name: 'ESP32-C5 Generic / TFT', 
         chip: 'ESP32-C5', 
@@ -390,10 +399,10 @@
       },
       { 
         id: 'lilygo-t-display-ttgo', 
-        name: 'LilyGO T-Display TTGO', 
+        name: 'LilyGO T-Display TTGO (16MB)', 
         chip: 'ESP32', 
         category: 'esp32', 
-        desc: 'Compact form-factor 1.14 inch IPS ST7789 LCD.',
+        desc: 'Compact form-factor 1.14 inch IPS ST7789 LCD, 16MB Flash edition.',
         url: 'Bruce-lilygo-t-display-ttgo.bin',
         icon: 'fa-tablet-screen-button'
       },
@@ -508,13 +517,11 @@
       const [isMonitor, setIsMonitor] = useState(false);
       const [monitorBaud, setMonitorBaud] = useState(115200);
 
-      // Quản lý Ngôn ngữ (Tự động phát hiện theo IP người dùng, cho phép chuyển đổi)
+      // Quản lý Ngôn ngữ (Mặc định Tiếng Anh, cho phép chuyển đổi)
       const [lang, setLang] = useState(() => {
         const saved = localStorage.getItem('duscu_lang');
         if (saved === 'vi' || saved === 'en') return saved;
-        const navLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
-        const tz = (Intl.DateTimeFormat().resolvedOptions().timeZone || '').toLowerCase();
-        return (navLang.includes('vi') || tz.includes('ho_chi_minh') || tz.includes('saigon')) ? 'vi' : 'en';
+        return 'en';
       });
 
       const t = I18N[lang] || I18N.en;
