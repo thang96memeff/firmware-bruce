@@ -391,6 +391,42 @@
         icon: 'fa-tv'
       },
       { 
+        id: 'lilygo-t-display-s3-touch', 
+        name: 'LilyGO T-Display S3 Touch', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: '1.9 inch ST7789, CST816S Capacitive Touch with ProTouch kinetic engine, dual buttons.',
+        url: 'Bruce-lilygo-t-display-s3-touch.bin',
+        icon: 'fa-mobile-screen'
+      },
+      { 
+        id: 'ES3C28P', 
+        name: 'ES3C28P Touch (2.8" IPS)', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: '2.8 inch 240x320 IPS, FT6336G Capacitive Touch with ProTouch kinetic engine, ES8311 Audio, SDIO MicroSD.',
+        url: 'Bruce-ES3C28P.bin',
+        icon: 'fa-hand-pointer'
+      },
+      { 
+        id: 'elecrow-advance-35-s3', 
+        name: 'Elecrow CrowPanel Advance 3.5"', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: '3.5 inch 480x320 IPS ILI9488, GT911 Capacitive Touch with ProTouch kinetic engine, I2S Audio, SD Card.',
+        url: 'Bruce-elecrow-advance-35-s3.bin',
+        icon: 'fa-tv'
+      },
+      { 
+        id: 'smoochiee-board', 
+        name: 'Smoochiee Board', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'ESP32-S3 pentest platform, dual Grove, Sub-GHz RF, IR, INMP441 Mic & Buzzer.',
+        url: 'Bruce-smoochiee-board.bin',
+        icon: 'fa-microchip'
+      },
+      { 
         id: 'lilygo-t-deck', 
         name: 'LilyGO T-Deck / Plus', 
         chip: 'ESP32-S3', 
@@ -445,6 +481,15 @@
         desc: '2.8 inch ILI9341 resistive touch 2USB classic dev kit.',
         url: 'Bruce-CYD-2432S028.bin',
         icon: 'fa-desktop'
+      },
+      { 
+        id: 'CYD-2432W328C', 
+        name: 'CYD Capacitive Touch (2.8" C)', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.8 inch CST816T Capacitive Touch with ProTouch kinetic engine, ST7789/ILI9341 display, SD slot.',
+        url: 'Bruce-CYD-2432W328C.bin',
+        icon: 'fa-hand-pointer'
       },
       { 
         id: 'lilygo-t-display-ttgo', 
@@ -1244,17 +1289,63 @@
                             </div>
                             <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">{b.desc}</p>
                             {b.id === 'Morph-s3' && (
-                              <div className="mt-2 pt-2 border-t border-zinc-850 flex items-center justify-between gap-2">
-                                <span className="text-[10px] font-mono text-amber-400/90 flex items-center gap-1.5 truncate">
-                                  <i className="fa-solid fa-book-open text-amber-400"></i>
-                                  <span>{lang === 'vi' ? 'Xem cẩm nang sử dụng & cấu hình phím Morph S3' : 'View Morph S3 user guide & controls'}</span>
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={() => setShowMorphGuide(true)}
-                                  className="text-[10px] font-mono font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-2 py-0.5 rounded transition-colors shrink-0 shadow-sm">
-                                  {t.morphGuideCardHint}
-                                </button>
+                              <div className="mt-3 pt-2.5 border-t border-zinc-800 space-y-2">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-[11px] font-mono font-bold text-amber-400 flex items-center gap-1.5">
+                                    <i className="fa-solid fa-diagram-project text-amber-400"></i>
+                                    <span>{lang === 'vi' ? 'QUY TRÌNH NẠP & CẤU HÌNH MORPH S3:' : 'MORPH S3 SETUP WORKFLOW:'}</span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowMorphGuide(true)}
+                                    className="text-[10px] font-mono font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-2 py-0.5 rounded transition-colors shrink-0 shadow-sm flex items-center gap-1">
+                                    <i className="fa-solid fa-book-open"></i>
+                                    {t.morphGuideCardHint}
+                                  </button>
+                                </div>
+
+                                {/* 4 Steps Flow */}
+                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-1.5 text-[10px] font-mono">
+                                  <div className="bg-zinc-950/80 p-2 rounded border border-zinc-800/80">
+                                    <div className="text-emerald-400 font-bold flex items-center gap-1 mb-0.5">
+                                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[9px]">1</span>
+                                      <span>{lang === 'vi' ? 'NẠP CODE' : 'FLASH CODE'}</span>
+                                    </div>
+                                    <p className="text-zinc-400 text-[9.5px] leading-tight">
+                                      {lang === 'vi' ? 'Bấm Nạp Firmware trực tiếp trên web vào Morph S3' : 'Flash firmware directly via Web Flasher'}
+                                    </p>
+                                  </div>
+
+                                  <div className="bg-zinc-950/80 p-2 rounded border border-zinc-800/80">
+                                    <div className="text-cyan-400 font-bold flex items-center gap-1 mb-0.5">
+                                      <span className="w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-[9px]">2</span>
+                                      <span>{lang === 'vi' ? 'KẾT NỐI WIFI' : 'CONNECT WIFI'}</span>
+                                    </div>
+                                    <p className="text-zinc-400 text-[9.5px] leading-tight">
+                                      {lang === 'vi' ? 'Bắt Wi-Fi "Morph-Config" (KHÔNG MẬT KHẨU)' : 'Connect "Morph-Config" AP (NO PASSWORD)'}
+                                    </p>
+                                  </div>
+
+                                  <div className="bg-zinc-950/80 p-2 rounded border border-zinc-800/80">
+                                    <div className="text-amber-400 font-bold flex items-center gap-1 mb-0.5">
+                                      <span className="w-4 h-4 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-[9px]">3</span>
+                                      <span>{lang === 'vi' ? 'TÙY CHỈNH' : 'CONFIGURE'}</span>
+                                    </div>
+                                    <p className="text-zinc-400 text-[9.5px] leading-tight">
+                                      {lang === 'vi' ? 'Vào 192.168.4.1 chỉnh phím, xoay màn hình, chân module' : 'Open 192.168.4.1 to configure buttons, screen & pins'}
+                                    </p>
+                                  </div>
+
+                                  <div className="bg-zinc-950/80 p-2 rounded border border-zinc-800/80">
+                                    <div className="text-purple-400 font-bold flex items-center gap-1 mb-0.5">
+                                      <span className="w-4 h-4 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[9px]">4</span>
+                                      <span>{lang === 'vi' ? 'LƯU CẤU HÌNH' : 'SAVE & REBOOT'}</span>
+                                    </div>
+                                    <p className="text-zinc-400 text-[9.5px] leading-tight">
+                                      {lang === 'vi' ? 'Bấm Save & Reboot để lưu vĩnh viễn vào chip' : 'Click Save & Reboot to save configuration'}
+                                    </p>
+                                  </div>
+                                </div>
                               </div>
                             )}
                           </div>
@@ -1649,23 +1740,24 @@
 
                       <ol className="space-y-2 text-[11px] text-zinc-300 list-decimal list-inside bg-zinc-950 p-3 rounded-lg border border-zinc-800">
                         <li>
-                          <b className="text-zinc-100">{lang === 'vi' ? 'Kích hoạt Web Config:' : 'Enable Web Config:'}</b><br/>
-                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Trên màn hình Morph, vào menu Settings -> Morph Web Config (hoặc giữ phím cấu hình khi bật nguồn).' : 'On Morph screen, go to Settings -> Morph Web Config.'}</span>
+                          <b className="text-emerald-400">{lang === 'vi' ? 'BƯỚC 1 - NẠP CODE:' : 'STEP 1 - FLASH CODE:'}</b><br/>
+                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Nạp firmware "Bruce-Morph-s3.bin" trực tiếp qua Web Flasher này (khuyến nghị chọn Xóa trước khi nạp).' : 'Flash "Bruce-Morph-s3.bin" directly via Web Flasher (Erase before flash recommended).'}</span>
                         </li>
                         <li>
-                          <b className="text-zinc-100">{lang === 'vi' ? 'Kết nối WiFi:' : 'Connect to WiFi:'}</b><br/>
-                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Dùng điện thoại hoặc PC kết nối vào mạng WiFi do thiết bị phát ra: ' : 'Connect phone/PC to the WiFi access point: '}</span>
+                          <b className="text-cyan-400">{lang === 'vi' ? 'BƯỚC 2 - KẾT NỐI WIFI DO MẠCH PHÁT:' : 'STEP 2 - CONNECT TO MORPH WIFI:'}</b><br/>
+                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Dùng điện thoại hoặc PC kết nối vào mạng Wi-Fi nó phát ra: ' : 'Connect phone or PC to the WiFi AP: '}</span>
                           <code className="text-amber-400 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800 ml-1">Morph-Config</code>
-                          <span className="text-zinc-400 ml-2">({lang === 'vi' ? 'Mật khẩu:' : 'Pass:'} <code className="text-amber-400">12345678</code>)</span>
+                          <span className="text-emerald-400 font-bold ml-2">({lang === 'vi' ? 'KHÔNG MẬT KHẨU' : 'NO PASSWORD'})</span>
                         </li>
                         <li>
-                          <b className="text-zinc-100">{lang === 'vi' ? 'Mở trình duyệt Web:' : 'Open Web Browser:'}</b><br/>
-                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Mở trình duyệt và truy cập vào địa chỉ IP: ' : 'Browse to local IP address: '}</span>
-                          <code className="text-cyan-400 font-bold bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800 ml-1">http://192.168.4.1</code>
+                          <b className="text-amber-400">{lang === 'vi' ? 'BƯỚC 3 - TÙY CHỈNH CẤU HÌNH:' : 'STEP 3 - CONFIGURE HARDWARE:'}</b><br/>
+                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Mở trình duyệt web và truy cập địa chỉ IP: ' : 'Open web browser and go to: '}</span>
+                          <code className="text-cyan-400 font-bold bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800 ml-1">http://192.168.4.1</code><br/>
+                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Tùy chỉnh chế độ phím (1 nút Encoder / 2 nút / 3 nút / 5 nút), hướng xoay màn hình (0/90/180/270), chân CC1101, NRF24, thẻ nhớ SD, LED...' : 'Select button mode (Encoder / 2-Btn / 3-Btn / 5-Btn), screen rotation, pinouts for CC1101, NRF24, SD Card...'}</span>
                         </li>
                         <li>
-                          <b className="text-zinc-100">{lang === 'vi' ? 'Tùy chỉnh & Lưu:' : 'Configure & Save:'}</b><br/>
-                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Chọn chế độ phím (1 nút Encoder / 2 nút / 3 nút / 5 nút), xoay màn hình (0/90/180/270), đổi chân GPIO rồi bấm SAVE & REBOOT.' : 'Select Button Mode, Display Rotation, change pinouts and click SAVE & REBOOT.'}</span>
+                          <b className="text-purple-400">{lang === 'vi' ? 'BƯỚC 4 - LƯU CẤU HÌNH & REBOOT:' : 'STEP 4 - SAVE & REBOOT:'}</b><br/>
+                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Kiểm tra không bị trùng chân đỏ rồi bấm SAVE & REBOOT. Thiết bị tự lưu vĩnh viễn vào Flash và khởi động lại!' : 'Check for pin conflicts, then click SAVE & REBOOT. Settings are permanently saved!'}</span>
                         </li>
                       </ol>
                     </div>
