@@ -172,7 +172,7 @@ String getEncString(int sec) {
 
 void startScan() {
   currentAttack = ATK_NONE; 
-  currentLedState = LED_OFF;
+  currentLedState = LED_BLUE_SOLID; // Sáng đèn xanh dương khi đang quét
   scanCount = 0; 
   selectedCount = 0; 
   isScanning = true; 
@@ -482,7 +482,7 @@ void loop() {
   // Heartbeat định kỳ khi đang scan để Bruce không timeout
   if (isScanning && (millis() - scanHeartbeatTimer > 1000)) {
     scanHeartbeatTimer = millis(); 
-    uartPrint("."); 
+    uartPrintln("."); 
   }
 
   if (scanDoneTrigger) {
