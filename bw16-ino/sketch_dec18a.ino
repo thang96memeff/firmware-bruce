@@ -229,6 +229,8 @@ void startScan() {
 }
 
 void setup() {
+  delay(1000); // Đệm an toàn 1s: Ổn định nguồn và nhường kết nối cho bootloader/ISP flasher khi nạp
+
   // 1. Mở Port 0 (PA7 TX / PA8 RX)
   Serial.begin(BAUD);
 
@@ -242,14 +244,9 @@ void setup() {
 
   // Khởi động Wi-Fi chuẩn STA cho RTL8720DN (AmebaD 3.1.5)
   wifi_on(RTW_MODE_STA);
-  int ch;
-  wifi_get_channel(&ch);
   
   uartPrintln("\n[BW16 MULTI-TARGET READY]");
   uartPrintln("[UART: Serial0 (PA7/PA8) & Serial1 (PB1/PB2) ACTIVE]");
-
-  delay(200);
-  startScan(); 
 }
 
 // --- ATTACK LOGIC ---
