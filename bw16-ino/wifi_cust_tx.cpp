@@ -10,18 +10,28 @@ The use of this repository and its contents is entirely voluntary and at the use
 By using this repository, you agree to the above terms and confirm that you take full responsibility for complying with any relevant laws or rules.*/
 
 void wifi_tx_raw_frame(void* frame, size_t length) {
-  void *ptr = (void *)**(uint32_t **)(rltk_wlan_info + 0x10);
-  void *frame_control = alloc_mgtxmitframe(ptr + 0xae0);
+  if (rltk_wlan_info == NULL || frame == NULL || length == 0) return;
+  
+  uint32_t *p_info = *(uint32_t **)(rltk_wlan_info + 0x10);
+  if (p_info == NULL) return;
+  
+  void *ptr = (void *)*p_info;
+  if (ptr == NULL) return;
 
-  if (frame_control != 0) {
-    update_mgntframe_attrib(ptr, frame_control + 8);
-    memset((void *)*(uint32_t *)(frame_control + 0x80), 0, 0x68);
-    uint8_t *frame_data = (uint8_t *)*(uint32_t *)(frame_control + 0x80) + 0x28;
-    memcpy(frame_data, frame, length);
-    *(uint32_t *)(frame_control + 0x14) = length;
-    *(uint32_t *)(frame_control + 0x18) = length;
-    dump_mgntframe(ptr, frame_control);
-  }
+  void *frame_control = alloc_mgtxmitframe((uint8_t *)ptr + 0xae0);
+  if (frame_control == NULL) return;
+
+  uint32_t *pxmitbuf_ptr = (uint32_t *)((uint8_t *)frame_control + 0x80);
+  if (pxmitbuf_ptr == NULL || *pxmitbuf_ptr == 0) return;
+
+  uint8_t *pkt_buf = (uint8_t *)(*pxmitbuf_ptr);
+  update_mgntframe_attrib(ptr, (uint8_t *)frame_control + 8);
+  memset(pkt_buf, 0, 0x68);
+  uint8_t *frame_data = pkt_buf + 0x28;
+  memcpy(frame_data, frame, length);
+  *(uint32_t *)((uint8_t *)frame_control + 0x14) = length;
+  *(uint32_t *)((uint8_t *)frame_control + 0x18) = length;
+  dump_mgntframe(ptr, frame_control);
 }
 
 void wifi_tx_deauth_frame(void* src_mac, void* dst_mac, uint16_t reason) {

