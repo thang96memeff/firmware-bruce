@@ -65,3 +65,4 @@ Lỗi `Err: Flashloader download fail` xảy ra khi Image Tool mở cổng COM �
 4. Nếu muốn xóa sạch data cũ: **Tools** $\rightarrow$ **Erase Flash** $\rightarrow$ **Enable**.
 5. Đưa chip vào Download Mode (Giữ Burn $\rightarrow$ Nhấn nhả RST $\rightarrow$ Thả Burn).
 6. Nhấn nút **Upload**.
+

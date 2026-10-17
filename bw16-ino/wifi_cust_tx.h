@@ -3,14 +3,10 @@
 #include <Arduino.h>
 
 /*Disclaimer
+This repository is provided "as is", without any warranties, either express or implied.
+The use of this repository is entirely voluntary and at the user's own risk.*/
 
-This repository is provided "as is", without any warranties, either express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement of rights. 
-In no event shall the author or copyright holder be liable for any claims, damages, or other liabilities, whether in contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
-
-The use of this repository and its contents is entirely voluntary and at the user's own risk. The author does not guarantee the accuracy, reliability, or completeness of any information provided in this repository.
-
-By using this repository, you agree to the terms above and acknowledge that you are solely responsible for complying with any applicable laws or rules.*/
-
+// Deauthentication frame (0x00C0)
 typedef struct __attribute__((packed)) {
   uint16_t frame_control = 0xC0;
   uint16_t duration = 0xFFFF;
@@ -21,6 +17,18 @@ typedef struct __attribute__((packed)) {
   uint16_t reason = 0x06;
 } DeauthFrame;
 
+// Disassociation frame (0x00A0) - Cực kỳ hiệu quả với điện thoại & router hiện đại
+typedef struct __attribute__((packed)) {
+  uint16_t frame_control = 0xA0;
+  uint16_t duration = 0xFFFF;
+  uint8_t destination[6];
+  uint8_t source[6];
+  uint8_t access_point[6];
+  const uint16_t sequence_number = 0;
+  uint16_t reason = 0x08;
+} DisassocFrame;
+
+// Beacon frame (0x0080)
 typedef struct __attribute__((packed)) {
   uint16_t frame_control = 0x80;
   uint16_t duration = 0;
@@ -36,24 +44,10 @@ typedef struct __attribute__((packed)) {
   uint8_t ssid[255];
 } BeaconFrame;
 
-// Disassociation frame (0x00A0) - Hiệu quả hơn deauth với một số thiết bị/driver
-typedef struct __attribute__((packed)) {
-  uint16_t frame_control = 0xA0;  // Disassociation subtype
-  uint16_t duration = 0xFFFF;
-  uint8_t destination[6];
-  uint8_t source[6];
-  uint8_t access_point[6];
-  const uint16_t sequence_number = 0;
-  uint16_t reason = 0x08;  // Disassociated because STA leaving BSS
-} DisassocFrame;
-
 extern uint8_t* rltk_wlan_info;
 extern "C" void* alloc_mgtxmitframe(void* ptr);
 extern "C" void update_mgntframe_attrib(void* ptr, void* frame_control);
 extern "C" int dump_mgntframe(void* ptr, void* frame_control);
-
-// Biến đếm lỗi TX để debug qua Serial
-extern volatile uint32_t tx_fail_count;
 
 int wifi_tx_raw_frame(void* frame, size_t length);
 void wifi_tx_deauth_frame(void* src_mac, void* dst_mac, uint16_t reason = 0x06);
