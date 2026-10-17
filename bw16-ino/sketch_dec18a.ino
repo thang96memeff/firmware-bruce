@@ -255,9 +255,9 @@ void setup() {
 // --- ATTACK LOGIC ---
 void setTargetChannel(int ch) {
   if (cachedChannel != ch) {
-    wext_set_channel("wlan0", ch);
+    wifi_set_channel(ch);
     cachedChannel = ch;
-    delay(6); // Thời gian cho RF PLL ổn định tần số kênh mới
+    delay(25); // Thời gian cho RF synthesizer / PLL và DMA ổn định tần số kênh mới
   }
 }
 

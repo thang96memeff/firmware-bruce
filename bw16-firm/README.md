@@ -47,3 +47,4 @@ Dùng file đơn `firmware.bin` (chính là bản `km0_km4_image2.bin`) để n�
 * **ESP32 RX** (ví dụ GPIO 22, 5...) $\leftarrow$ **BW16 TX1** (Chân PB1 / D4)
 * **GND** $\leftrightarrow$ **GND**
 * **3V3/5V** $\leftrightarrow$ **VCC**
+
