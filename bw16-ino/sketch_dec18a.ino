@@ -197,8 +197,7 @@ void startScan() {
   if (ret != RTW_SUCCESS) {
     wifi_off();
     delay(200);
-    WiFi.enableConcurrent();
-    WiFi.status();
+    wifi_on(RTW_MODE_STA);
     delay(300);
     ret = wifi_scan_networks(scanResultHandler, NULL);
   }
@@ -241,9 +240,8 @@ void setup() {
   pinMode(PIN_LED_B, OUTPUT);
   setLedColor(0, 0, 0);
 
-  // Khởi động Wi-Fi chuẩn Concurrent STA+AP (RTW_MODE_STA_AP) cho RTL8720DN
-  WiFi.enableConcurrent();
-  WiFi.status();
+  // Khởi động Wi-Fi chuẩn STA cho RTL8720DN (AmebaD 3.1.5)
+  wifi_on(RTW_MODE_STA);
   int ch;
   wifi_get_channel(&ch);
   
