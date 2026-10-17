@@ -239,7 +239,6 @@ void setup() {
   pinMode(PIN_LED_B, OUTPUT);
   setLedColor(0, 0, 0);
   
-  WiFi.enableConcurrent();
   wifi_on(RTW_MODE_STA); 
   uartPrintln("\n[BW16 MULTI-TARGET READY]");
   uartPrintln("[UART: Serial0 (PA7/PA8) & Serial1 (PB1/PB2) ACTIVE]");
