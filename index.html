@@ -635,6 +635,12 @@
       const transportRef = useRef(null);
       const readerRef = useRef(null);
       const activeTransportRef = useRef(null);
+      const isMonitorRef = useRef(false);
+      const autoResumeMonitorRef = useRef(false);
+      const logTabRef = useRef(logTab);
+      useEffect(() => { logTabRef.current = logTab; }, [logTab]);
+      const monitorBaudRef = useRef(monitorBaud);
+      useEffect(() => { monitorBaudRef.current = monitorBaud; }, [monitorBaud]);
 
       // Đảm bảo đóng và giải phóng hoàn toàn cổng Serial
       const releaseAndClosePort = async (port) => {
@@ -660,12 +666,12 @@
           } catch(e) {}
           readerRef.current = null;
         }
-        if (port.readable) {
-          try {
+        try {
+          if (port.readable || port.writable) {
             await port.close();
-          } catch(e) {
-            console.warn("close port warning:", e);
           }
+        } catch(e) {
+          console.warn("close port warning:", e);
         }
       };
 
@@ -743,20 +749,75 @@
 
       useEffect(() => {
         const handleUsbDisconnect = (e) => {
-          if (portRef.current && e.target === portRef.current) {
-            disconnectPort();
-            logSys("[PORT] Thiết bị ngắt kết nối vật lý (USB cable unplugged).", "warning");
+          logSys("[PORT] Thiết bị tạm ngắt kết nối (USB unplugged). Giữ nguyên log cũ & sẵn sàng tự kết nối lại...", "warning");
+          if (isMonitorRef.current) {
+            autoResumeMonitorRef.current = true;
+          }
+          isMonitorRef.current = false;
+          setIsMonitor(false);
+          if (readerRef.current) {
+            try { readerRef.current.cancel(); } catch(err) {}
+            try { readerRef.current.releaseLock(); } catch(err) {}
+            readerRef.current = null;
+          }
+          setIsConnected(false);
+        };
+
+        const handleUsbConnect = (e) => {
+          logSys("[PORT] Phát hiện thiết bị vừa cắm vào cổng USB. Tự động kết nối...", "success");
+          const port = e.target;
+          portRef.current = port;
+          setIsConnected(true);
+
+          if (autoResumeMonitorRef.current || logTabRef.current === 'dev') {
+            setTimeout(async () => {
+              try {
+                await startMonitor(port);
+                logSys("[MONITOR] Tự động kích hoạt lại Serial Monitor thành công!", "success");
+              } catch(err) {
+                logSys(`[MONITOR] Thử kết nối lại tự động: ${err.message}`, "warning");
+              }
+            }, 450);
           }
         };
+
         if ('serial' in navigator) {
           navigator.serial.addEventListener('disconnect', handleUsbDisconnect);
-          return () => navigator.serial.removeEventListener('disconnect', handleUsbDisconnect);
+          navigator.serial.addEventListener('connect', handleUsbConnect);
+          return () => {
+            navigator.serial.removeEventListener('disconnect', handleUsbDisconnect);
+            navigator.serial.removeEventListener('connect', handleUsbConnect);
+          };
         }
       }, []);
 
       useEffect(() => {
         if (termRef.current) termRef.current.scrollTop = termRef.current.scrollHeight;
       }, [sysLogs, devLogs, logTab]);
+
+      // Tìm và kết nối cổng COM gần nhất (nếu có cấp quyền trước) hoặc yêu cầu chọn cổng
+      const ensurePortConnected = async (promptUser = false) => {
+        if (!('serial' in navigator)) {
+          throw new Error(t.logNoWebSerial);
+        }
+        let port = portRef.current;
+        if (!port && !promptUser) {
+          try {
+            const ports = await navigator.serial.getPorts();
+            if (ports && ports.length > 0) {
+              port = ports[ports.length - 1]; // Chọn cổng gần nhất đã cấp quyền
+            }
+          } catch(e) {}
+        }
+        if (!port) {
+          port = await navigator.serial.requestPort();
+        }
+        if (port) {
+          portRef.current = port;
+          setIsConnected(true);
+        }
+        return port;
+      };
 
       // Serial Connection Logic
       const connectPort = async () => {
@@ -767,7 +828,7 @@
           if (!window.ESP_TOOLS) {
             throw new Error(t.logNoEsptool);
           }
-          const port = await navigator.serial.requestPort();
+          const port = await ensurePortConnected(true);
           await releaseAndClosePort(port);
           portRef.current = port;
           setIsConnected(true);
@@ -805,7 +866,7 @@
       };
 
       const disconnectPort = async () => {
-        await stopMonitor();
+        await stopMonitor(true);
         if (portRef.current) {
           await releaseAndClosePort(portRef.current);
           portRef.current = null;
@@ -815,55 +876,80 @@
         logSys(t.logPortDisconnect, "warning");
       };
 
-      // Serial Monitor Logic
-      const startMonitor = async () => {
+      // Serial Monitor Logic - Tự kết nối COM gần nhất, tự khôi phục khi cắm lại & ghép dòng hoàn chỉnh
+      const startMonitor = async (targetPort = null) => {
+        if (isFlashing || isErasingOnly) return;
+        autoResumeMonitorRef.current = true;
         try {
-          if (!portRef.current) return;
-          await stopMonitor();
-          await releaseAndClosePort(portRef.current);
-          await new Promise(r => setTimeout(r, 100));
+          let port = targetPort || portRef.current;
+          if (!port) {
+            port = await ensurePortConnected(false);
+          }
+          if (!port) return;
 
-          const transport = new window.ESP_TOOLS.Transport(portRef.current);
-          transportRef.current = transport;
-          activeTransportRef.current = transport;
-          await transport.connect(parseInt(monitorBaud));
+          await stopMonitor(false);
+          await releaseAndClosePort(port);
+          await new Promise(r => setTimeout(r, 120));
+
+          const baud = parseInt(monitorBaudRef.current) || 115200;
+          await port.open({ baudRate: baud });
+          isMonitorRef.current = true;
           setIsMonitor(true);
           setLogTab('dev');
-          logSys(t.logMonitorStart(monitorBaud), 'success');
+          logSys(t.logMonitorStart(baud), 'success');
 
-          while (transport.device.readable && setIsMonitor) {
-            const reader = transport.device.readable.getReader();
-            readerRef.current = reader;
-            try {
-              while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                const lines = new TextDecoder().decode(value).split('\n');
-                lines.forEach(l => { if (l.trim()) logDev(l.trim()); });
+          const decoder = new TextDecoder();
+          let partialLine = "";
+          const reader = port.readable.getReader();
+          readerRef.current = reader;
+
+          try {
+            while (isMonitorRef.current && port.readable) {
+              const { value, done } = await reader.read();
+              if (done) break;
+              if (value) {
+                partialLine += decoder.decode(value, { stream: true });
+                const lines = partialLine.split(/\r?\n/);
+                partialLine = lines.pop(); // Giữ lại phần chưa có ký tự xuống dòng
+                for (const line of lines) {
+                  if (line.length > 0) logDev(line);
+                }
               }
-            } catch (e) { break; } 
-            finally { reader.releaseLock(); readerRef.current = null; }
+            }
+          } catch (e) {
+            if (isMonitorRef.current) {
+              console.warn("Serial Monitor stream stopped:", e);
+            }
+          } finally {
+            try { reader.releaseLock(); } catch(e) {}
+            readerRef.current = null;
           }
         } catch (err) {
           logSys(t.logMonitorErr(err.message), 'error');
+          isMonitorRef.current = false;
           setIsMonitor(false);
         }
       };
 
-      const stopMonitor = async () => {
+      const stopMonitor = async (resetAutoResume = true) => {
+        if (resetAutoResume) {
+          autoResumeMonitorRef.current = false;
+        }
+        isMonitorRef.current = false;
+        setIsMonitor(false);
         if (readerRef.current) {
-          await readerRef.current.cancel().catch(()=>{});
+          try { await readerRef.current.cancel(); } catch(e) {}
+          try { readerRef.current.releaseLock(); } catch(e) {}
           readerRef.current = null;
         }
         if (transportRef.current) {
-          await transportRef.current.disconnect().catch(()=>{});
+          try { await transportRef.current.disconnect(); } catch(e) {}
           transportRef.current = null;
           activeTransportRef.current = null;
         }
         if (portRef.current) {
           await releaseAndClosePort(portRef.current);
         }
-        setIsMonitor(false);
       };
 
       // Full Chip Erase Only
@@ -1494,10 +1580,10 @@
                       </select>
 
                       <button 
-                        onClick={isMonitor ? stopMonitor : startMonitor} 
-                        disabled={!isConnected || isFlashing} 
+                        onClick={isMonitor ? () => stopMonitor(true) : () => startMonitor()} 
+                        disabled={isFlashing || isErasingOnly} 
                         className={`px-2.5 py-1 rounded text-xs font-mono border transition-colors disabled:opacity-40 flex items-center gap-1 ${
-                          isMonitor ? 'bg-zinc-800 text-rose-400 border-rose-500/40' : 'bg-zinc-800 text-cyan-400 border-cyan-500/40'
+                          isMonitor ? 'bg-zinc-800 text-rose-400 border-rose-500/40 hover:bg-rose-950/40' : 'bg-zinc-800 text-cyan-400 border-cyan-500/40 hover:bg-cyan-950/40'
                         }`}>
                         <i className={`fa-solid ${isMonitor ? 'fa-stop' : 'fa-play'} text-[10px]`}></i>
                         <span>{isMonitor ? t.stopMon : t.startMon}</span>
