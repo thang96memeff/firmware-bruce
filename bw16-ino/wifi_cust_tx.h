@@ -36,13 +36,28 @@ typedef struct __attribute__((packed)) {
   uint8_t ssid[255];
 } BeaconFrame;
 
+// Disassociation frame (0x00A0) - Hiệu quả hơn deauth với một số thiết bị/driver
+typedef struct __attribute__((packed)) {
+  uint16_t frame_control = 0xA0;  // Disassociation subtype
+  uint16_t duration = 0xFFFF;
+  uint8_t destination[6];
+  uint8_t source[6];
+  uint8_t access_point[6];
+  const uint16_t sequence_number = 0;
+  uint16_t reason = 0x08;  // Disassociated because STA leaving BSS
+} DisassocFrame;
+
 extern uint8_t* rltk_wlan_info;
 extern "C" void* alloc_mgtxmitframe(void* ptr);
 extern "C" void update_mgntframe_attrib(void* ptr, void* frame_control);
 extern "C" int dump_mgntframe(void* ptr, void* frame_control);
 
-void wifi_tx_raw_frame(void* frame, size_t length);
+// Biến đếm lỗi TX để debug qua Serial
+extern volatile uint32_t tx_fail_count;
+
+int wifi_tx_raw_frame(void* frame, size_t length);
 void wifi_tx_deauth_frame(void* src_mac, void* dst_mac, uint16_t reason = 0x06);
+void wifi_tx_disassoc_frame(void* src_mac, void* dst_mac, uint16_t reason = 0x08);
 void wifi_tx_beacon_frame(void* src_mac, void* dst_mac, const char *ssid);
 
 #endif
