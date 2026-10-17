@@ -81,6 +81,7 @@ const int allChannels[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 36, 40, 44, 48, 14
 const int totalChannels = 19;
 
 // --- DUAL UART HELPER (Truyền đồng thời cả Port 0 và Port 1) ---
+// Dùng cho protocol messages mà Bruce OS cần nhận: SCAN:OK, AP:, [STOPPED], sci
 void uartPrint(const String &s) {
   Serial.print(s);
   Serial1.print(s);
@@ -94,6 +95,13 @@ void uartPrintln(const String &s) {
 void uartPrintln() {
   Serial.println();
   Serial1.println();
+}
+
+// --- DEBUG LOG (Chỉ gửi ra Serial0/USB cho PC, KHÔNG gửi sang ESP32) ---
+// Dùng cho log trạng thái tấn công: [DEAUTH], [WPA3], [SELECTED], [ATTACK STARTED]
+// Nếu gửi sang ESP32 → Bruce parse lỗi → "ERROR: Command not found" → ESP32 crash
+void debugLog(const String &s) {
+  Serial.println(s);
 }
 
 // --- LED CONTROL ---
@@ -342,10 +350,10 @@ void atkDeauth() {
   static unsigned long lastLogTime = 0;
   static uint32_t packetCount = 0;
   
-  // Throttle bằng millis(): 80ms giữa các đợt → ~12 burst/giây
-  // Đủ nhanh để hiệu quả, đủ chậm để DMA buffer kịp giải phóng
+  // Throttle bằng millis(): 40ms giữa các đợt → ~25 burst/giây (~75 pkt/s)
+  // RAM validation trong wifi_tx_raw_frame() đảm bảo không crash dù gửi nhanh
   unsigned long now = millis();
-  if (now - lastBurstTime < 80) return;
+  if (now - lastBurstTime < 40) return;
   lastBurstTime = now;
   
   if (selectedCount == 0) return;

@@ -84,3 +84,4 @@ void wifi_tx_beacon_frame(void* src_mac, void* dst_mac, const char *ssid) {
   }
   wifi_tx_raw_frame(&frame, 38 + frame.ssid_length);
 }
+
