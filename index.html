@@ -749,6 +749,7 @@
 
       useEffect(() => {
         const handleUsbDisconnect = (e) => {
+          if (portRef.current && e.target && e.target !== portRef.current) return;
           logSys("[PORT] Thiết bị tạm ngắt kết nối (USB unplugged). Giữ nguyên log cũ & sẵn sàng tự kết nối lại...", "warning");
           if (isMonitorRef.current) {
             autoResumeMonitorRef.current = true;
@@ -876,7 +877,7 @@
         logSys(t.logPortDisconnect, "warning");
       };
 
-      // Serial Monitor Logic - Tự kết nối COM gần nhất, tự khôi phục khi cắm lại & ghép dòng hoàn chỉnh
+      // Serial Monitor Logic - Tự kết nối COM gần nhất, tự khôi phục khi cắm lại, hỗ trợ DTR kích hoạt ESP32-S3 & loop chống rớt
       const startMonitor = async (targetPort = null) => {
         if (isFlashing || isErasingOnly) return;
         autoResumeMonitorRef.current = true;
@@ -887,12 +888,27 @@
           }
           if (!port) return;
 
-          await stopMonitor(false);
-          await releaseAndClosePort(port);
-          await new Promise(r => setTimeout(r, 120));
-
+          // Mở port nếu chưa mở
           const baud = parseInt(monitorBaudRef.current) || 115200;
-          await port.open({ baudRate: baud });
+          try {
+            if (!port.readable && !port.writable) {
+              await port.open({ baudRate: baud });
+            }
+          } catch(openErr) {
+            // Nếu port đang bận hoặc cần refresh baud, giải phóng và mở lại
+            await releaseAndClosePort(port);
+            await new Promise(r => setTimeout(r, 120));
+            await port.open({ baudRate: baud });
+          }
+
+          // Tín hiệu phần cứng: DTR = true (BẮT BUỘC để ESP32-S3 USB CDC bắt đầu xuất dữ liệu Serial)
+          // RTS = false (đảm bảo chân EN ở mức HIGH, chip chạy bình thường không bị kẹt trong bootloader)
+          try {
+            await port.setSignals({ dataTerminalReady: true, requestToSend: false });
+          } catch(sigErr) {
+            console.warn("setSignals warning:", sigErr);
+          }
+
           isMonitorRef.current = true;
           setIsMonitor(true);
           setLogTab('dev');
@@ -900,29 +916,40 @@
 
           const decoder = new TextDecoder();
           let partialLine = "";
-          const reader = port.readable.getReader();
-          readerRef.current = reader;
 
-          try {
-            while (isMonitorRef.current && port.readable) {
-              const { value, done } = await reader.read();
-              if (done) break;
-              if (value) {
-                partialLine += decoder.decode(value, { stream: true });
-                const lines = partialLine.split(/\r?\n/);
-                partialLine = lines.pop(); // Giữ lại phần chưa có ký tự xuống dòng
-                for (const line of lines) {
-                  if (line.length > 0) logDev(line);
+          // Vòng lặp đọc 2 tầng theo chuẩn Spacehuhn / Web Serial:
+          // Nếu gặp lỗi framing/parity tạm thời, tự động re-acquire reader mà không bao giờ đóng port hay mất icon
+          while (isMonitorRef.current && (port.readable || portRef.current?.readable)) {
+            const activePort = portRef.current || port;
+            if (!activePort || !activePort.readable) break;
+
+            try {
+              const reader = activePort.readable.getReader();
+              readerRef.current = reader;
+
+              while (isMonitorRef.current) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                if (value) {
+                  partialLine += decoder.decode(value, { stream: true });
+                  const lines = partialLine.split(/\r?\n/);
+                  partialLine = lines.pop(); // Giữ lại phần chưa có ký tự xuống dòng
+                  for (const line of lines) {
+                    if (line.length > 0) logDev(line);
+                  }
                 }
               }
+            } catch (readErr) {
+              if (isMonitorRef.current) {
+                console.warn("Serial glitch recovered:", readErr);
+                await new Promise(r => setTimeout(r, 80));
+              }
+            } finally {
+              if (readerRef.current) {
+                try { readerRef.current.releaseLock(); } catch(e) {}
+                readerRef.current = null;
+              }
             }
-          } catch (e) {
-            if (isMonitorRef.current) {
-              console.warn("Serial Monitor stream stopped:", e);
-            }
-          } finally {
-            try { reader.releaseLock(); } catch(e) {}
-            readerRef.current = null;
           }
         } catch (err) {
           logSys(t.logMonitorErr(err.message), 'error');
