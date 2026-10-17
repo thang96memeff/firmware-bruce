@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-typedef struct {
+typedef struct __attribute__((packed)) {
   uint16_t frame_control = 0xC0;
   uint16_t duration = 0xFFFF;
   uint8_t destination[6];
@@ -13,7 +13,7 @@ typedef struct {
   uint16_t reason = 0x06;
 } DeauthFrame;
 
-typedef struct {
+typedef struct __attribute__((packed)) {
   uint16_t frame_control = 0x80;
   uint16_t duration = 0;
   uint8_t destination[6];
