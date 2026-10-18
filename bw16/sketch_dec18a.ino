@@ -220,8 +220,8 @@ void processCommand(String cmd) {
     }
   }
   
-  else if (cmd.startsWith("atk:")) {
-      String type = cmd.substring(4);
+  else if (cmd.startsWith("atk:") || cmd == "at" || cmd == "atk") {
+      String type = cmd.startsWith("atk:") ? cmd.substring(4) : "deauth";
       if (type == "deauth" && selectedCount > 0) { 
           currentAttack = ATK_DEAUTH; 
           currentLedState = LED_RED_BLINK; 
