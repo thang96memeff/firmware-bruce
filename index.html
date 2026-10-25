@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DUSCU FLASHER | Industrial Hardware Utility</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            zinc: { 850: '#191a1d', 900: '#121316', 950: '#090a0c' },
+            amber: { 500: '#f59e0b', 400: '#fbbf24' },
+            cyan: { 500: '#06b6d4', 400: '#22d3ee' }
+          },
+          fontFamily: {
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
+            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- ESPTOOL-JS v0.7.0 (Hỗ trợ ESP32, ESP32-S3, ESP32-C3, ESP32-C5, ESP32-C6...) -->
+  <script type="module">
+    import { Transport, ESPLoader, bstrToUi8 } from 'https://cdn.jsdelivr.net/npm/esptool-js@0.7.0/+esm';
+
+    // Helper tạo Uint8Array đồng bộ chính xác với Realm / Scope của ESPLoader module
+    const toModuleUint8Array = (input) => {
+      if (!input) return new Uint8Array(0);
+      if (input instanceof Uint8Array) {
+        return new Uint8Array(input.buffer, input.byteOffset, input.byteLength);
+      }
+      if (input instanceof ArrayBuffer) {
+        return new Uint8Array(input);
+      }
+      if (input.buffer && input.buffer instanceof ArrayBuffer) {
+        return new Uint8Array(input.buffer, input.byteOffset || 0, input.byteLength || input.buffer.byteLength);
+      }
+      if (typeof input === 'string') {
+        return bstrToUi8 ? bstrToUi8(input) : new TextEncoder().encode(input);
+      }
+      return new Uint8Array(input);
+    };
+
+    // Monkey-patch writeFlash prototype để bảo đảm cross-realm compatibility với Babel Standalone
+    const origWriteFlash = ESPLoader.prototype.writeFlash;
+    ESPLoader.prototype.writeFlash = async function(options) {
+      if (options && Array.isArray(options.fileArray)) {
+        for (let i = 0; i < options.fileArray.length; i++) {
+          const item = options.fileArray[i];
+          if (item && item.data !== undefined) {
+            item.data = toModuleUint8Array(item.data);
+          }
+        }
+      }
+      return await origWriteFlash.call(this, options);
+    };
+
+    window.ESP_TOOLS = {
+      Transport,
+      ESPLoader,
+      bstrToUi8,
+      toUint8Array: toModuleUint8Array
+    };
+    window.dispatchEvent(new Event('esptool_ready'));
+  </script>
+
+  <style>
+    /* Rainbow Shimmer viền 2px cho Morph S3 */
+    @keyframes rainbowShimmer {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .morph-rainbow-border {
+      position: relative;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #ff0055, #ff7700, #ffdd00, #00ff66, #00ccff, #a855f7, #ff0055);
+      background-size: 300% 300%;
+      animation: rainbowShimmer 3.5s linear infinite;
+      padding: 2px;
+    }
+    /* Cyber Gradient viền 2px cho Xingzhi Cube S3 Launcher */
+    @keyframes cyberShimmer {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    .launcher-cyber-border {
+      position: relative;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #06b6d4, #3b82f6, #ec4899, #f59e0b, #10b981, #06b6d4);
+      background-size: 300% 300%;
+      animation: cyberShimmer 3.5s linear infinite;
+      padding: 2px;
+    }
+    .hero-inner-card {
+      background-color: #141416;
+      border-radius: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #090a0c; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 2px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-zinc-300 font-sans antialiased m-0 p-0 h-screen overflow-hidden flex flex-col select-none">
+  <div id="root" class="h-full flex flex-col"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo } = React;
+
+    const GITHUB_API_URL = "https://api.github.com/repos/thang96memeff/firmware-bruce/contents";
+    const GITHUB_RAW_BASE = "https://thang96memeff.github.io/firmware-bruce/";
+
+    // Đa ngôn ngữ (i18n): Tự động phát hiện theo IP người dùng hoặc chuyển đổi thủ công
+    const I18N = {
+      vi: {
+        appSub: "CÔNG CỤ NẠP PHẦN CỨNG // ESP32 • ESP32-S3 • ESP32-C5 (WIFI 6)",
+        syncBtn: "GITHUB SYNC",
+        syncTooltip: "Đồng bộ danh sách file từ GitHub",
+        serialSec: "[01] GIAO TIẾP SERIAL",
+        connectBtn: "KẾT NỐI THIẾT BỊ",
+        disconnectBtn: "NGẮT KẾT NỐI",
+        baudTooltip: "Tốc độ nạp Bootloader",
+        hardwareSec: "[02] BO MẠCH ĐÍCH",
+        profilesCount: "CẤU HÌNH PHẦN CỨNG",
+        morphTitle: "MORPH S3 FLAGSHIP",
+        morphDesc: "ESP32-S3 N16R8 • Sniffer / Sub-GHz / BLE",
+        morphGuideBtn: "HƯỚNG DẪN MORPH",
+        morphGuideBadge: "HƯỚNG DẪN",
+        morphGuideCardHint: "XEM HƯỚNG DẪN",
+        morphGuideTitle: "HƯỚNG DẪN SỬ DỤNG MORPH S3 FLAGSHIP",
+        morphGuideSub: "CẨM NANG PHẦN CỨNG • THAO TÁC PHÍM • WEB CONFIG • NẠP FIRMWARE",
+        morphTabControls: "🎮 THAO TÁC PHÍM",
+        morphTabHardware: "🎯 PHẦN CỨNG & CHÂN",
+        morphTabWebui: "🌐 WEB CONFIG",
+        morphTabFlash: "⚡ HƯỚNG DẪN NẠP",
+        morphSelectNow: "CHỌN NẠP MORPH S3 NGAY",
+        morphCloseBtn: "ĐÓNG",
+        launcherTitle: "XINGZHI CUBE LAUNCHER",
+        launcherDesc: "ESP32-S3 • Trình khởi chạy đa ứng dụng",
+        selectBtn: "CHỌN",
+        activeBtn: "[ĐANG CHỌN]",
+        readyBadge: "SẴN SÀNG",
+        cloudReadyBadge: "CLOUD SẴN SÀNG",
+        customLocalBadge: "TỰ CHỌN / CỤC BỘ",
+        externalTitle: "FIRMWARE NGOÀI (.BIN)",
+        offsetLabel: "OFFSET:",
+        dropHint: "CHỌN FILE .BIN TỪ MÁY TÍNH",
+        localLoaded: "ĐÃ TẢI TỆP CỤC BỘ",
+        deselectFile: "[BỎ CHỌN FILE CỤC BỘ]",
+        eraseBefore: "XÓA TRƯỚC KHI NẠP",
+        eraseAllBtn: "XÓA SẠCH",
+        eraseConfirm: "XÁC NHẬN: XÓA SẠCH TOÀN BỘ BỘ NHỚ FLASH (Full Chip Erase)?\nToàn bộ NVS, WiFi, cài đặt và phân vùng sẽ bị xóa trắng!",
+        flashBtn: "NẠP FIRMWARE",
+        flashingBtn: "ĐANG NẠP...",
+        sysLogTab: "NHẬT KÝ HỆ THỐNG",
+        serialMonTab: "SERIAL MONITOR",
+        clearLogTooltip: "Xóa màn hình console",
+        startMon: "BẮT ĐẦU",
+        stopMon: "DỪNG",
+        sysPlaceholder: "// Chờ kết nối thiết bị hoặc lệnh nạp firmware...",
+        monPlaceholder: "// Chưa có dữ liệu Serial (Bấm 'BẮT ĐẦU' để mở monitor)...",
+        portOnline: "CỔNG TRỰC TUYẾN",
+        portOffline: "CỔNG NGOẠI TUYẾN",
+        catAll: "TẤT CẢ",
+        catS3: "ESP32-S3",
+        catC5: "C5 (WIFI 6)",
+        catEsp32: "ESP32",
+        vipGroup: "★ CẤU HÌNH VIP / HERO",
+        standardGroup: "CẤU HÌNH PHẦN CỨNG TIÊU CHUẨN",
+        logInit: "[INIT] DUSCU FLASHER v2.5 sẵn sàng (ESP32 / ESP32-S3 / ESP32-C5 / Multi-App Launcher).",
+        logSyncSuccess: (count) => `[SYNC] Đã đồng bộ ${count} file firmware từ GitHub repository.`,
+        logSyncWarn: (err) => `[WARN] GitHub API: Sử dụng danh mục mặc định (${err})`,
+        logPortSuccess: "[PORT] Đã kết nối cổng COM thành công.",
+        logPortDisconnect: "[PORT] Đã ngắt kết nối cổng COM.",
+        logPortErr: (err) => `[ERR] Lỗi kết nối cổng: ${err}`,
+        logNoWebSerial: "Trình duyệt không hỗ trợ Web Serial API. Vui lòng mở bằng Google Chrome hoặc MS Edge trên PC.",
+        logNoEsptool: "Thư viện ESPLoader chưa sẵn sàng. Kiểm tra kết nối mạng.",
+        logEraseStart: "[CMD] Bắt đầu tiến trình xóa sạch Flash (Full Chip Erase)...",
+        logEraseExec: "[EXEC] Đang phát lệnh xóa chip qua Bootloader...",
+        logEraseSuccess: "[SUCCESS] XÓA SẠCH BỘ NHỚ FLASH THÀNH CÔNG.",
+        logEraseFail: (err) => `[FAIL] Lỗi xóa Flash: ${err}`,
+        logNoTarget: "[ERR] Chưa chọn bo mạch đích hoặc file firmware .bin!",
+        logLocalFile: (name, mb) => `[FILE] Nạp file cục bộ: ${name} [${mb} MB]`,
+        logFetching: (file) => `[FETCH] Đang tải firmware: ${file}...`,
+        logFetchFail: (file) => `File ${file} chưa có sẵn trên GitHub. Bạn có thể dùng ô nạp file ngoài để chọn file .bin cục bộ.`,
+        logSyncBootloader: (baud) => `[SYNC] Đồng bộ bootloader @ ${baud} baud...`,
+        logWriteFlash: (addr, erase) => `[WRITE] Ghi bộ nhớ tại địa chỉ 0x${addr} ${erase ? '(Xóa toàn bộ Flash)' : ''}...`,
+        logFlashSuccess: "[SUCCESS] GHI FIRMWARE HOÀN TẤT THÀNH CÔNG 100%.",
+        logReboot: "[REBOOT] Đang khởi động lại thiết bị...",
+        logFlashFail: (err) => `[FAIL] Ghi Firmware thất bại: ${err}`,
+        logMonitorStart: (baud) => `[MONITOR] Bắt đầu đọc Serial @ ${baud} baud.`,
+        logMonitorErr: (err) => `[ERR] Serial Monitor: ${err}`
+      },
+      en: {
+        appSub: "HARDWARE PROGRAMMING INSTRUMENT // ESP32 • ESP32-S3 • ESP32-C5 (WIFI 6)",
+        syncBtn: "GITHUB SYNC",
+        syncTooltip: "Synchronize firmware file list from GitHub",
+        serialSec: "[01] SERIAL INTERFACE",
+        connectBtn: "CONNECT DEVICE",
+        disconnectBtn: "DISCONNECT",
+        baudTooltip: "Bootloader flash baud rate",
+        hardwareSec: "[02] TARGET HARDWARE",
+        profilesCount: "HARDWARE PROFILES",
+        morphTitle: "MORPH S3 FLAGSHIP",
+        morphDesc: "ESP32-S3 N16R8 • Sniffer / Sub-GHz / BLE",
+        morphGuideBtn: "MORPH GUIDE",
+        morphGuideBadge: "GUIDE",
+        morphGuideCardHint: "VIEW MANUAL",
+        morphGuideTitle: "MORPH S3 FLAGSHIP USER MANUAL",
+        morphGuideSub: "HARDWARE OVERVIEW • BUTTON CONTROLS • WEB CONFIG • FLASHING GUIDE",
+        morphTabControls: "🎮 CONTROLS",
+        morphTabHardware: "🎯 HARDWARE & PINS",
+        morphTabWebui: "🌐 WEB CONFIG",
+        morphTabFlash: "⚡ FLASHING GUIDE",
+        morphSelectNow: "SELECT MORPH S3 NOW",
+        morphCloseBtn: "CLOSE",
+        launcherTitle: "XINGZHI CUBE LAUNCHER",
+        launcherDesc: "ESP32-S3 • Official Multi-App Launcher",
+        selectBtn: "SELECT",
+        activeBtn: "[ACTIVE]",
+        readyBadge: "READY",
+        cloudReadyBadge: "CLOUD READY",
+        customLocalBadge: "CUSTOM / LOCAL",
+        externalTitle: "EXTERNAL FIRMWARE (.BIN)",
+        offsetLabel: "OFFSET:",
+        dropHint: "SELECT .BIN FILE FROM COMPUTER",
+        localLoaded: "LOCAL LOADED",
+        deselectFile: "[DESELECT LOCAL FILE]",
+        eraseBefore: "ERASE BEFORE FLASH",
+        eraseAllBtn: "ERASE ALL",
+        eraseConfirm: "CONFIRM: FULL CHIP ERASE?\nAll NVS data, WiFi credentials, settings and partitions will be permanently erased!",
+        flashBtn: "FLASH FIRMWARE",
+        flashingBtn: "PROGRAMMING...",
+        sysLogTab: "SYSTEM LOG",
+        serialMonTab: "SERIAL MONITOR",
+        clearLogTooltip: "Clear console output",
+        startMon: "START",
+        stopMon: "STOP",
+        sysPlaceholder: "// Waiting for device connection or flash command...",
+        monPlaceholder: "// No Serial data (Click 'START' to open monitor)...",
+        portOnline: "PORT ONLINE",
+        portOffline: "PORT OFFLINE",
+        catAll: "ALL",
+        catS3: "ESP32-S3",
+        catC5: "C5 (WIFI 6)",
+        catEsp32: "ESP32",
+        vipGroup: "★ VIP / HERO PROFILES",
+        standardGroup: "STANDARD HARDWARE PROFILES",
+        logInit: "[INIT] DUSCU FLASHER v2.5 ready (ESP32 / ESP32-S3 / ESP32-C5 / Multi-App Launcher).",
+        logSyncSuccess: (count) => `[SYNC] Synchronized ${count} firmware files from GitHub repository.`,
+        logSyncWarn: (err) => `[WARN] GitHub API: Using default profiles (${err})`,
+        logPortSuccess: "[PORT] Connected to COM port successfully.",
+        logPortDisconnect: "[PORT] Disconnected from COM port.",
+        logPortErr: (err) => `[ERR] Port connection failed: ${err}`,
+        logNoWebSerial: "Browser does not support Web Serial API. Please open in Google Chrome or MS Edge on PC.",
+        logNoEsptool: "ESPLoader library is not ready. Check network connection.",
+        logEraseStart: "[CMD] Starting Full Chip Erase process...",
+        logEraseExec: "[EXEC] Sending erase command via Bootloader...",
+        logEraseSuccess: "[SUCCESS] FULL CHIP FLASH ERASED SUCCESSFULLY.",
+        logEraseFail: (err) => `[FAIL] Flash erase failed: ${err}`,
+        logNoTarget: "[ERR] No target hardware or firmware .bin file selected!",
+        logLocalFile: (name, mb) => `[FILE] Loading local file: ${name} [${mb} MB]`,
+        logFetching: (file) => `[FETCH] Downloading firmware: ${file}...`,
+        logFetchFail: (file) => `File ${file} not available on GitHub. You can use external file loader to select a local .bin file.`,
+        logSyncBootloader: (baud) => `[SYNC] Syncing bootloader @ ${baud} baud...`,
+        logWriteFlash: (addr, erase) => `[WRITE] Writing memory at 0x${addr} ${erase ? '(Full Chip Erase)' : ''}...`,
+        logFlashSuccess: "[SUCCESS] FIRMWARE PROGRAMMING COMPLETED 100%.",
+        logReboot: "[REBOOT] Hard resetting target device...",
+        logFlashFail: (err) => `[FAIL] Flash programming failed: ${err}`,
+        logMonitorStart: (baud) => `[MONITOR] Starting Serial Monitor @ ${baud} baud.`,
+        logMonitorErr: (err) => `[ERR] Serial Monitor: ${err}`
+      }
+    };
+
+    // Danh sách toàn bộ các Bo mạch hỗ trợ trong dự án
+    const MASTER_BOARDS = [
+      // 1. VIP HERO PROFILES (FEATURED HARDWARE)
+      { 
+        id: 'Morph-s3', 
+        name: 'Morph S3 Flagship', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        isHero: true,
+        desc: 'Morph S3 N16R8 Octal-PSRAM. Full Sniffer, Sub-GHz CC1101, NRF24, BLE & Touch UI.',
+        url: 'Bruce-Morph-s3.bin',
+        icon: 'fa-wand-magic-sparkles'
+      },
+      { 
+        id: 'Launcher-xingzhi-cube-s3', 
+        name: 'Xingzhi Cube S3 Launcher', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        isHero: true,
+        desc: 'Official Multi-Boot Launcher for Xingzhi Cube S3. 240x240 ST7789 LCD, 3-Key Navigation.',
+        url: 'Launcher-xingzhi-cube-s3.bin',
+        icon: 'fa-cubes-stacked'
+      },
+
+      // 2. C5 Series (RISC-V Dual-Band WiFi 6)
+      { 
+        id: 'lilygo-c5-1_9-inch', 
+        name: 'LilyGO T-Display C5 (1.9")', 
+        chip: 'ESP32-C5', 
+        category: 'c5', 
+        desc: 'ST7789 1.9 inch 170x320. RISC-V Single-Core 240MHz, 2.4/5GHz Dual-Band WiFi 6.',
+        url: 'Bruce-lilygo-c5-1_9-inch.bin',
+        icon: 'fa-bolt'
+      },
+      { 
+        id: 'mywatch-c5', 
+        name: 'MyWatch C5 (ESP32-C5 N16R8)', 
+        chip: 'ESP32-C5', 
+        category: 'c5', 
+        desc: 'ST7789 240x296, CST816S Pro Touch UI, RISC-V Dual-Band WiFi 6, 16MB Flash + 8MB PSRAM.',
+        url: 'Bruce-mywatch-c5.bin',
+        icon: 'fa-stopwatch'
+      },
+      { 
+        id: 'ESP32-C5-tft', 
+        name: 'ESP32-C5 Generic / TFT', 
+        chip: 'ESP32-C5', 
+        category: 'c5', 
+        desc: 'Standard ESP32-C5 development board connected via SPI display.',
+        url: 'Bruce-ESP32-C5-tft.bin',
+        icon: 'fa-microchip'
+      },
+      { 
+        id: 'bruce-c5-1_47', 
+        name: 'Bruce C5 1.47" (N8)', 
+        chip: 'ESP32-C5', 
+        category: 'c5', 
+        desc: 'ST7789 1.47 inch 170x320. RISC-V 240MHz, Dual-Band WiFi 6, 8MB Flash, 3-Key Navigation.',
+        url: 'Bruce-bruce-c5-1_47.bin',
+        icon: 'fa-bolt'
+      },
+
+      // 3. ESP32-S3 Series
+      { 
+        id: 's3-mini-1_47-inch', 
+        name: 'ESP32-S3 Super Mini 1.47"', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'ESP32-S3 Super Mini 4MB Flash, ST7789 1.47 inch 170x320, 3-Key Nav + Animation, Sub-GHz CC1101 / NRF24 / SD.',
+        url: 'Bruce-s3-mini-1_47-inch.bin',
+        icon: 'fa-microchip'
+      },
+      { 
+        id: 'xingzhi-cube-s3', 
+        name: 'Xingzhi Cube S3 (Bruce FW)', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Bruce Pentest firmware for Xingzhi Cube S3, ST7789 240x240 LCD.',
+        url: 'Bruce-xingzhi-cube-s3.bin',
+        icon: 'fa-cube'
+      },
+      { 
+        id: 'lilygo-t-embed-cc1101', 
+        name: 'LilyGO T-Embed CC1101', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Rotary encoder, built-in CC1101 Sub-GHz transceiver, horizontal 170x320 LCD.',
+        url: 'Bruce-lilygo-t-embed-cc1101.bin',
+        icon: 'fa-tower-broadcast'
+      },
+      { 
+        id: 'lilygo-t-display-s3', 
+        name: 'LilyGO T-Display S3', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: '1.9 inch ST7789 8-bit parallel display, high-speed dual buttons.',
+        url: 'Bruce-lilygo-t-display-s3.bin',
+        icon: 'fa-tv'
+      },
+      { 
+        id: 'lilygo-t-display-s3-touch', 
+        name: 'LilyGO T-Display S3 Touch', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: '1.9 inch ST7789, CST816S Capacitive Touch with ProTouch kinetic engine, dual buttons.',
+        url: 'Bruce-lilygo-t-display-s3-touch.bin',
+        icon: 'fa-mobile-screen'
+      },
+      { 
+        id: 'ES3C28P', 
+        name: 'ES3C28P Touch (2.8" IPS)', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: '2.8 inch 240x320 IPS, FT6336G Capacitive Touch with ProTouch kinetic engine, ES8311 Audio, SDIO MicroSD.',
+        url: 'Bruce-ES3C28P.bin',
+        icon: 'fa-hand-pointer'
+      },
+      { 
+        id: 'elecrow-advance-35-s3', 
+        name: 'Elecrow CrowPanel Advance 3.5"', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: '3.5 inch 480x320 IPS ILI9488, GT911 Capacitive Touch with ProTouch kinetic engine, I2S Audio, SD Card.',
+        url: 'Bruce-elecrow-advance-35-s3.bin',
+        icon: 'fa-tv'
+      },
+      { 
+        id: 'smoochiee-board', 
+        name: 'Smoochiee Board', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'ESP32-S3 pentest platform, dual Grove, Sub-GHz RF, IR, INMP441 Mic & Buzzer.',
+        url: 'Bruce-smoochiee-board.bin',
+        icon: 'fa-microchip'
+      },
+      { 
+        id: 'lilygo-t-deck', 
+        name: 'LilyGO T-Deck / Plus', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Physical QWERTY keyboard, trackball, SX1262 LoRa & I2S microphone.',
+        url: 'Bruce-lilygo-t-deck.bin',
+        icon: 'fa-keyboard'
+      },
+      { 
+        id: 'lilygo-t-display-s3-pro', 
+        name: 'LilyGO T-Display S3 Pro', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Capacitive touch screen, camera support and LiPo charging circuit.',
+        url: 'Bruce-lilygo-t-display-s3-pro.bin',
+        icon: 'fa-mobile-screen'
+      },
+      { 
+        id: 'lilygo-t-watch-s3', 
+        name: 'LilyGO T-Watch S3', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Wearable smartwatch platform with capacitive touch & RTC.',
+        url: 'Bruce-lilygo-t-watch-s3.bin',
+        icon: 'fa-stopwatch'
+      },
+      { 
+        id: 'm5stack-cores3', 
+        name: 'M5Stack CoreS3', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'ILI9342C capacitive touch, camera, dual mics, AXP2101 power manager.',
+        url: 'Bruce-m5stack-cores3.bin',
+        icon: 'fa-cubes'
+      },
+      { 
+        id: 'm5stack-sticks3', 
+        name: 'M5Stick S3', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Compact ESP32-S3, 135x240 LCD, AXP2101 PMIC, battery & IR transmitter.',
+        url: 'Bruce-m5stack-sticks3.bin',
+        icon: 'fa-pager'
+      },
+
+      // 4. Classic ESP32 Series
+      { 
+        id: 'CYD-2432S028', 
+        name: 'CYD (Cheap Yellow Display 2USB)', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.8 inch ILI9341 resistive touch 2USB classic dev kit.',
+        url: 'Bruce-CYD-2432S028.bin',
+        icon: 'fa-desktop'
+      },
+      { 
+        id: 'CYD-2432W328C', 
+        name: 'CYD Capacitive Touch (2.8" C)', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.8 inch CST816T Capacitive Touch with ProTouch kinetic engine, ST7789/ILI9341 display, SD slot.',
+        url: 'Bruce-CYD-2432W328C.bin',
+        icon: 'fa-hand-pointer'
+      },
+      { 
+        id: 'lilygo-t-display-ttgo', 
+        name: 'LilyGO T-Display TTGO (16MB)', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Compact form-factor 1.14 inch IPS ST7789 LCD, 16MB Flash edition.',
+        url: 'Bruce-lilygo-t-display-ttgo.bin',
+        icon: 'fa-tablet-screen-button'
+      },
+      { 
+        id: 'm5stack-cardputer', 
+        name: 'M5Stack Cardputer', 
+        chip: 'ESP32-S3', 
+        category: 'esp32', 
+        desc: 'Credit-card sized terminal with 56-key keyboard, speaker & SD slot.',
+        url: 'Bruce-m5stack-cardputer.bin',
+        icon: 'fa-calculator'
+      },
+      { 
+        id: 'm5stack-cplus1_1', 
+        name: 'M5StickC Plus 1.1', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Miniature wrist/pocket tool, 1.14 inch LCD, IMU sensor & battery.',
+        url: 'Bruce-m5stack-cplus1_1.bin',
+        icon: 'fa-pager'
+      },
+      { 
+        id: 'm5stack-cplus2', 
+        name: 'M5StickC Plus 2', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Upgraded 200mAh battery, PMIC and improved buzzer output.',
+        url: 'Bruce-m5stack-cplus2.bin',
+        icon: 'fa-pager'
+      },
+      { 
+        id: 'm5stack-core2', 
+        name: 'M5Stack Core2', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.0 inch touch LCD, vibration motor, RTC BM8563 & AXP192.',
+        url: 'Bruce-m5stack-core2.bin',
+        icon: 'fa-cube'
+      },
+      { 
+        id: 'smoochiee-board', 
+        name: 'Smoochiee Board', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Dedicated RF pentesting hardware with 5-button D-Pad navigation.',
+        url: 'Bruce-smoochiee-board.bin',
+        icon: 'fa-shield-halved'
+      },
+      { 
+        id: 'marauder-mini', 
+        name: 'Marauder Mini', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Handheld mini wireless security auditing toolkit.',
+        url: 'Bruce-marauder-mini.bin',
+        icon: 'fa-skull'
+      },
+      { 
+        id: 'marauder-touch', 
+        name: 'Marauder Touch', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Touchscreen edition Marauder interface.',
+        url: 'Bruce-marauder-touch.bin',
+        icon: 'fa-hand-pointer'
+      },
+      { 
+        id: 'phantom', 
+        name: 'Phantom S024R', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.4 inch SPI ST7789 display instrument.',
+        url: 'Bruce-phantom.bin',
+        icon: 'fa-ghost'
+      },
+      { 
+        id: 'xk404', 
+        name: 'XK404 Pentest Device', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Portable hardware research node.',
+        url: 'Bruce-xk404.bin',
+        icon: 'fa-terminal'
+      }
+    ];
+
+    function App() {
+      const [isConnected, setIsConnected] = useState(false);
+      const [baudRate, setBaudRate] = useState(921600);
+      const [eraseFlash, setEraseFlash] = useState(false);
+      const [selectedCategory, setSelectedCategory] = useState('all');
+      
+      const [selectedBoardId, setSelectedBoardId] = useState('Morph-s3');
+      const [localFile, setLocalFile] = useState(null);
+      const [flashOffset, setFlashOffset] = useState('0x0000');
+      
+      // GitHub live detection
+      const [githubFiles, setGithubFiles] = useState({});
+      const [isFetchingGithub, setIsFetchingGithub] = useState(false);
+      const [logoUrl, setLogoUrl] = useState(GITHUB_RAW_BASE + "IMG_4498.jpeg");
+
+      // Chip info
+      const [chipInfo, setChipInfo] = useState(null);
+
+      // Flash & Terminal state
+      const [isFlashing, setIsFlashing] = useState(false);
+      const [isErasingOnly, setIsErasingOnly] = useState(false);
+      const [progress, setProgress] = useState(0);
+      const [logTab, setLogTab] = useState('sys');
+      const [sysLogs, setSysLogs] = useState([]);
+      const [devLogs, setDevLogs] = useState([]);
+      const [isMonitor, setIsMonitor] = useState(false);
+      const [monitorBaud, setMonitorBaud] = useState(115200);
+
+      // Morph S3 User Manual Modal State
+      const [showMorphGuide, setShowMorphGuide] = useState(false);
+      const [guideTab, setGuideTab] = useState('controls');
+
+      // Quản lý Ngôn ngữ (Mặc định Tiếng Anh, cho phép chuyển đổi)
+      const [lang, setLang] = useState(() => {
+        const saved = localStorage.getItem('duscu_lang');
+        if (saved === 'vi' || saved === 'en') return saved;
+        return 'en';
+      });
+
+      const t = I18N[lang] || I18N.en;
+
+      const toggleLang = () => {
+        const nextLang = lang === 'vi' ? 'en' : 'vi';
+        setLang(nextLang);
+        localStorage.setItem('duscu_lang', nextLang);
+      };
+
+      const termRef = useRef(null);
+      const portRef = useRef(null);
+      const transportRef = useRef(null);
+      const readerRef = useRef(null);
+      const activeTransportRef = useRef(null);
+      const isMonitorRef = useRef(false);
+      const autoResumeMonitorRef = useRef(false);
+      const logTabRef = useRef(logTab);
+      useEffect(() => { logTabRef.current = logTab; }, [logTab]);
+      const monitorBaudRef = useRef(monitorBaud);
+      useEffect(() => { monitorBaudRef.current = monitorBaud; }, [monitorBaud]);
+
+      // Đảm bảo đóng và giải phóng hoàn toàn cổng Serial
+      const releaseAndClosePort = async (port) => {
+        if (!port) return;
+        if (activeTransportRef.current) {
+          try {
+            await activeTransportRef.current.disconnect();
+          } catch(e) {}
+          activeTransportRef.current = null;
+        }
+        if (transportRef.current) {
+          try {
+            await transportRef.current.disconnect();
+          } catch(e) {}
+          transportRef.current = null;
+        }
+        if (readerRef.current) {
+          try {
+            await readerRef.current.cancel();
+          } catch(e) {}
+          try {
+            readerRef.current.releaseLock();
+          } catch(e) {}
+          readerRef.current = null;
+        }
+        try {
+          if (port.readable || port.writable) {
+            await port.close();
+          }
+        } catch(e) {
+          console.warn("close port warning:", e);
+        }
+      };
+
+      // Log utilities
+      const logSys = (msg, type = 'info') => {
+        setSysLogs(prev => [...prev, { time: new Date().toLocaleTimeString('en-GB'), msg, type }]);
+      };
+      const logDev = (msg) => {
+        setDevLogs(prev => [...prev, { time: new Date().toLocaleTimeString('en-GB'), msg }]);
+      };
+
+      // Check GitHub repo contents on mount
+      const fetchGithubContents = async () => {
+        setIsFetchingGithub(true);
+        try {
+          const res = await fetch(GITHUB_API_URL + '?t=' + Date.now(), {
+            headers: { 'Accept': 'application/vnd.github.v3+json' }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const map = {};
+            if (Array.isArray(data)) {
+              data.forEach(item => {
+                if (item.name && item.name.endsWith('.bin')) {
+                  map[item.name] = {
+                    size: item.size,
+                    download_url: item.download_url,
+                    html_url: item.html_url
+                  };
+                }
+              });
+            }
+            setGithubFiles(map);
+            logSys(t.logSyncSuccess(Object.keys(map).length), 'success');
+          } else {
+            throw new Error(`HTTP ${res.status}`);
+          }
+        } catch (e) {
+          logSys(t.logSyncWarn(e.message), 'warning');
+        } finally {
+          setIsFetchingGithub(false);
+        }
+      };
+
+      // Tự động nhận diện IP người dùng để đặt Tiếng Việt hoặc Tiếng Anh
+      useEffect(() => {
+        const detectUserCountry = async () => {
+          try {
+            const res = await fetch('https://api.country.is', { signal: AbortSignal.timeout(3500) });
+            if (res.ok) {
+              const data = await res.json();
+              const autoLang = (data.country === 'VN') ? 'vi' : 'en';
+              setLang(autoLang);
+              logSys(`[IP-GEO] Country: ${data.country || 'GLOBAL'} | Language: ${autoLang === 'vi' ? 'Tiếng Việt' : 'English'}`, 'info');
+              return;
+            }
+          } catch(e1) {
+            try {
+              const res2 = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(3500) });
+              if (res2.ok) {
+                const data2 = await res2.json();
+                const autoLang = (data2.country_code === 'VN') ? 'vi' : 'en';
+                setLang(autoLang);
+                logSys(`[IP-GEO] Country: ${data2.country_code || 'GLOBAL'} | Language: ${autoLang === 'vi' ? 'Tiếng Việt' : 'English'}`, 'info');
+                return;
+              }
+            } catch(e2) {}
+          }
+        };
+
+        logSys(t.logInit, "info");
+        detectUserCountry();
+        fetchGithubContents();
+      }, []);
+
+      useEffect(() => {
+        const handleUsbDisconnect = (e) => {
+          if (portRef.current && e.target && e.target !== portRef.current) return;
+          logSys("[PORT] Thiết bị tạm ngắt kết nối (USB unplugged). Giữ nguyên log cũ & sẵn sàng tự kết nối lại...", "warning");
+          if (isMonitorRef.current) {
+            autoResumeMonitorRef.current = true;
+          }
+          isMonitorRef.current = false;
+          setIsMonitor(false);
+          if (readerRef.current) {
+            try { readerRef.current.cancel(); } catch(err) {}
+            try { readerRef.current.releaseLock(); } catch(err) {}
+            readerRef.current = null;
+          }
+          setIsConnected(false);
+        };
+
+        const handleUsbConnect = (e) => {
+          logSys("[PORT] Phát hiện thiết bị vừa cắm vào cổng USB. Tự động kết nối...", "success");
+          const port = e.target;
+          portRef.current = port;
+          setIsConnected(true);
+
+          if (autoResumeMonitorRef.current || logTabRef.current === 'dev') {
+            setTimeout(async () => {
+              try {
+                await startMonitor(port);
+                logSys("[MONITOR] Tự động kích hoạt lại Serial Monitor thành công!", "success");
+              } catch(err) {
+                logSys(`[MONITOR] Thử kết nối lại tự động: ${err.message}`, "warning");
+              }
+            }, 450);
+          }
+        };
+
+        if ('serial' in navigator) {
+          navigator.serial.addEventListener('disconnect', handleUsbDisconnect);
+          navigator.serial.addEventListener('connect', handleUsbConnect);
+          return () => {
+            navigator.serial.removeEventListener('disconnect', handleUsbDisconnect);
+            navigator.serial.removeEventListener('connect', handleUsbConnect);
+          };
+        }
+      }, []);
+
+      useEffect(() => {
+        if (termRef.current) termRef.current.scrollTop = termRef.current.scrollHeight;
+      }, [sysLogs, devLogs, logTab]);
+
+      // Tìm và kết nối cổng COM gần nhất (nếu có cấp quyền trước) hoặc yêu cầu chọn cổng
+      const ensurePortConnected = async (promptUser = false) => {
+        if (!('serial' in navigator)) {
+          throw new Error(t.logNoWebSerial);
+        }
+        let port = portRef.current;
+        if (!port && !promptUser) {
+          try {
+            const ports = await navigator.serial.getPorts();
+            if (ports && ports.length > 0) {
+              port = ports[ports.length - 1]; // Chọn cổng gần nhất đã cấp quyền
+            }
+          } catch(e) {}
+        }
+        if (!port) {
+          port = await navigator.serial.requestPort();
+        }
+        if (port) {
+          portRef.current = port;
+          setIsConnected(true);
+        }
+        return port;
+      };
+
+      // Serial Connection Logic
+      const connectPort = async () => {
+        try {
+          if (!('serial' in navigator)) {
+            throw new Error(t.logNoWebSerial);
+          }
+          if (!window.ESP_TOOLS) {
+            throw new Error(t.logNoEsptool);
+          }
+          const port = await ensurePortConnected(true);
+          await releaseAndClosePort(port);
+          portRef.current = port;
+          setIsConnected(true);
+          logSys(t.logPortSuccess, "success");
+
+          // Tự động nhận diện Chip
+          let probeTransport = null;
+          try {
+            probeTransport = new window.ESP_TOOLS.Transport(port);
+            activeTransportRef.current = probeTransport;
+            const esploader = new window.ESP_TOOLS.ESPLoader({
+              transport: probeTransport,
+              baudrate: 115200,
+              terminal: { clean: ()=>{}, writeLine: ()=>{}, write: ()=>{} }
+            });
+            await esploader.main();
+            const chipDesc = `${esploader.chip.CHIP_NAME || 'ESP-Device'}`;
+            const macStr = esploader.macAddr ? esploader.macAddr().map(b => b.toString(16).padStart(2,'0')).join(':').toUpperCase() : 'N/A';
+            setChipInfo({ chip: chipDesc, mac: macStr });
+            logSys(`[CHIP] Model: ${chipDesc} | MAC: ${macStr}`, "success");
+          } catch(e) {
+            console.warn("Probe chip warning:", e);
+          } finally {
+            if (probeTransport) {
+              await probeTransport.disconnect().catch(()=>{});
+              probeTransport = null;
+              activeTransportRef.current = null;
+            }
+            await releaseAndClosePort(port);
+          }
+
+        } catch (err) {
+          logSys(t.logPortErr(err.message), "error");
+        }
+      };
+
+      const disconnectPort = async () => {
+        await stopMonitor(true);
+        if (portRef.current) {
+          await releaseAndClosePort(portRef.current);
+          portRef.current = null;
+        }
+        setIsConnected(false);
+        setChipInfo(null);
+        logSys(t.logPortDisconnect, "warning");
+      };
+
+      // Serial Monitor Logic - Tự kết nối COM gần nhất, tự khôi phục khi cắm lại, hỗ trợ DTR kích hoạt ESP32-S3 & loop chống rớt
+      const startMonitor = async (targetPort = null) => {
+        if (isFlashing || isErasingOnly) return;
+        autoResumeMonitorRef.current = true;
+        try {
+          let port = targetPort || portRef.current;
+          if (!port) {
+            port = await ensurePortConnected(false);
+          }
+          if (!port) return;
+
+          // Mở port nếu chưa mở
+          const baud = parseInt(monitorBaudRef.current) || 115200;
+          try {
+            if (!port.readable && !port.writable) {
+              await port.open({ baudRate: baud });
+            }
+          } catch(openErr) {
+            // Nếu port đang bận hoặc cần refresh baud, giải phóng và mở lại
+            await releaseAndClosePort(port);
+            await new Promise(r => setTimeout(r, 120));
+            await port.open({ baudRate: baud });
+          }
+
+          // Tín hiệu phần cứng: DTR = true (BẮT BUỘC để ESP32-S3 USB CDC bắt đầu xuất dữ liệu Serial)
+          // RTS = false (đảm bảo chân EN ở mức HIGH, chip chạy bình thường không bị kẹt trong bootloader)
+          try {
+            await port.setSignals({ dataTerminalReady: true, requestToSend: false });
+          } catch(sigErr) {
+            console.warn("setSignals warning:", sigErr);
+          }
+
+          isMonitorRef.current = true;
+          setIsMonitor(true);
+          setLogTab('dev');
+          logSys(t.logMonitorStart(baud), 'success');
+
+          const decoder = new TextDecoder();
+          let partialLine = "";
+
+          // Vòng lặp đọc 2 tầng theo chuẩn Spacehuhn / Web Serial:
+          // Nếu gặp lỗi framing/parity tạm thời, tự động re-acquire reader mà không bao giờ đóng port hay mất icon
+          while (isMonitorRef.current && (port.readable || portRef.current?.readable)) {
+            const activePort = portRef.current || port;
+            if (!activePort || !activePort.readable) break;
+
+            try {
+              const reader = activePort.readable.getReader();
+              readerRef.current = reader;
+
+              while (isMonitorRef.current) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                if (value) {
+                  partialLine += decoder.decode(value, { stream: true });
+                  const lines = partialLine.split(/\r?\n/);
+                  partialLine = lines.pop(); // Giữ lại phần chưa có ký tự xuống dòng
+                  for (const line of lines) {
+                    if (line.length > 0) logDev(line);
+                  }
+                }
+              }
+            } catch (readErr) {
+              if (isMonitorRef.current) {
+                console.warn("Serial glitch recovered:", readErr);
+                await new Promise(r => setTimeout(r, 80));
+              }
+            } finally {
+              if (readerRef.current) {
+                try { readerRef.current.releaseLock(); } catch(e) {}
+                readerRef.current = null;
+              }
+            }
+          }
+        } catch (err) {
+          logSys(t.logMonitorErr(err.message), 'error');
+          isMonitorRef.current = false;
+          setIsMonitor(false);
+        }
+      };
+
+      const stopMonitor = async (resetAutoResume = true) => {
+        if (resetAutoResume) {
+          autoResumeMonitorRef.current = false;
+        }
+        isMonitorRef.current = false;
+        setIsMonitor(false);
+        if (readerRef.current) {
+          try { await readerRef.current.cancel(); } catch(e) {}
+          try { readerRef.current.releaseLock(); } catch(e) {}
+          readerRef.current = null;
+        }
+        if (transportRef.current) {
+          try { await transportRef.current.disconnect(); } catch(e) {}
+          transportRef.current = null;
+          activeTransportRef.current = null;
+        }
+        if (portRef.current) {
+          await releaseAndClosePort(portRef.current);
+        }
+      };
+
+      // Full Chip Erase Only
+      const handleEraseOnly = async () => {
+        if (!isConnected || !portRef.current) return;
+        if (!confirm(t.eraseConfirm)) return;
+
+        setIsErasingOnly(true);
+        setLogTab('sys');
+        logSys(t.logEraseStart, "warning");
+
+        let eraseTransport = null;
+        try {
+          await stopMonitor();
+          await releaseAndClosePort(portRef.current);
+          await new Promise(r => setTimeout(r, 200));
+
+          eraseTransport = new window.ESP_TOOLS.Transport(portRef.current);
+          activeTransportRef.current = eraseTransport;
+          const esploader = new window.ESP_TOOLS.ESPLoader({
+            transport: eraseTransport,
+            baudrate: parseInt(baudRate),
+            terminal: { clean: ()=>{}, writeLine: (msg)=>logSys(msg, 'info'), write: (msg)=>logSys(msg, 'info') }
+          });
+          await esploader.main();
+          logSys(t.logEraseExec, "info");
+          await esploader.eraseFlash();
+          logSys(t.logEraseSuccess, "success");
+          try {
+            if (typeof esploader.after === 'function') {
+              await esploader.after("hard_reset");
+            } else if (typeof esploader.hardReset === 'function') {
+              await esploader.hardReset();
+            }
+          } catch(e) {}
+        } catch (err) {
+          logSys(t.logEraseFail(err.message), "error");
+        } finally {
+          if (eraseTransport) {
+            try {
+              await eraseTransport.disconnect();
+            } catch(e) {}
+            eraseTransport = null;
+            activeTransportRef.current = null;
+          }
+          await releaseAndClosePort(portRef.current);
+          setIsErasingOnly(false);
+        }
+      };
+
+      // Flash Logic
+      const handleFlash = async () => {
+        const board = MASTER_BOARDS.find(b => b.id === selectedBoardId);
+
+        if (!localFile && !board?.url) {
+          return logSys(t.logNoTarget, "error");
+        }
+        if (!portRef.current) {
+          return logSys(t.logPortErr("Chưa kết nối cổng Serial!"), "error");
+        }
+
+        setIsFlashing(true);
+        setProgress(0);
+        setLogTab('sys');
+
+        let flashTransport = null;
+        try {
+          await stopMonitor();
+          await releaseAndClosePort(portRef.current);
+          await new Promise(r => setTimeout(r, 200));
+
+          let fwData = null;
+          if (localFile) {
+            logSys(t.logLocalFile(localFile.name, (localFile.size / 1048576).toFixed(2)), "info");
+            const buf = await localFile.arrayBuffer();
+            fwData = window.ESP_TOOLS?.toUint8Array ? window.ESP_TOOLS.toUint8Array(buf) : new Uint8Array(buf);
+          } else {
+            const remoteFile = board.url;
+            logSys(t.logFetching(remoteFile), "info");
+            const fetchUrl = GITHUB_RAW_BASE + remoteFile + '?t=' + Date.now();
+            let resp = await fetch(fetchUrl);
+            if (!resp.ok) {
+              if (githubFiles[remoteFile]?.download_url) {
+                resp = await fetch(githubFiles[remoteFile].download_url);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+              } else {
+                throw new Error(t.logFetchFail(remoteFile));
+              }
+            }
+            const buf = await resp.arrayBuffer();
+            fwData = window.ESP_TOOLS?.toUint8Array ? window.ESP_TOOLS.toUint8Array(buf) : new Uint8Array(buf);
+          }
+
+          if (!fwData || (fwData.length === 0 && fwData.byteLength === 0)) {
+            throw new Error("Không thể tải nội dung firmware (Dữ liệu rỗng hoặc sai định dạng).");
+          }
+
+          logSys(t.logSyncBootloader(baudRate), "info");
+          flashTransport = new window.ESP_TOOLS.Transport(portRef.current);
+          activeTransportRef.current = flashTransport;
+
+          const esploader = new window.ESP_TOOLS.ESPLoader({
+            transport: flashTransport,
+            baudrate: parseInt(baudRate),
+            terminal: { clean: ()=>{}, writeLine: (msg) => logSys(msg, 'info'), write: (msg) => logSys(msg, 'info') }
+          });
+
+          await esploader.main();
+          logSys(`[READY] Bootloader connected. Chip: ${esploader.chip.CHIP_NAME || 'ESP-Device'}`, "success");
+
+          const writeOffset = parseInt(flashOffset, 16) || 0x0;
+          logSys(t.logWriteFlash(writeOffset.toString(16).toUpperCase(), eraseFlash), "info");
+
+          await esploader.writeFlash({
+            fileArray: [{ data: fwData, address: writeOffset }],
+            flashSize: 'keep',
+            eraseAll: eraseFlash,
+            compress: true,
+            reportProgress: (fileIdx, written, total) => {
+              const pct = Math.round((written / total) * 100);
+              setProgress(pct);
+            }
+          });
+
+          logSys("----------------------------------------", "success");
+          logSys(t.logFlashSuccess, "success");
+          logSys(t.logReboot, "info");
+          logSys("----------------------------------------", "success");
+
+          try {
+            if (typeof esploader.after === 'function') {
+              await esploader.after("hard_reset");
+            } else if (typeof esploader.hardReset === 'function') {
+              await esploader.hardReset();
+            }
+          } catch(e) {}
+        } catch (err) {
+          logSys(t.logFlashFail(err.message), "error");
+        } finally {
+          if (flashTransport) {
+            try {
+              await flashTransport.disconnect();
+            } catch(e) {}
+            flashTransport = null;
+            activeTransportRef.current = null;
+          }
+          await releaseAndClosePort(portRef.current);
+          setIsFlashing(false);
+          setProgress(0);
+        }
+      };
+
+      // Filtered Board List
+      const filteredBoards = useMemo(() => {
+        if (selectedCategory === 'all') return MASTER_BOARDS.filter(b => !b.isHero);
+        return MASTER_BOARDS.filter(b => b.category === selectedCategory && !b.isHero);
+      }, [selectedCategory]);
+
+      const isMorphSelected = selectedBoardId === 'Morph-s3' && !localFile;
+      const isLauncherSelected = selectedBoardId === 'Launcher-xingzhi-cube-s3' && !localFile;
+
+      return (
+        <div className="flex-1 flex flex-col min-h-0 bg-zinc-950 text-zinc-300 font-sans">
+          
+          {/* HEADER (Industrial Instrument Console) */}
+          <header className="flex items-center justify-between px-5 py-3 border-b border-zinc-800 bg-zinc-900 shrink-0 z-20">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden">
+                {logoUrl ? <img src={logoUrl} className="w-full h-full object-cover" alt="logo" /> : <i className="fa-solid fa-microchip text-amber-500 text-sm"></i>}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-sm font-extrabold tracking-wider text-zinc-100 font-mono">DUSCU FLASHER</h1>
+                  <span className="text-[10px] bg-zinc-800 text-amber-400 border border-zinc-700 px-1.5 py-0.5 rounded font-mono font-bold">OPERATE v2.5</span>
+                </div>
+                <p className="text-[11px] text-zinc-500 font-mono">{t.appSub}</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* GitHub Repo Button */}
+              <a 
+                href="https://github.com/thang96memeff/firmware-bruce" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                title="GitHub: thang96memeff/firmware-bruce"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-500/60 text-xs font-mono text-zinc-300 hover:text-amber-400 transition-colors">
+                <i className="fa-brands fa-github text-amber-400 text-sm"></i>
+                <span className="font-bold">GitHub</span>
+              </a>
+
+              {/* Morph S3 User Guide Button */}
+              <button 
+                onClick={() => setShowMorphGuide(true)}
+                title={t.morphGuideTitle}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-rose-500/15 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 text-xs font-mono text-amber-300 font-bold transition-all shadow-sm">
+                <i className="fa-solid fa-book-open text-amber-400"></i>
+                <span className="hidden sm:inline">{t.morphGuideBtn}</span>
+                <span className="sm:hidden">MORPH</span>
+              </button>
+
+              <button 
+                onClick={fetchGithubContents} 
+                disabled={isFetchingGithub}
+                title={t.syncTooltip}
+                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 text-xs font-mono text-zinc-300 transition-colors">
+                <i className={`fa-brands fa-github ${isFetchingGithub ? 'fa-spin text-amber-400' : 'text-zinc-400'}`}></i>
+                <span>{t.syncBtn}</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              </button>
+
+              {/* Language Switcher Pill */}
+              <button 
+                onClick={toggleLang}
+                title={lang === 'vi' ? 'Switch to English (Chuyển sang Tiếng Anh)' : 'Chuyển sang Tiếng Việt (Switch to Vietnamese)'}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 text-xs font-mono text-zinc-300 transition-colors">
+                <i className="fa-solid fa-globe text-amber-400 text-[11px]"></i>
+                <span className="font-bold">{lang === 'vi' ? 'VI' : 'EN'}</span>
+              </button>
+            </div>
+          </header>
+
+          {/* MAIN OPERATE WORKSPACE */}
+          <main className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+            
+            {/* LEFT CONTROL PANEL (450px) */}
+            <div className="w-full lg:w-[450px] border-r border-zinc-800 flex flex-col bg-zinc-900/60 overflow-y-auto custom-scrollbar">
+              <div className="p-4 space-y-4">
+                
+                {/* PANEL 1: SERIAL CONNECTION */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="text-amber-500">[01]</span> {t.serialSec.replace('[01] ', '')}
+                    </span>
+                    {chipInfo && (
+                      <span className="text-[10px] bg-zinc-800 text-emerald-400 border border-zinc-700 px-2 py-0.5 rounded font-mono">
+                        {chipInfo.chip}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2">
+                    {!isConnected ? (
+                      <button 
+                        onClick={connectPort}
+                        className="flex-1 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold py-2 px-3 rounded text-xs font-mono tracking-wide transition-colors flex items-center justify-center gap-1.5">
+                        <i className="fa-solid fa-plug text-[11px]"></i> {t.connectBtn}
+                      </button>
+                    ) : (
+                      <button 
+                        onClick={disconnectPort} 
+                        disabled={isFlashing || isErasingOnly}
+                        className="flex-1 bg-zinc-800 hover:bg-zinc-750 text-rose-400 border border-zinc-700 font-bold py-2 px-3 rounded text-xs font-mono tracking-wide transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5">
+                        <i className="fa-solid fa-power-off text-[11px]"></i> {t.disconnectBtn}
+                      </button>
+                    )}
+
+                    <select 
+                      value={baudRate} 
+                      onChange={e => setBaudRate(e.target.value)} 
+                      disabled={isFlashing || isErasingOnly}
+                      title={t.baudTooltip}
+                      className="w-28 bg-zinc-950 border border-zinc-800 rounded px-2 text-xs font-mono text-zinc-300 outline-none focus:border-amber-500 disabled:opacity-50">
+                      <option value="115200">115200</option>
+                      <option value="460800">460800</option>
+                      <option value="921600">921600</option>
+                      <option value="1500000">1500000</option>
+                      <option value="2000000">2000000</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* PANEL 2: TARGET HARDWARE (VIP HEROES + ALL BOARDS) */}
+                <div className="space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                      <span className="text-amber-500">[02]</span> {t.hardwareSec.replace('[02] ', '')}
+                    </span>
+                    <span className="text-[10px] font-mono text-zinc-500">{MASTER_BOARDS.length} {t.profilesCount}</span>
+                  </div>
+
+                  {/* VIP HERO SPOTLIGHT CARDS */}
+                  <div className="space-y-2">
+                    {/* VIP MORPH S3 HERO (RAINBOW SHIMMER BORDER) */}
+                    <div 
+                      onClick={() => { setSelectedBoardId('Morph-s3'); setLocalFile(null); }}
+                      className={`cursor-pointer transition-all ${isMorphSelected ? 'morph-rainbow-border' : 'p-[2px] rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900'}`}>
+                      <div className="hero-inner-card p-2.5 flex items-center justify-between gap-2.5">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-700/80 flex items-center justify-center text-amber-400 text-sm shrink-0">
+                            <i className="fa-solid fa-wand-magic-sparkles animate-pulse"></i>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="text-xs font-bold font-mono text-zinc-100 tracking-wider truncate">MORPH S3 FLAGSHIP</span>
+                              <span className="text-[9px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-1 rounded">VIP</span>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setShowMorphGuide(true); }}
+                                className="text-[9px] font-mono font-bold bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded transition-colors flex items-center gap-1 shadow-sm"
+                                title={t.morphGuideTitle}>
+                                <i className="fa-solid fa-book-open text-[8px]"></i>
+                                <span>{t.morphGuideBadge}</span>
+                              </button>
+                            </div>
+                            <p className="text-[11px] font-mono text-zinc-400 truncate">{t.morphDesc}</p>
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0 font-mono">
+                          {githubFiles['Bruce-Morph-s3.bin'] ? (
+                            <span className="text-[10px] text-emerald-400 bg-zinc-900 border border-emerald-500/30 px-1.5 py-0.5 rounded">
+                              {(githubFiles['Bruce-Morph-s3.bin'].size / 1048576).toFixed(2)} MB
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded">
+                              {t.readyBadge}
+                            </span>
+                          )}
+                          <div className="mt-0.5 text-[10px] text-amber-400 font-bold">
+                            {isMorphSelected ? t.activeBtn : t.selectBtn}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* HERO XINGZHI CUBE S3 LAUNCHER (CYBER SHIMMER BORDER) */}
+                    <div 
+                      onClick={() => { setSelectedBoardId('Launcher-xingzhi-cube-s3'); setLocalFile(null); }}
+                      className={`cursor-pointer transition-all ${isLauncherSelected ? 'launcher-cyber-border' : 'p-[2px] rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900'}`}>
+                      <div className="hero-inner-card p-2.5 flex items-center justify-between gap-2.5">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-700/80 flex items-center justify-center text-cyan-400 text-sm shrink-0">
+                            <i className="fa-solid fa-cubes-stacked animate-pulse"></i>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-bold font-mono text-zinc-100 tracking-wider truncate">XINGZHI CUBE LAUNCHER</span>
+                              <span className="text-[9px] font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-1 rounded">HERO</span>
+                            </div>
+                            <p className="text-[11px] font-mono text-zinc-400 truncate">{t.launcherDesc}</p>
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0 font-mono">
+                          {githubFiles['Launcher-xingzhi-cube-s3.bin'] ? (
+                            <span className="text-[10px] text-emerald-400 bg-zinc-900 border border-emerald-500/30 px-1.5 py-0.5 rounded">
+                              {(githubFiles['Launcher-xingzhi-cube-s3.bin'].size / 1048576).toFixed(2)} MB
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded">
+                              {t.readyBadge}
+                            </span>
+                          )}
+                          <div className="mt-0.5 text-[10px] text-cyan-400 font-bold">
+                            {isLauncherSelected ? t.activeBtn : t.selectBtn}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CATEGORY SWITCHERS */}
+                  <div className="flex gap-1 overflow-x-auto pb-0.5 custom-scrollbar font-mono text-[11px]">
+                    {[
+                      { id: 'all', label: t.catAll },
+                      { id: 's3', label: t.catS3 },
+                      { id: 'c5', label: t.catC5 },
+                      { id: 'esp32', label: t.catEsp32 }
+                    ].map(cat => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setSelectedCategory(cat.id)}
+                        className={`px-2 py-1 rounded font-medium whitespace-nowrap transition-colors border ${selectedCategory === cat.id ? 'bg-zinc-800 text-zinc-100 border-zinc-700' : 'bg-zinc-950 text-zinc-500 border-zinc-850 hover:text-zinc-300'}`}>
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* BOARD SELECTOR DROPDOWN & INFO */}
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 space-y-2">
+                    <select 
+                      value={selectedBoardId} 
+                      onChange={e => { setSelectedBoardId(e.target.value); setLocalFile(null); }}
+                      disabled={isFlashing || isErasingOnly}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-xs font-mono text-zinc-200 outline-none focus:border-amber-500">
+                      <optgroup label={t.vipGroup}>
+                        {MASTER_BOARDS.filter(b => b.isHero).map(b => (
+                          <option key={b.id} value={b.id}>
+                            [{b.chip}] ★ {b.name} {githubFiles[b.url] ? `[${(githubFiles[b.url].size/1048576).toFixed(2)} MB]` : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label={t.standardGroup}>
+                        {filteredBoards.map(b => (
+                          <option key={b.id} value={b.id}>
+                            [{b.chip}] {b.name} {githubFiles[b.url] ? `[${(githubFiles[b.url].size/1048576).toFixed(2)} MB]` : ''}
+                          </option>
+                        ))}
+                      </optgroup>
+                    </select>
+
+                    {/* Selected board technical details */}
+                    {(() => {
+                      const b = MASTER_BOARDS.find(item => item.id === selectedBoardId);
+                      if (!b) return null;
+                      const hasCloud = Boolean(githubFiles[b.url]);
+                      return (
+                        <div className="bg-zinc-950 rounded p-2 border border-zinc-800/60 flex items-start gap-2">
+                          <i className={`fa-solid ${b.icon || 'fa-microchip'} text-zinc-400 mt-0.5 text-xs`}></i>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-1 font-mono">
+                              <span className="text-[11px] font-bold text-zinc-200 truncate">{b.name}</span>
+                              {hasCloud ? (
+                                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1 rounded border border-emerald-500/20">
+                                  {t.cloudReadyBadge}
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-zinc-500 bg-zinc-900 px-1 rounded border border-zinc-800">
+                                  {t.customLocalBadge}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">{b.desc}</p>
+                            {b.id === 'Morph-s3' && (
+                              <div className="mt-3 pt-2.5 border-t border-zinc-800 space-y-2">
+                                <div className="flex items-center justify-between gap-2">
+                                  <span className="text-[11px] font-mono font-bold text-amber-400 flex items-center gap-1.5">
+                                    <i className="fa-solid fa-diagram-project text-amber-400"></i>
+                                    <span>{lang === 'vi' ? 'QUY TRÌNH NẠP & CẤU HÌNH MORPH S3:' : 'MORPH S3 SETUP WORKFLOW:'}</span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowMorphGuide(true)}
+                                    className="text-[10px] font-mono font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-2 py-0.5 rounded transition-colors shrink-0 shadow-sm flex items-center gap-1">
+                                    <i className="fa-solid fa-book-open"></i>
+                                    {t.morphGuideCardHint}
+                                  </button>
+                                </div>
+
+                                {/* 4 Steps Flow */}
+                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-1.5 text-[10px] font-mono">
+                                  <div className="bg-zinc-950/80 p-2 rounded border border-zinc-800/80">
+                                    <div className="text-emerald-400 font-bold flex items-center gap-1 mb-0.5">
+                                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[9px]">1</span>
+                                      <span>{lang === 'vi' ? 'NẠP CODE' : 'FLASH CODE'}</span>
+                                    </div>
+                                    <p className="text-zinc-400 text-[9.5px] leading-tight">
+                                      {lang === 'vi' ? 'Bấm Nạp Firmware trực tiếp trên web vào Morph S3' : 'Flash firmware directly via Web Flasher'}
+                                    </p>
+                                  </div>
+
+                                  <div className="bg-zinc-950/80 p-2 rounded border border-zinc-800/80">
+                                    <div className="text-cyan-400 font-bold flex items-center gap-1 mb-0.5">
+                                      <span className="w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-[9px]">2</span>
+                                      <span>{lang === 'vi' ? 'KẾT NỐI WIFI' : 'CONNECT WIFI'}</span>
+                                    </div>
+                                    <p className="text-zinc-400 text-[9.5px] leading-tight">
+                                      {lang === 'vi' ? 'Bắt Wi-Fi "Morph-Config" (KHÔNG MẬT KHẨU)' : 'Connect "Morph-Config" AP (NO PASSWORD)'}
+                                    </p>
+                                  </div>
+
+                                  <div className="bg-zinc-950/80 p-2 rounded border border-zinc-800/80">
+                                    <div className="text-amber-400 font-bold flex items-center gap-1 mb-0.5">
+                                      <span className="w-4 h-4 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-[9px]">3</span>
+                                      <span>{lang === 'vi' ? 'TÙY CHỈNH' : 'CONFIGURE'}</span>
+                                    </div>
+                                    <p className="text-zinc-400 text-[9.5px] leading-tight">
+                                      {lang === 'vi' ? 'Vào 192.168.4.1 chỉnh phím, xoay màn hình, chân module' : 'Open 192.168.4.1 to configure buttons, screen & pins'}
+                                    </p>
+                                  </div>
+
+                                  <div className="bg-zinc-950/80 p-2 rounded border border-zinc-800/80">
+                                    <div className="text-purple-400 font-bold flex items-center gap-1 mb-0.5">
+                                      <span className="w-4 h-4 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[9px]">4</span>
+                                      <span>{lang === 'vi' ? 'LƯU CẤU HÌNH' : 'SAVE & REBOOT'}</span>
+                                    </div>
+                                    <p className="text-zinc-400 text-[9.5px] leading-tight">
+                                      {lang === 'vi' ? 'Bấm Save & Reboot để lưu vĩnh viễn vào chip' : 'Click Save & Reboot to save configuration'}
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+
+                  {/* LOCAL FILE UPLOAD (OPTIONAL) */}
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 space-y-2">
+                    <div className="flex items-center justify-between text-[11px] font-mono">
+                      <span className="text-zinc-400 font-bold flex items-center gap-1.5">
+                        <i className="fa-solid fa-file-code text-amber-500"></i> {t.externalTitle}
+                      </span>
+                      <div className="flex items-center gap-1 text-zinc-500">
+                        <span>{t.offsetLabel}</span>
+                        <input 
+                          type="text" 
+                          value={flashOffset} 
+                          onChange={e => setFlashOffset(e.target.value)} 
+                          disabled={isFlashing}
+                          className="w-16 bg-zinc-950 border border-zinc-800 rounded px-1.5 py-0.5 text-center text-amber-400 outline-none focus:border-amber-500" 
+                        />
+                      </div>
+                    </div>
+
+                    <label className="border border-dashed border-zinc-800 hover:border-zinc-700 rounded p-2.5 flex flex-col items-center justify-center cursor-pointer transition-colors bg-zinc-950 group">
+                      <input 
+                        type="file" 
+                        accept=".bin" 
+                        onChange={e => { if (e.target.files[0]) { setLocalFile(e.target.files[0]); } }}
+                        disabled={isFlashing || isErasingOnly}
+                        className="hidden" 
+                      />
+                      {localFile ? (
+                        <div className="text-center font-mono">
+                          <div className="text-xs font-bold text-zinc-200 truncate max-w-[320px]">{localFile.name}</div>
+                          <div className="text-[10px] text-emerald-400 mt-0.5">{(localFile.size / 1048576).toFixed(2)} MB // {t.localLoaded}</div>
+                        </div>
+                      ) : (
+                        <div className="text-center text-zinc-500 group-hover:text-zinc-400 font-mono text-[11px]">
+                          <i className="fa-solid fa-arrow-up-from-bracket mb-1 block"></i>
+                          <span>{t.dropHint}</span>
+                        </div>
+                      )}
+                    </label>
+                    {localFile && (
+                      <button 
+                        onClick={() => setLocalFile(null)} 
+                        className="text-[10px] font-mono text-rose-400 hover:underline block text-center w-full">
+                        {t.deselectFile}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* PANEL 3: FLASH & ERASE EXECUTION */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 cursor-pointer font-mono">
+                      <input 
+                        type="checkbox" 
+                        checked={eraseFlash} 
+                        onChange={e => setEraseFlash(e.target.checked)} 
+                        disabled={isFlashing || isErasingOnly} 
+                        className="w-3.5 h-3.5 rounded border-zinc-700 bg-zinc-950 text-amber-500 focus:ring-0 cursor-pointer" 
+                      />
+                      <span className="text-xs text-zinc-300 select-none">
+                        {t.eraseBefore}
+                      </span>
+                    </label>
+
+                    {/* ERASE ONLY BUTTON */}
+                    <button
+                      onClick={handleEraseOnly}
+                      disabled={!isConnected || isFlashing || isErasingOnly}
+                      title="Full Chip Erase"
+                      className="text-[10px] font-mono bg-zinc-950 hover:bg-zinc-850 text-rose-400 border border-rose-500/30 px-2 py-1 rounded transition-colors disabled:opacity-40">
+                      <i className="fa-solid fa-trash-can mr-1"></i>{t.eraseAllBtn}
+                    </button>
+                  </div>
+
+                  {/* MAIN FLASH BUTTON */}
+                  <button 
+                    onClick={handleFlash} 
+                    disabled={!isConnected || isFlashing || isErasingOnly}
+                    className={`w-full relative overflow-hidden font-mono font-bold py-3 rounded transition-colors text-xs tracking-wider uppercase flex items-center justify-center gap-2 ${
+                      (!isConnected || isFlashing || isErasingOnly) 
+                        ? 'bg-zinc-800 text-zinc-600 border border-zinc-700/60 cursor-not-allowed' 
+                        : 'bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer'
+                    }`}>
+                    {isFlashing ? (
+                      <>
+                        <i className="fa-solid fa-circle-notch fa-spin"></i>
+                        <span>{t.flashingBtn} {progress}%</span>
+                        <div 
+                          className="absolute left-0 bottom-0 top-0 bg-white/15 transition-all duration-100" 
+                          style={{ width: `${progress}%` }} 
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-solid fa-bolt"></i>
+                        <span>{t.flashBtn}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            {/* RIGHT CONSOLE & SERIAL MONITOR (PURE INDUSTRIAL BLACK) */}
+            <div className="flex-1 flex flex-col bg-[#0a0a0c]">
+              
+              {/* Terminal Tab Bar */}
+              <div className="flex items-center justify-between px-3 border-b border-zinc-800 bg-zinc-900/80 shrink-0 font-mono">
+                <div className="flex">
+                  <button 
+                    onClick={() => setLogTab('sys')} 
+                    className={`py-2 px-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
+                      logTab === 'sys' ? 'text-amber-400 border-amber-500' : 'text-zinc-500 border-transparent hover:text-zinc-300'
+                    }`}>
+                    <i className="fa-solid fa-terminal text-[10px]"></i> {t.sysLogTab}
+                  </button>
+                  <button 
+                    onClick={() => setLogTab('dev')} 
+                    className={`py-2 px-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
+                      logTab === 'dev' ? 'text-cyan-400 border-cyan-500' : 'text-zinc-500 border-transparent hover:text-zinc-300'
+                    }`}>
+                    <i className="fa-solid fa-tv text-[10px]"></i> {t.serialMonTab}
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-1.5 py-1.5">
+                  {logTab === 'dev' && (
+                    <>
+                      <select 
+                        value={monitorBaud} 
+                        onChange={e => setMonitorBaud(e.target.value)} 
+                        disabled={isMonitor}
+                        className="bg-zinc-950 border border-zinc-800 rounded px-2 py-0.5 text-xs font-mono text-zinc-300 outline-none">
+                        <option value="115200">115200</option>
+                        <option value="9600">9600</option>
+                        <option value="921600">921600</option>
+                      </select>
+
+                      <button 
+                        onClick={isMonitor ? () => stopMonitor(true) : () => startMonitor()} 
+                        disabled={isFlashing || isErasingOnly} 
+                        className={`px-2.5 py-1 rounded text-xs font-mono border transition-colors disabled:opacity-40 flex items-center gap-1 ${
+                          isMonitor ? 'bg-zinc-800 text-rose-400 border-rose-500/40 hover:bg-rose-950/40' : 'bg-zinc-800 text-cyan-400 border-cyan-500/40 hover:bg-cyan-950/40'
+                        }`}>
+                        <i className={`fa-solid ${isMonitor ? 'fa-stop' : 'fa-play'} text-[10px]`}></i>
+                        <span>{isMonitor ? t.stopMon : t.startMon}</span>
+                      </button>
+                    </>
+                  )}
+
+                  <button 
+                    onClick={() => logTab === 'sys' ? setSysLogs([]) : setDevLogs([])} 
+                    className="p-1 px-2 rounded border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200 transition-colors" 
+                    title={t.clearLogTooltip}>
+                    <i className="fa-solid fa-trash-can text-xs"></i>
+                  </button>
+                </div>
+              </div>
+
+              {/* Console Log Area (0 border radius, 11px font) */}
+              <div 
+                ref={termRef} 
+                className="flex-1 p-3 overflow-y-auto font-mono text-[11px] leading-relaxed custom-scrollbar break-all text-zinc-300 select-text bg-[#0a0a0c]">
+                {(logTab === 'sys' ? sysLogs : devLogs).length === 0 ? (
+                  <div className="text-zinc-700 select-none">
+                    {logTab === 'sys' ? t.sysPlaceholder : t.monPlaceholder}
+                  </div>
+                ) : (
+                  (logTab === 'sys' ? sysLogs : devLogs).map((l, i) => (
+                    <div key={i} className="flex gap-2 mb-0.5">
+                      <span className="text-zinc-600 shrink-0 select-none">[{l.time}]</span>
+                      <span className={`${
+                        l.type === 'error' ? 'text-rose-500 font-semibold' : 
+                        l.type === 'success' ? 'text-emerald-500 font-semibold' : 
+                        l.type === 'warning' ? 'text-amber-500' : 
+                        'text-zinc-300'
+                      }`}>
+                        {l.msg}
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              {/* HUD Status Bar */}
+              <div className="px-3 py-1.5 border-t border-zinc-800 bg-zinc-900 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
+                <div className="flex items-center gap-2">
+                  <span className="flex items-center gap-1.5">
+                    <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-zinc-600'}`}></span>
+                    <span>{isConnected ? t.portOnline : t.portOffline}</span>
+                  </span>
+                  {chipInfo && <span className="text-zinc-400">// {chipInfo.chip} [{chipInfo.mac}]</span>}
+                </div>
+                <div>ESPLoader 0.7.0</div>
+              </div>
+
+            </div>
+
+          </main>
+
+          {/* MORPH S3 USER GUIDE MODAL */}
+          {showMorphGuide && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 select-text">
+              <div className="bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                
+                {/* Rainbow Accent Top Border */}
+                <div className="h-1 w-full bg-gradient-to-r from-pink-500 via-amber-500 via-emerald-500 to-cyan-500"></div>
+
+                {/* Modal Header */}
+                <div className="p-4 border-b border-zinc-800 flex items-center justify-between gap-3 bg-zinc-950/80">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-sm shrink-0">
+                      <i className="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <h2 className="text-xs sm:text-sm font-bold font-mono text-zinc-100 tracking-wider truncate">
+                          {t.morphGuideTitle}
+                        </h2>
+                        <span className="text-[9px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded shrink-0">
+                          ESP32-S3
+                        </span>
+                      </div>
+                      <p className="text-[10px] sm:text-[11px] font-mono text-zinc-400 truncate">
+                        {t.morphGuideSub}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => setShowMorphGuide(false)}
+                    className="w-7 h-7 rounded border border-zinc-800 hover:border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 flex items-center justify-center transition-colors shrink-0">
+                    <i className="fa-solid fa-xmark text-xs"></i>
+                  </button>
+                </div>
+
+                {/* Modal Tab Switchers */}
+                <div className="flex border-b border-zinc-800 bg-zinc-950 px-3 overflow-x-auto custom-scrollbar font-mono text-xs gap-1 py-1.5 shrink-0">
+                  {[
+                    { id: 'controls', label: t.morphTabControls },
+                    { id: 'hardware', label: t.morphTabHardware },
+                    { id: 'webui',    label: t.morphTabWebui },
+                    { id: 'flash',    label: t.morphTabFlash }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setGuideTab(tab.id)}
+                      className={`px-3 py-1.5 rounded font-medium whitespace-nowrap transition-colors border ${
+                        guideTab === tab.id 
+                          ? 'bg-zinc-850 text-amber-300 border-amber-500/50 shadow-sm' 
+                          : 'bg-transparent text-zinc-400 border-transparent hover:text-zinc-200 hover:bg-zinc-900'
+                      }`}>
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Modal Scrollable Body */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-4 font-mono text-xs text-zinc-300 custom-scrollbar leading-relaxed">
+                  
+                  {/* TAB 1: CONTROLS & NAVIGATION */}
+                  {guideTab === 'controls' && (
+                    <div className="space-y-3.5">
+                      <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800/80">
+                        <div className="flex items-center gap-2 text-amber-400 font-bold mb-2">
+                          <i className="fa-solid fa-gamepad"></i>
+                          <span>{lang === 'vi' ? '1. CHẾ ĐỘ 3 NÚT (TIÊU CHUẨN)' : '1. STANDARD 3-BUTTON MODE'}</span>
+                        </div>
+                        <ul className="space-y-1.5 text-zinc-300 text-[11px] list-disc list-inside">
+                          <li><b className="text-zinc-100">UP (GPIO 16):</b> {lang === 'vi' ? 'Di chuyển lên trên / Giảm giá trị.' : 'Navigate UP / Decrement value.'}</li>
+                          <li><b className="text-zinc-100">DOWN (GPIO 13):</b> {lang === 'vi' ? 'Di chuyển xuống dưới / Tăng giá trị.' : 'Navigate DOWN / Increment value.'}</li>
+                          <li><b className="text-zinc-100">OK (GPIO 0):</b> {lang === 'vi' ? 'Nhấn 1 lần: Chọn / Mở menu (Enter). Nhấn giữ > 1.2s: Thoát / Trở về menu trước (Back / ESC).' : 'Single click: Enter / Select. Hold > 1.2s: Back / ESC.'}</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800/80">
+                        <div className="flex items-center gap-2 text-cyan-400 font-bold mb-2">
+                          <i className="fa-solid fa-sliders"></i>
+                          <span>{lang === 'vi' ? '2. CHẾ ĐỘ 2 NÚT (PHONG CÁCH T-DISPLAY S3)' : '2. 2-BUTTON MODE (T-DISPLAY S3 STYLE)'}</span>
+                        </div>
+                        <ul className="space-y-1.5 text-zinc-300 text-[11px] list-disc list-inside">
+                          <li><b className="text-zinc-100">Nút Next (GPIO 13):</b> {lang === 'vi' ? 'Nhấn 1 lần: Di chuyển tới. Nhấp đúp (Double-click) hoặc Giữ: Chọn (OK / Enter).' : 'Single click: Next. Double-click or Hold: Select / Enter.'}</li>
+                          <li><b className="text-zinc-100">Nút Prev (GPIO 16):</b> {lang === 'vi' ? 'Nhấn 1 lần: Di chuyển lùi. Nhấp đúp (Double-click) hoặc Giữ: Trở về (Back / ESC).' : 'Single click: Prev. Double-click or Hold: Back / ESC.'}</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800/80">
+                        <div className="flex items-center gap-2 text-emerald-400 font-bold mb-2">
+                          <i className="fa-solid fa-circle-dot"></i>
+                          <span>{lang === 'vi' ? '3. CHẾ ĐỘ CON LĂN (ROTARY ENCODER / T-EMBED)' : '3. ROTARY ENCODER MODE'}</span>
+                        </div>
+                        <ul className="space-y-1.5 text-zinc-300 text-[11px] list-disc list-inside">
+                          <li><b className="text-zinc-100">{lang === 'vi' ? 'Xoay con lăn:' : 'Rotate Dial:'}</b> {lang === 'vi' ? 'Cuộn mượt mà lên hoặc xuống menu.' : 'Smoothly scroll menu items up or down.'}</li>
+                          <li><b className="text-zinc-100">{lang === 'vi' ? 'Nhấn nút con lăn:' : 'Press Dial (OK):'}</b> {lang === 'vi' ? 'Xác nhận / Chọn mục.' : 'Confirm / Select.'}</li>
+                          <li><b className="text-zinc-100">{lang === 'vi' ? 'Nút ESC phụ / Giữ:' : 'Aux Button / Hold:'}</b> {lang === 'vi' ? 'Thoát / Trở về.' : 'Exit / Back.'}</li>
+                        </ul>
+                      </div>
+
+                      <div className="bg-zinc-950 p-2.5 rounded border border-rose-500/30 text-[11px] text-rose-300 flex items-start gap-2">
+                        <i className="fa-solid fa-power-off mt-0.5 text-rose-400"></i>
+                        <span>
+                          {lang === 'vi' 
+                            ? 'Tắt nguồn: Giữ nút L_BTN (hoặc L + R) trong 3 giây để đưa thiết bị vào chế độ Deep Sleep tiết kiệm pin.' 
+                            : 'Power Off: Hold L_BTN (or L + R) for 3 seconds to enter Deep Sleep power-saving mode.'}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 2: HARDWARE & PINOUT */}
+                  {guideTab === 'hardware' && (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                        <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800">
+                          <div className="text-amber-400 font-bold mb-1 flex items-center gap-1.5">
+                            <i className="fa-solid fa-microchip"></i>
+                            <span>CHIP & BỘ NHỚ</span>
+                          </div>
+                          <p className="text-zinc-400">ESP32-S3 Dual-Core LX7 @ 240MHz</p>
+                          <p className="text-emerald-400 font-semibold">16MB Flash • 8MB Octal-PSRAM</p>
+                        </div>
+
+                        <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800">
+                          <div className="text-cyan-400 font-bold mb-1 flex items-center gap-1.5">
+                            <i className="fa-solid fa-display"></i>
+                            <span>MÀN HÌNH ST7789 IPS</span>
+                          </div>
+                          <p className="text-zinc-400">240x240 IPS (SPI 40MHz)</p>
+                          <p className="text-zinc-400">MOSI: 10 • SCLK: 9 • CS: 14 • DC: 8</p>
+                          <p className="text-zinc-400">RST: 18 • BL: 13 (PWM)</p>
+                        </div>
+
+                        <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800">
+                          <div className="text-purple-400 font-bold mb-1 flex items-center gap-1.5">
+                            <i className="fa-solid fa-tower-broadcast"></i>
+                            <span>CC1101 SUB-GHZ (SPI)</span>
+                          </div>
+                          <p className="text-zinc-400">Tần số: 300 - 928 MHz</p>
+                          <p className="text-zinc-400">SS: 2 • GDO0: 1</p>
+                          <p className="text-zinc-400">MOSI: 48 • MISO: 41 • SCK: 47</p>
+                        </div>
+
+                        <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800">
+                          <div className="text-green-400 font-bold mb-1 flex items-center gap-1.5">
+                            <i className="fa-solid fa-wifi"></i>
+                            <span>NRF24L01+ 2.4GHZ (SPI)</span>
+                          </div>
+                          <p className="text-zinc-400">MouseJacker / 2.4G Jammer</p>
+                          <p className="text-zinc-400">CE: 4 • SS: 21</p>
+                          <p className="text-zinc-400">MOSI: 48 • MISO: 41 • SCK: 47</p>
+                        </div>
+
+                        <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800">
+                          <div className="text-blue-400 font-bold mb-1 flex items-center gap-1.5">
+                            <i className="fa-solid fa-sd-card"></i>
+                            <span>THẺ NHỚ MICROSD</span>
+                          </div>
+                          <p className="text-zinc-400">CS: 42 (Chung bus SPI)</p>
+                          <p className="text-zinc-400">Hỗ trợ đọc file sub, pcap, badusb</p>
+                        </div>
+
+                        <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800">
+                          <div className="text-rose-400 font-bold mb-1 flex items-center gap-1.5">
+                            <i className="fa-solid fa-network-wired"></i>
+                            <span>GROVE I2C & BADUSB</span>
+                          </div>
+                          <p className="text-zinc-400">I2C Grove: SDA: 5 • SCL: 6</p>
+                          <p className="text-zinc-400">Serial / BadUSB: RX: 44 • TX: 43</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* TAB 3: MORPH WEB CONFIG */}
+                  {guideTab === 'webui' && (
+                    <div className="space-y-3">
+                      <div className="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded text-amber-300 text-[11px]">
+                        <i className="fa-solid fa-circle-check mr-1.5"></i>
+                        {lang === 'vi' 
+                          ? 'Morph S3 tích hợp sẵn Web Config trực quan, cho phép đổi chân phím, xoay màn hình và tùy chỉnh phần cứng trực tiếp qua WiFi mà KHÔNG cần nạp lại code!'
+                          : 'Morph S3 includes an onboard Web Config interface to reassign buttons, rotate display, and configure pins over WiFi without recompiling code!'}
+                      </div>
+
+                      <ol className="space-y-2 text-[11px] text-zinc-300 list-decimal list-inside bg-zinc-950 p-3 rounded-lg border border-zinc-800">
+                        <li>
+                          <b className="text-emerald-400">{lang === 'vi' ? 'BƯỚC 1 - NẠP CODE:' : 'STEP 1 - FLASH CODE:'}</b><br/>
+                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Nạp firmware "Bruce-Morph-s3.bin" trực tiếp qua Web Flasher này (khuyến nghị chọn Xóa trước khi nạp).' : 'Flash "Bruce-Morph-s3.bin" directly via Web Flasher (Erase before flash recommended).'}</span>
+                        </li>
+                        <li>
+                          <b className="text-cyan-400">{lang === 'vi' ? 'BƯỚC 2 - KẾT NỐI WIFI DO MẠCH PHÁT:' : 'STEP 2 - CONNECT TO MORPH WIFI:'}</b><br/>
+                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Dùng điện thoại hoặc PC kết nối vào mạng Wi-Fi nó phát ra: ' : 'Connect phone or PC to the WiFi AP: '}</span>
+                          <code className="text-amber-400 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800 ml-1">Morph-Config</code>
+                          <span className="text-emerald-400 font-bold ml-2">({lang === 'vi' ? 'KHÔNG MẬT KHẨU' : 'NO PASSWORD'})</span>
+                        </li>
+                        <li>
+                          <b className="text-amber-400">{lang === 'vi' ? 'BƯỚC 3 - TÙY CHỈNH CẤU HÌNH:' : 'STEP 3 - CONFIGURE HARDWARE:'}</b><br/>
+                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Mở trình duyệt web và truy cập địa chỉ IP: ' : 'Open web browser and go to: '}</span>
+                          <code className="text-cyan-400 font-bold bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800 ml-1">http://192.168.4.1</code><br/>
+                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Tùy chỉnh chế độ phím (1 nút Encoder / 2 nút / 3 nút / 5 nút), hướng xoay màn hình (0/90/180/270), chân CC1101, NRF24, thẻ nhớ SD, LED...' : 'Select button mode (Encoder / 2-Btn / 3-Btn / 5-Btn), screen rotation, pinouts for CC1101, NRF24, SD Card...'}</span>
+                        </li>
+                        <li>
+                          <b className="text-purple-400">{lang === 'vi' ? 'BƯỚC 4 - LƯU CẤU HÌNH & REBOOT:' : 'STEP 4 - SAVE & REBOOT:'}</b><br/>
+                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Kiểm tra không bị trùng chân đỏ rồi bấm SAVE & REBOOT. Thiết bị tự lưu vĩnh viễn vào Flash và khởi động lại!' : 'Check for pin conflicts, then click SAVE & REBOOT. Settings are permanently saved!'}</span>
+                        </li>
+                      </ol>
+                    </div>
+                  )}
+
+                  {/* TAB 4: FLASHING INSTRUCTIONS */}
+                  {guideTab === 'flash' && (
+                    <div className="space-y-3">
+                      <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800 space-y-2.5 text-[11px]">
+                        <div className="flex items-center gap-2 text-emerald-400 font-bold">
+                          <i className="fa-solid fa-bolt"></i>
+                          <span>{lang === 'vi' ? 'CÁC BƯỚC NẠP FIRMWARE NHANH' : 'FAST FLASHING STEPS'}</span>
+                        </div>
+                        <ol className="space-y-1.5 list-decimal list-inside text-zinc-300">
+                          <li>{lang === 'vi' ? 'Cắm cáp USB Type-C nối Morph S3 với máy tính (dùng Google Chrome hoặc MS Edge).' : 'Connect Morph S3 to PC via USB Type-C cable (use Chrome or Edge).'}</li>
+                          <li>{lang === 'vi' ? 'Nếu máy tính chưa nhận: Giữ nút BOOT (GPIO 0) -> cắm cáp hoặc nhấn nút RESET để chip vào Bootloader.' : 'If not detected: Hold BOOT (GPIO 0) and click RESET to enter Bootloader.'}</li>
+                          <li>{lang === 'vi' ? 'Bấm nút "KẾT NỐI THIẾT BỊ" góc trên bên trái, chọn cổng COM của ESP32-S3.' : 'Click "CONNECT DEVICE" and select the ESP32-S3 COM port.'}</li>
+                          <li>{lang === 'vi' ? 'Chọn bo mạch "MORPH S3 FLAGSHIP" (file Bruce-Morph-s3.bin đã được tích hợp sẵn).' : 'Select "MORPH S3 FLAGSHIP" profile (Bruce-Morph-s3.bin is ready).'}</li>
+                          <li>{lang === 'vi' ? 'Nên tích chọn "XÓA TRƯỚC KHI NẠP" (Full Erase) cho lần đầu nạp.' : 'Check "ERASE BEFORE FLASH" for first-time installation.'}</li>
+                          <li>{lang === 'vi' ? 'Bấm nút "NẠP FIRMWARE" và đợi tiến trình đạt 100% là xong!' : 'Click "FLASH FIRMWARE" and wait for 100% completion!'}</li>
+                        </ol>
+                      </div>
+
+                      <div className="text-center pt-2">
+                        <button
+                          onClick={() => {
+                            setSelectedBoardId('Morph-s3');
+                            setLocalFile(null);
+                            setShowMorphGuide(false);
+                          }}
+                          className="w-full py-2.5 rounded bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold font-mono tracking-wider transition-colors shadow-lg shadow-amber-500/20 text-xs flex items-center justify-center gap-2">
+                          <i className="fa-solid fa-wand-magic-sparkles"></i>
+                          <span>{t.morphSelectNow}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+
+                {/* Modal Footer */}
+                <div className="p-3 border-t border-zinc-800 bg-zinc-950 flex items-center justify-between font-mono text-xs">
+                  <span className="text-[11px] text-zinc-500">Morph S3 Flagship • Bruce-v2</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedBoardId('Morph-s3');
+                        setLocalFile(null);
+                        setShowMorphGuide(false);
+                      }}
+                      className="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-zinc-700 font-bold transition-colors">
+                      {t.morphSelectNow}
+                    </button>
+                    <button
+                      onClick={() => setShowMorphGuide(false)}
+                      className="px-3 py-1.5 rounded bg-zinc-850 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 transition-colors">
+                      {t.morphCloseBtn}
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
+ 
