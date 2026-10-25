@@ -171,6 +171,7 @@
         eraseConfirm: "XÁC NHẬN: XÓA SẠCH TOÀN BỘ BỘ NHỚ FLASH (Full Chip Erase)?\nToàn bộ NVS, WiFi, cài đặt và phân vùng sẽ bị xóa trắng!",
         flashBtn: "NẠP FIRMWARE",
         flashingBtn: "ĐANG NẠP...",
+        pinoutTab: "SƠ ĐỒ CHÂN (PINOUT)",
         sysLogTab: "NHẬT KÝ HỆ THỐNG",
         serialMonTab: "SERIAL MONITOR",
         clearLogTooltip: "Xóa màn hình console",
@@ -250,6 +251,7 @@
         eraseConfirm: "CONFIRM: FULL CHIP ERASE?\nAll NVS data, WiFi credentials, settings and partitions will be permanently erased!",
         flashBtn: "FLASH FIRMWARE",
         flashingBtn: "PROGRAMMING...",
+        pinoutTab: "PINOUT & WIRING",
         sysLogTab: "SYSTEM LOG",
         serialMonTab: "SERIAL MONITOR",
         clearLogTooltip: "Clear console output",
@@ -291,8 +293,4938 @@
       }
     };
 
+const BOARD_PINOUTS = {
+  "Morph-s3": {
+    "name": "Morph S3 Flagship",
+    "chip": "ESP32-S3 (N16R8 Octal-PSRAM)",
+    "type": "DIY / Modular Pentest Hub",
+    "usb": "Native USB-C (CDC on boot - GPIO 19/20)",
+    "desc": "Bo mạch Pentest cờ đầu hiệu năng cao, hỗ trợ đa mô-đun RF chia sẻ chung bus SPI tốc độ cao.",
+    "display": {
+      "driver": "ST7789 IPS 1.54 inch (240x240)",
+      "bus": "SPI (HSPI Port)",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA / DIN / SDI",
+          "gpio": "GPIO 10",
+          "note": "Dữ liệu SPI Master Out"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL / CLK / SCK",
+          "gpio": "GPIO 9",
+          "note": "Xung nhịp SPI Clock"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 14",
+          "note": "Chọn chip màn hình"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS / A0",
+          "gpio": "GPIO 8",
+          "note": "Chuyển lệnh (Command) / Dữ liệu"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES / RST",
+          "gpio": "GPIO 18",
+          "note": "Chân Reset màn hình"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BLK / BL / LED",
+          "gpio": "GPIO 13",
+          "note": "Đèn nền (Điều khiển độ sáng PWM)"
+        },
+        {
+          "code": "VCC / GND",
+          "real": "VCC / GND",
+          "gpio": "3.3V / GND",
+          "note": "Cấp nguồn 3.3V ổn định"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (300-928 MHz)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI (Serial In)",
+          "gpio": "GPIO 48",
+          "note": "Nối chung đường SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO (Serial Out)",
+          "gpio": "GPIO 41",
+          "note": "Nối chung đường SPI MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK / CLK",
+          "gpio": "GPIO 47",
+          "note": "Nối chung đường SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN / CS",
+          "gpio": "GPIO 2",
+          "note": "Chọn chip CC1101"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0 / GDO0",
+          "gpio": "GPIO 1",
+          "note": "Chân ngắt nhận/phát xung RF"
+        },
+        {
+          "code": "VCC / GND",
+          "real": "VCC / GND",
+          "gpio": "3.3V / GND",
+          "note": "⚠️ Nguồn 3.3V (Không cắm 5V)"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun 2.4GHz NRF24L01+ (Sniffer / BLE / Jammer)",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 48",
+          "note": "Nối chung đường SPI MOSI"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 41",
+          "note": "Nối chung đường SPI MISO"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK / CLK",
+          "gpio": "GPIO 47",
+          "note": "Nối chung đường SPI SCK"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 21",
+          "note": "Chọn chip NRF24"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 4",
+          "note": "Kích hoạt phát/nhận sóng"
+        },
+        {
+          "code": "IRQ",
+          "real": "IRQ",
+          "gpio": "NC (Bỏ trống)",
+          "note": "Không cần kết nối"
+        },
+        {
+          "code": "VCC / GND",
+          "real": "VCC / GND",
+          "gpio": "3.3V / GND",
+          "note": "⚠️ BẮT BUỘC NGUỒN 3.3V (Cắm 5V cháy chip ngay!)"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 42",
+          "note": "Chọn thẻ MicroSD"
+        },
+        {
+          "code": "SDCARD_MOSI",
+          "real": "MOSI / DI",
+          "gpio": "GPIO 48",
+          "note": "Dữ liệu vào thẻ"
+        },
+        {
+          "code": "SDCARD_MISO",
+          "real": "MISO / DO",
+          "gpio": "GPIO 41",
+          "note": "Dữ liệu ra từ thẻ"
+        },
+        {
+          "code": "SDCARD_SCK",
+          "real": "SCK / CLK",
+          "gpio": "GPIO 47",
+          "note": "Xung nhịp thẻ nhớ"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím OK / CHỌN",
+        "gpio": "GPIO 0 (BOOT)",
+        "note": "Nối nút nhấn về GND (Active LOW)"
+      },
+      {
+        "name": "Phím LÊN / TIẾN",
+        "gpio": "GPIO 39",
+        "note": "Nối nút nhấn về GND (Active LOW)"
+      },
+      {
+        "name": "Phím XUỐNG / LÙI",
+        "gpio": "GPIO 40",
+        "note": "Nối nút nhấn về GND (Active LOW)"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Cổng I2C Grove (SDA)",
+        "gpio": "GPIO 5",
+        "note": "Mở rộng RTC, cảm biến, GPS"
+      },
+      {
+        "name": "Cổng I2C Grove (SCL)",
+        "gpio": "GPIO 6",
+        "note": "Mở rộng RTC, cảm biến, GPS"
+      },
+      {
+        "name": "Mắt thu hồng ngoại (IR RX)",
+        "gpio": "GPIO 3",
+        "note": "Đầu thu hồng ngoại VS1838B"
+      },
+      {
+        "name": "Đèn LED NeoPixel (WS2812B)",
+        "gpio": "GPIO 12",
+        "note": "Đèn báo trạng thái RGB đa sắc"
+      }
+    ],
+    "tips": "Morph S3 chia sẻ chung bus SPI (GPIO 47, 48, 41) cho cả Màn hình, CC1101, NRF24 và Thẻ nhớ. Mỗi module chỉ cần cấp chân CS riêng biệt."
+  },
+  "Launcher-xingzhi-cube-s3": {
+    "name": "Xingzhi Cube S3 Multi-App Launcher",
+    "chip": "ESP32-S3 (N16R8)",
+    "type": "Thiết bị tích hợp sẵn (All-in-One)",
+    "usb": "Native USB-C",
+    "desc": "Trình khởi chạy đa ứng dụng (Launcher) chính thức cho Xingzhi Cube S3, cho phép chuyển đổi nhanh giữa các firmware Pentest và tiện ích.",
+    "display": {
+      "driver": "ST7789 IPS 240x240 LCD",
+      "bus": "SPI nội bộ",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA / DIN",
+          "gpio": "GPIO 10",
+          "note": "Tích hợp sẵn trên bo mạch"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL / CLK",
+          "gpio": "GPIO 9",
+          "note": "Tích hợp sẵn trên bo mạch"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 14",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 8",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES / RST",
+          "gpio": "GPIO 18",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BLK / BL",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mở rộng CC1101 Sub-GHz qua Header / Cáp",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 48",
+          "note": "Chân SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 41",
+          "note": "Chân SPI MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 47",
+          "note": "Chân SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 2",
+          "note": "Chân CS Sub-GHz"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 1",
+          "note": "Chân ngắt RF"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mở rộng NRF24L01+ 2.4GHz",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 48",
+          "note": "Chân SPI MOSI"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 41",
+          "note": "Chân SPI MISO"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 47",
+          "note": "Chân SPI SCK"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 21",
+          "note": "Chân CS NRF24"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 4",
+          "note": "Chân kích hoạt sóng"
+        },
+        {
+          "code": "VCC / GND",
+          "real": "VCC / GND",
+          "gpio": "3.3V / GND",
+          "note": "⚠️ Nguồn 3.3V duy nhất"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 42",
+          "note": "Khe thẻ nhớ cắm ngoài"
+        },
+        {
+          "code": "SDCARD_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 48",
+          "note": "SPI MOSI"
+        },
+        {
+          "code": "SDCARD_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 41",
+          "note": "SPI MISO"
+        },
+        {
+          "code": "SDCARD_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 47",
+          "note": "SPI SCK"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím OK / GIỮA",
+        "gpio": "GPIO 0",
+        "note": "Phím bấm vật lý tích hợp"
+      },
+      {
+        "name": "Phím LÊN / TRÁI",
+        "gpio": "GPIO 39",
+        "note": "Phím bấm vật lý tích hợp"
+      },
+      {
+        "name": "Phím XUỐNG / PHẢI",
+        "gpio": "GPIO 40",
+        "note": "Phím bấm vật lý tích hợp"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Cổng I2C Grove (SDA)",
+        "gpio": "GPIO 5",
+        "note": "Cổng cắm cảm biến bên hông"
+      },
+      {
+        "name": "Cổng I2C Grove (SCL)",
+        "gpio": "GPIO 6",
+        "note": "Cổng cắm cảm biến bên hông"
+      },
+      {
+        "name": "Mắt thu IR RX",
+        "gpio": "GPIO 3",
+        "note": "Tích hợp sẵn trên mặt trước"
+      },
+      {
+        "name": "Đèn LED trạng thái",
+        "gpio": "GPIO 12",
+        "note": "Tích hợp sẵn"
+      }
+    ],
+    "tips": "Bản Launcher giúp bạn quản lý nhiều bản firmware trên thẻ nhớ SD hoặc phân vùng Flash của Xingzhi Cube S3."
+  },
+  "xingzhi-cube-s3": {
+    "name": "Xingzhi Cube S3 (Bruce Pentest Firmware)",
+    "chip": "ESP32-S3 (N16R8)",
+    "type": "Thiết bị tích hợp sẵn (All-in-One)",
+    "usb": "Native USB-C",
+    "desc": "Bản firmware Bruce đầy đủ cho thiết bị Xingzhi Cube S3. Đầy đủ tính năng WiFi / BLE / Sub-GHz / BadUSB.",
+    "display": {
+      "driver": "ST7789 IPS 240x240 LCD",
+      "bus": "SPI nội bộ",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA / DIN",
+          "gpio": "GPIO 10",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL / CLK",
+          "gpio": "GPIO 9",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 14",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 8",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES / RST",
+          "gpio": "GPIO 18",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BLK / BL",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Nối ngoài)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 48",
+          "note": "Chân SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 41",
+          "note": "Chân SPI MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 47",
+          "note": "Chân SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 2",
+          "note": "Chân CS Sub-GHz"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 1",
+          "note": "Chân ngắt RF"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun 2.4GHz NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 48",
+          "note": "Chân SPI MOSI"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 41",
+          "note": "Chân SPI MISO"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 47",
+          "note": "Chân SPI SCK"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 21",
+          "note": "Chân CS NRF24"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 4",
+          "note": "Chân kích hoạt sóng"
+        },
+        {
+          "code": "VCC / GND",
+          "real": "VCC / GND",
+          "gpio": "3.3V / GND",
+          "note": "⚠️ Nguồn 3.3V"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 42",
+          "note": "Khe thẻ nhớ MicroSD"
+        },
+        {
+          "code": "SDCARD_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 48",
+          "note": "SPI MOSI"
+        },
+        {
+          "code": "SDCARD_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 41",
+          "note": "SPI MISO"
+        },
+        {
+          "code": "SDCARD_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 47",
+          "note": "SPI SCK"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím OK / GIỮA",
+        "gpio": "GPIO 0",
+        "note": "Phím vật lý tích hợp"
+      },
+      {
+        "name": "Phím LÊN / TRÁI",
+        "gpio": "GPIO 39",
+        "note": "Phím vật lý tích hợp"
+      },
+      {
+        "name": "Phím XUỐNG / PHẢI",
+        "gpio": "GPIO 40",
+        "note": "Phím vật lý tích hợp"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Cổng Grove SDA",
+        "gpio": "GPIO 5",
+        "note": "Giao tiếp I2C"
+      },
+      {
+        "name": "Cổng Grove SCL",
+        "gpio": "GPIO 6",
+        "note": "Giao tiếp I2C"
+      },
+      {
+        "name": "Mắt thu IR RX",
+        "gpio": "GPIO 3",
+        "note": "Thu tín hiệu hồng ngoại"
+      },
+      {
+        "name": "Đèn LED",
+        "gpio": "GPIO 12",
+        "note": "Đèn báo tích hợp"
+      }
+    ],
+    "tips": "Nếu bạn muốn dùng CC1101 trên Cube S3, hàn dây ra các chân SPI ngoài (GPIO 47, 48, 41) cùng CS=GPIO 2, GDO0=GPIO 1."
+  },
+  "s3-mini-1_47-inch": {
+    "name": "ESP32-S3 Super Mini 1.47\"",
+    "chip": "ESP32-S3 Super Mini (4MB Flash)",
+    "type": "Bo mạch tự chế nhỏ gọn (DIY Pocket)",
+    "usb": "Native USB-C (GPIO 19/20)",
+    "desc": "Bản build tối ưu cho bo mạch siêu nhỏ ESP32-S3 Super Mini kết hợp màn hình màu ST7789 1.47 inch 170x320.",
+    "display": {
+      "driver": "ST7789 IPS 1.47 inch (170x320)",
+      "bus": "SPI Bus",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA / DIN",
+          "gpio": "GPIO 11",
+          "note": "Dữ liệu SPI (Trên màn hình in là SDA)"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL / CLK",
+          "gpio": "GPIO 10",
+          "note": "Xung SPI (Trên màn hình in là SCL)"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 44",
+          "note": "Chọn chip màn hình"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 13",
+          "note": "Chuyển lệnh / dữ liệu"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES / RST",
+          "gpio": "GPIO 12",
+          "note": "Chân Reset"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BLK / BL",
+          "gpio": "GPIO 43",
+          "note": "Đèn nền Backlight"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 11",
+          "note": "Chung đường MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 8",
+          "note": "Chân MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 10",
+          "note": "Chung đường SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN / CS",
+          "gpio": "GPIO 17",
+          "note": "Chọn chip CC1101"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 16",
+          "note": "Xung tín hiệu RF"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 11",
+          "note": "Chung đường MOSI"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 8",
+          "note": "Chung đường MISO"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 10",
+          "note": "Chung đường SCK"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 18",
+          "note": "Chọn chip NRF24"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 21",
+          "note": "Chân kích hoạt sóng"
+        },
+        {
+          "code": "VCC / GND",
+          "real": "VCC / GND",
+          "gpio": "3.3V / GND",
+          "note": "⚠️ Nguồn 3.3V"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 7",
+          "note": "Chọn thẻ nhớ"
+        },
+        {
+          "code": "SDCARD_MOSI",
+          "real": "MOSI / DI",
+          "gpio": "GPIO 11",
+          "note": "SPI MOSI"
+        },
+        {
+          "code": "SDCARD_MISO",
+          "real": "MISO / DO",
+          "gpio": "GPIO 8",
+          "note": "SPI MISO"
+        },
+        {
+          "code": "SDCARD_SCK",
+          "real": "SCK / CLK",
+          "gpio": "GPIO 10",
+          "note": "SPI SCK"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím OK / SELECT",
+        "gpio": "GPIO 1",
+        "note": "Nút nhấn nối GND"
+      },
+      {
+        "name": "Phím LÊN / UP",
+        "gpio": "GPIO 3",
+        "note": "Nút nhấn nối GND"
+      },
+      {
+        "name": "Phím XUỐNG / DOWN",
+        "gpio": "GPIO 2",
+        "note": "Nút nhấn nối GND"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Hồng ngoại phát (IR TX)",
+        "gpio": "GPIO 14",
+        "note": "Đèn LED hồng ngoại phát"
+      },
+      {
+        "name": "Hồng ngoại thu (IR RX)",
+        "gpio": "GPIO 15",
+        "note": "Mắt thu hồng ngoại VS1838B"
+      },
+      {
+        "name": "I2C SDA / SCL",
+        "gpio": "GPIO 8 / 9",
+        "note": "Mở rộng I2C"
+      }
+    ],
+    "tips": "Màn hình 1.47 inch in chân dữ liệu là SDA (nối GPIO 11) và SCL (nối GPIO 10). MISO nối GPIO 8 dùng chung cho cả CC1101, NRF24 và MicroSD."
+  },
+  "ES3C28P": {
+    "name": "ES3C28P Touch (2.8\" IPS)",
+    "chip": "ESP32-S3 (N16R8)",
+    "type": "Màn hình cảm ứng tích hợp (Capacitive Touch)",
+    "usb": "USB-C CP2102 / CH343 / Native",
+    "desc": "Bo mạch phát triển ESP32-S3 tích hợp sẵn màn hình cảm ứng điện dung 2.8 inch FT6336G, âm thanh ES8311 và khe thẻ SDIO.",
+    "display": {
+      "driver": "ST7789 IPS 2.8 inch (240x320) + Cảm ứng FT6336G",
+      "bus": "SPI Màn hình + I2C Cảm ứng",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA / DIN",
+          "gpio": "GPIO 11",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL / CLK",
+          "gpio": "GPIO 12",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 10",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 46",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL / LED",
+          "gpio": "GPIO 45",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TOUCH_SDA",
+          "real": "SDA",
+          "gpio": "GPIO 16",
+          "note": "Cảm ứng điện dung FT6336"
+        },
+        {
+          "code": "TOUCH_SCL",
+          "real": "SCL",
+          "gpio": "GPIO 15",
+          "note": "Cảm ứng điện dung FT6336"
+        },
+        {
+          "code": "TOUCH_INT",
+          "real": "INT",
+          "gpio": "GPIO 17",
+          "note": "Ngắt cảm ứng"
+        },
+        {
+          "code": "TOUCH_RST",
+          "real": "RST",
+          "gpio": "GPIO 18",
+          "note": "Reset cảm ứng"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Cắm Header)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 3",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 2",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 14",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 21",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 2",
+          "note": "Xung ngắt RF"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 3",
+          "note": "Chân MOSI"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 2",
+          "note": "Chân MISO"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 14",
+          "note": "Chân SCK"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 21",
+          "note": "Chân CS"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 3",
+          "note": "Chân CE"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SD_SLOT",
+          "real": "MicroSD",
+          "gpio": "SDIO tích hợp",
+          "note": "Khe cắm thẻ nhớ trực tiếp trên mạch"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Cảm ứng điện dung",
+        "gpio": "FT6336 (I2C)",
+        "note": "Hỗ trợ vuốt chạm động học ProTouch mượt mà"
+      },
+      {
+        "name": "Phím BOOT",
+        "gpio": "GPIO 0",
+        "note": "Phím vật lý phụ trợ"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "LED RGB WS2812B",
+        "gpio": "GPIO 42",
+        "note": "Đèn báo trạng thái"
+      },
+      {
+        "name": "Âm thanh I2S (ES8311)",
+        "gpio": "GPIO 5",
+        "note": "Chip giải mã Audio DAC/Speaker"
+      }
+    ],
+    "tips": "Màn hình cảm ứng FT6336 sử dụng I2C chung cổng GPIO 15/16. Đã kích hoạt kinetic scroll trong Bruce!"
+  },
+  "elecrow-advance-35-s3": {
+    "name": "Elecrow CrowPanel Advance 3.5\"",
+    "chip": "ESP32-S3 (N16R8)",
+    "type": "Màn hình lớn tích hợp (3.5\" Touch Panel)",
+    "usb": "USB-C kép",
+    "desc": "Màn hình cảm ứng điện dung cỡ lớn 3.5 inch độ phân giải 480x320, tích hợp chip cảm ứng GT911 và khe cắm thẻ nhớ MicroSD.",
+    "display": {
+      "driver": "ILI9488 3.5 inch IPS (480x320) + GT911 Capacitive Touch",
+      "bus": "SPI Tốc độ cao 40MHz",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA / DIN",
+          "gpio": "GPIO 11",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_MISO",
+          "real": "SDO / DO",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL / CLK",
+          "gpio": "GPIO 12",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 10",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 46",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL / LED",
+          "gpio": "GPIO 45",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TOUCH_SDA",
+          "real": "SDA",
+          "gpio": "GPIO 19",
+          "note": "Cảm ứng GT911"
+        },
+        {
+          "code": "TOUCH_SCL",
+          "real": "SCL",
+          "gpio": "GPIO 20",
+          "note": "Cảm ứng GT911"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Nối Header ngoài)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 11",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 13",
+          "note": "Chung SPI MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 12",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 21",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 2",
+          "note": "Header ngoài"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 11",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 13",
+          "note": "Chung SPI MISO"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 12",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 21",
+          "note": "Chân CS"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 3",
+          "note": "Chân CE"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 42",
+          "note": "Khe cắm thẻ nhớ TF tích hợp"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Cảm ứng điện dung GT911",
+        "gpio": "I2C GPIO 19/20",
+        "note": "Chạm đa điểm và vuốt trượt siêu nhạy"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Cổng cắm I2C / UART ngoài",
+        "gpio": "Header 4-pin",
+        "note": "Mở rộng module ngoài"
+      }
+    ],
+    "tips": "Màn hình 3.5 inch ILI9488 cho không gian hiển thị rộng rãi nhất trong các dòng Bruce!"
+  },
+  "smoochiee-board": {
+    "name": "Smoochiee Board",
+    "chip": "ESP32-S3",
+    "type": "Bo mạch chuyên dụng Pentest (Hardware Toolkit)",
+    "usb": "USB-C",
+    "desc": "Bo mạch pentest phần cứng trang bị dải 16 đèn LED RGB NeoPixel, cụm 5 phím D-Pad và 2 cổng Grove độc lập.",
+    "display": {
+      "driver": "ST7789 1.47 inch 170x320",
+      "bus": "SPI",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 17",
+          "note": "Dữ liệu màn hình"
+        },
+        {
+          "code": "TFT_MISO",
+          "real": "SDO",
+          "gpio": "GPIO 8",
+          "note": "Đọc dữ liệu"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 18",
+          "note": "Xung nhịp"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 7",
+          "note": "Chọn chip màn hình"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 15",
+          "note": "Lệnh / dữ liệu"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 16",
+          "note": "Reset"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 6",
+          "note": "Đèn nền"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 12",
+          "note": "Bus RF riêng biệt"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 11",
+          "note": "Bus RF riêng biệt"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 13",
+          "note": "Bus RF riêng biệt"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 46",
+          "note": "Chọn chip CC1101"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 9",
+          "note": "Xung ngắt RF"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 12",
+          "note": "Bus RF"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 11",
+          "note": "Bus RF"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 13",
+          "note": "Bus RF"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 14",
+          "note": "Chọn chip NRF24"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 21",
+          "note": "Kích hoạt phát"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 3",
+          "note": "Khe thẻ nhớ TF"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím LÊN (UP)",
+        "gpio": "GPIO 41",
+        "note": "Phím D-Pad"
+      },
+      {
+        "name": "Phím XUỐNG (DOWN)",
+        "gpio": "GPIO 40",
+        "note": "Phím D-Pad"
+      },
+      {
+        "name": "Phím TRÁI (LEFT)",
+        "gpio": "GPIO 39",
+        "note": "Phím D-Pad"
+      },
+      {
+        "name": "Phím PHẢI (RIGHT)",
+        "gpio": "GPIO 38",
+        "note": "Phím D-Pad"
+      },
+      {
+        "name": "Phím OK / CHỌN",
+        "gpio": "GPIO 0",
+        "note": "Phím BOOT"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "16x RGB LED WS2812B",
+        "gpio": "GPIO 45",
+        "note": "Dải LED hiệu ứng ánh sáng cực đẹp"
+      },
+      {
+        "name": "Cổng Grove SDA / SCL",
+        "gpio": "GPIO 47 / 48",
+        "note": "Cổng cắm I2C"
+      },
+      {
+        "name": "Hồng ngoại TX / RX",
+        "gpio": "GPIO 5 / 4",
+        "note": "Thu phát hồng ngoại"
+      }
+    ],
+    "tips": "Smoochiee Board có 2 bus SPI riêng: bus màn hình (GPIO 17/18) và bus RF (GPIO 12/13/11) giúp đường truyền tín hiệu RF không bị nhiễu bởi màn hình!"
+  },
+  "lilygo-t-display-s3": {
+    "name": "LilyGO T-Display S3",
+    "chip": "ESP32-S3 (N16R8)",
+    "type": "Thiết bị tích hợp sẵn (All-in-One)",
+    "usb": "Native USB-C",
+    "desc": "Màn hình 1.9 inch ST7789 giao thức 8-bit Parallel tốc độ làm tươi cực cao, có sẵn 2 nút bấm tiện lợi.",
+    "display": {
+      "driver": "ST7789 1.9 inch 170x320 8-bit Parallel",
+      "bus": "8-bit Parallel (D0-D7 = GPIO 39-48, WR=8, RD=9)",
+      "pins": [
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 6",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 7",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 5",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 38",
+          "note": "Tích hợp sẵn (PWM)"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Nối qua Header 2 hàng chân)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 3",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 2",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 43",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 1",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 44",
+          "note": "Header ngoài"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 3",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 2",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 43",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 1",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 17",
+          "note": "Header ngoài"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím BOOT / LÊN",
+        "gpio": "GPIO 0",
+        "note": "Nút bấm cạnh cổng USB"
+      },
+      {
+        "name": "Phím KEY / XUỐNG",
+        "gpio": "GPIO 14",
+        "note": "Nút bấm cạnh màn hình"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "I2C SDA / SCL",
+        "gpio": "GPIO 18 / 21",
+        "note": "Mở rộng cảm biến ngoài"
+      }
+    ],
+    "tips": "Màn hình chạy bus Parallel nên giải phóng hoàn toàn chân SPI (GPIO 43, 3, 2) cho module RF ngoài đạt tốc độ tối đa!"
+  },
+  "lilygo-t-display-s3-touch": {
+    "name": "LilyGO T-Display S3 Touch",
+    "chip": "ESP32-S3 (N16R8)",
+    "type": "Màn hình cảm ứng tích hợp (Capacitive Touch)",
+    "usb": "Native USB-C",
+    "desc": "Phiên bản màn hình cảm ứng điện dung CST816S của T-Display S3, điều khiển cảm ứng đa điểm trực tiếp trên mặt kính.",
+    "display": {
+      "driver": "ST7789 1.9\" 170x320 8-bit Parallel + CST816S Touch",
+      "bus": "8-bit Parallel + I2C Cảm ứng",
+      "pins": [
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 6",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 7",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 5",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 38",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TOUCH_SDA",
+          "real": "SDA",
+          "gpio": "GPIO 18",
+          "note": "Cảm ứng CST816S"
+        },
+        {
+          "code": "TOUCH_SCL",
+          "real": "SCL",
+          "gpio": "GPIO 17",
+          "note": "Cảm ứng CST816S"
+        },
+        {
+          "code": "TOUCH_INT",
+          "real": "INT",
+          "gpio": "GPIO 21",
+          "note": "Ngắt cảm ứng"
+        },
+        {
+          "code": "TOUCH_RST",
+          "real": "RST",
+          "gpio": "GPIO 16",
+          "note": "Reset cảm ứng"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 3",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 2",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 43",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 1",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 44",
+          "note": "Header ngoài"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 3",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 2",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 43",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 1",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 10",
+          "note": "Header ngoài"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Cảm ứng đa điểm",
+        "gpio": "CST816S ProTouch",
+        "note": "Vuốt chạm động học trực tiếp"
+      },
+      {
+        "name": "Phím BOOT",
+        "gpio": "GPIO 0",
+        "note": "Nút bấm phụ"
+      }
+    ],
+    "tips": "Cảm ứng điện dung CST816S cho phép bạn thao tác toàn bộ menu Bruce chỉ bằng các thao tác chạm và vuốt!"
+  },
+  "lilygo-t-display-s3-pro": {
+    "name": "LilyGO T-Display S3 Pro",
+    "chip": "ESP32-S3 (N16R8)",
+    "type": "Màn hình dài độ phân giải cao (222x480)",
+    "usb": "USB-C",
+    "desc": "Màn hình dài 2.4 inch ST7796 222x480 sắc nét, hỗ trợ cảm ứng điện dung FT3168 và khe thẻ nhớ MicroSD.",
+    "display": {
+      "driver": "ST7796 2.4 inch 222x480 SPI + FT3168 Touch",
+      "bus": "SPI Tốc độ cao",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 12",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 39",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 9",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 47",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 13",
+          "note": "SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 11",
+          "note": "SPI MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 12",
+          "note": "SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 43",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 44",
+          "note": "Header ngoài"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 14",
+          "note": "Khe cắm thẻ nhớ tích hợp"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Cảm ứng điện dung FT3168",
+        "gpio": "I2C GPIO 5/6",
+        "note": "Mặt kính cảm ứng siêu mượt"
+      },
+      {
+        "name": "Phím vật lý",
+        "gpio": "GPIO 0, 12, 16",
+        "note": "Nút bấm cạnh bên"
+      }
+    ],
+    "tips": "Màn hình tỷ lệ dài độc đáo rất thích hợp cho hiển thị danh sách gói tin Sniffer và phổ tần số Sub-GHz!"
+  },
+  "lilygo-t-embed-cc1101": {
+    "name": "LilyGO T-Embed CC1101",
+    "chip": "ESP32-S3 (N16R8)",
+    "type": "Thiết bị tích hợp sẵn (All-in-One với CC1101)",
+    "usb": "USB-C",
+    "desc": "Thiết bị cầm tay nguyên khối tích hợp sẵn mô-đun CC1101 Sub-GHz, núm xoay vô cực Rotary Encoder, khe cắm MicroSD và dải 7 LED RGB.",
+    "display": {
+      "driver": "ST7789 170x320 ngang",
+      "bus": "SPI nội bộ",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 9",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 11",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 41",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 16",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 40",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 21",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (TÍCH HỢP SẴN BÊN TRONG)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 9",
+          "note": "Đã nối sẵn trên mạch"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 10",
+          "note": "Đã nối sẵn trên mạch"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 11",
+          "note": "Đã nối sẵn trên mạch"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 12",
+          "note": "Đã nối sẵn trên mạch"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 3",
+          "note": "Đã nối sẵn trên mạch"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+ (Cắm mở rộng qua Header ngoài)",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 9",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 10",
+          "note": "Chung SPI MISO"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 11",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 44",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 43",
+          "note": "Header ngoài"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 13",
+          "note": "Khe cắm thẻ nhớ MicroSD tích hợp sẵn"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Núm xoay Rotary Encoder",
+        "gpio": "A=GPIO 2, B=GPIO 1",
+        "note": "Xoay trái/phải để cuộn menu"
+      },
+      {
+        "name": "Phím bấm núm xoay (CLICK)",
+        "gpio": "GPIO 0",
+        "note": "Bấm núm xoay xuống để CHỌN (OK)"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "7x Đèn LED RGB WS2812",
+        "gpio": "GPIO 42",
+        "note": "Dải LED vòng quanh núm xoay"
+      },
+      {
+        "name": "Cổng Grove I2C",
+        "gpio": "SDA=8, SCL=18",
+        "note": "Cắm cảm biến ngoài"
+      }
+    ],
+    "tips": "Thiết bị nguyên khối hoàn hảo: CC1101 và khe thẻ nhớ đã có sẵn bên trong vỏ hộp, không cần hàn nối bất kỳ dây nào!"
+  },
+  "lilygo-t-embed": {
+    "name": "LilyGO T-Embed (Bản Tiêu chuẩn)",
+    "chip": "ESP32-S3 (N16R8)",
+    "type": "Thiết bị tích hợp sẵn (All-in-One)",
+    "usb": "USB-C",
+    "desc": "Bản T-Embed tiêu chuẩn với núm xoay encoder, khe cắm MicroSD, màn hình 170x320 ngang và chân mở rộng cắm module RF.",
+    "display": {
+      "driver": "ST7789 170x320",
+      "bus": "SPI nội bộ",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 9",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 11",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 41",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 16",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 21",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Cắm Header ngoài)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 9",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 10",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 11",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 12",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 3",
+          "note": "Header ngoài"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 13",
+          "note": "Khe cắm thẻ nhớ TF tích hợp"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Núm xoay Rotary Encoder",
+        "gpio": "A=GPIO 2, B=GPIO 1",
+        "note": "Xoay trái/phải"
+      },
+      {
+        "name": "Phím bấm núm xoay (OK)",
+        "gpio": "GPIO 0",
+        "note": "Bấm núm xoay"
+      }
+    ],
+    "tips": "Nếu bản T-Embed của bạn không có sẵn chip CC1101 bên trong, bạn có thể cắm thêm module qua chân header ngoài."
+  },
+  "lilygo-t-deck": {
+    "name": "LilyGO T-Deck / Plus",
+    "chip": "ESP32-S3 (N16R8)",
+    "type": "Cyberdeck cầm tay đầy đủ bàn phím",
+    "usb": "USB-C",
+    "desc": "Thiết bị Cyberdeck đỉnh cao với bàn phím QWERTY vật lý đầy đủ 56 phím, bi xoay Trackball, mô-đun LoRa SX1262 và khe thẻ MicroSD.",
+    "display": {
+      "driver": "ST7789 IPS 2.4 inch (240x320)",
+      "bus": "SPI Tốc độ cao",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 41",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 40",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 12",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 11",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 42",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Nối Header ngoài)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 41",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 38",
+          "note": "Chung SPI MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 40",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 43",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 44",
+          "note": "Header ngoài"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 39",
+          "note": "Khe cắm thẻ nhớ TF tích hợp"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Bàn phím QWERTY (TCA8418)",
+        "gpio": "I2C SDA=18, SCL=8",
+        "note": "Bàn phím vật lý đầy đủ gõ chữ và số"
+      },
+      {
+        "name": "Bi xoay Trackball",
+        "gpio": "U=3, D=15, L=1, R=2, OK=0",
+        "note": "Di chuyển con trỏ và nhấn nút OK"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Chip LoRa SX1262",
+        "gpio": "SPI LoRa",
+        "note": "Tích hợp sẵn trên bo mạch"
+      },
+      {
+        "name": "Microphone I2S",
+        "gpio": "I2S",
+        "note": "Ghi âm và phân tích âm thanh"
+      }
+    ],
+    "tips": "Bàn phím QWERTY gõ lệnh BadUSB và nhập mật khẩu WiFi trực tiếp mà không cần dùng bàn phím ảo!"
+  },
+  "lilygo-t-watch-s3": {
+    "name": "LilyGO T-Watch S3",
+    "chip": "ESP32-S3",
+    "type": "Đồng hồ thông minh đeo tay (Smartwatch)",
+    "usb": "USB-C",
+    "desc": "Đồng hồ thông minh đeo tay hỗ trợ cảm ứng điện dung, đồng hồ thời gian thực RTC BM8563, cảm biến chuyển động và mạch quản lý pin AXP2101.",
+    "display": {
+      "driver": "ST7789 1.54 inch (240x240) + Cảm ứng FT6336U",
+      "bus": "SPI + I2C",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 18",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 12",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 38",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 45",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TOUCH_I2C",
+          "real": "SDA/SCL",
+          "gpio": "GPIO 6 / 7",
+          "note": "Cảm ứng điện dung"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Màn hình cảm ứng",
+        "gpio": "FT6336U",
+        "note": "Thao tác vuốt chạm trên mặt đồng hồ"
+      },
+      {
+        "name": "Phím cạnh hông (Crown Button)",
+        "gpio": "GPIO 0",
+        "note": "Bật/tắt màn hình và chọn menu"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Chip quản lý pin AXP2101",
+        "gpio": "I2C",
+        "note": "Đo dung lượng pin chính xác"
+      },
+      {
+        "name": "Cảm biến chuyển động BMA423",
+        "gpio": "I2C",
+        "note": "Đếm bước chân và lắc tay sáng màn hình"
+      }
+    ],
+    "tips": "Thiết bị pentest dạng đồng hồ đeo tay kín đáo và tiện lợi nhất!"
+  },
+  "m5stack-cardputer": {
+    "name": "M5Stack Cardputer",
+    "chip": "ESP32-S3 (N8R2)",
+    "type": "Máy tính bỏ túi cỡ thẻ ATM (All-in-One)",
+    "usb": "USB-C",
+    "desc": "Thiết bị bỏ túi hình thẻ ATM trang bị bàn phím 56 phím, loa công suất lớn NS4168, mic ghi âm, khe thẻ nhớ và cổng Grove mở rộng.",
+    "display": {
+      "driver": "ST7789 1.14 inch 135x240",
+      "bus": "SPI nội bộ",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 35",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 36",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 37",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 34",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 33",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 38",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Nối qua Cổng Grove hoặc Header mở rộng)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 14",
+          "note": "Chân MOSI chia sẻ từ thẻ nhớ"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 39",
+          "note": "Chân MISO chia sẻ từ thẻ nhớ"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 40",
+          "note": "Chân SCK chia sẻ từ thẻ nhớ"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 1",
+          "note": "Chân SCL của cổng Grove"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 2",
+          "note": "Chân SDA của cổng Grove"
+        },
+        {
+          "code": "VCC / GND",
+          "real": "VCC / GND",
+          "gpio": "3.3V / GND",
+          "note": "Lấy nguồn từ cổng Grove"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 14",
+          "note": "Chân MOSI thẻ nhớ"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 39",
+          "note": "Chân MISO thẻ nhớ"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 40",
+          "note": "Chân SCK thẻ nhớ"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 1",
+          "note": "Chân SCL cổng Grove"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 2",
+          "note": "Chân SDA cổng Grove"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 12",
+          "note": "Khe cắm MicroSD tích hợp bên hông"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Bàn phím 56 phím QWERTY",
+        "gpio": "I2C SDA=8, SCL=9",
+        "note": "Đầy đủ các phím điều hướng và ký tự"
+      },
+      {
+        "name": "Phím G0",
+        "gpio": "GPIO 0",
+        "note": "Phím nhấn phía trên"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Đèn phát hồng ngoại (IR TX)",
+        "gpio": "GPIO 44",
+        "note": "Phát lệnh điều khiển từ xa TV/Điều hòa"
+      },
+      {
+        "name": "LED RGB SK6812",
+        "gpio": "GPIO 21",
+        "note": "Đèn báo trạng thái"
+      },
+      {
+        "name": "Cổng Grove",
+        "gpio": "SDA=2, SCL=1",
+        "note": "Cổng cắm mô-đun ngoài"
+      }
+    ],
+    "tips": "Cách nối CC1101/NRF24 cho Cardputer: Lấy chân SCK/MOSI/MISO từ hàng chân thẻ nhớ, chân CS/CE từ cổng Grove (GPIO 1 & 2)!"
+  },
+  "m5stack-cores3": {
+    "name": "M5Stack CoreS3",
+    "chip": "ESP32-S3 (N16R8)",
+    "type": "Hộp điều khiển trung tâm (Flagship Controller)",
+    "usb": "USB-C",
+    "desc": "Bộ điều khiển cao cấp tích hợp màn hình cảm ứng 2.0 inch ILI9342C, camera, micro kép, khe MicroSD và chip quản lý nguồn AXP2101.",
+    "display": {
+      "driver": "ILI9342C 2.0 inch 240x320 Cảm ứng",
+      "bus": "SPI nội bộ + I2C",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 37",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 35",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 36",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 3",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 35",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Nối qua Cổng Grove Port A)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 2",
+          "note": "Port A SDA"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 1",
+          "note": "Port A SCL"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 0",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 26",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 2",
+          "note": "Tín hiệu RF"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 4",
+          "note": "Khe thẻ nhớ TF tích hợp"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Màn hình cảm ứng điện dung",
+        "gpio": "FT6336U",
+        "note": "Vuốt chạm trên toàn bộ mặt kính 2.0\""
+      }
+    ],
+    "tips": "CoreS3 sở hữu cấu hình mạnh mẽ nhất dòng M5Stack với 16MB Flash và 8MB PSRAM!"
+  },
+  "m5stack-sticks3": {
+    "name": "M5Stack StickS3",
+    "chip": "ESP32-S3",
+    "type": "Thanh bỏ túi nhỏ gọn (Pocket Stick)",
+    "usb": "USB-C",
+    "desc": "Thanh điều khiển nhỏ gọn tích hợp màn hình 1.14 inch, mắt phát hồng ngoại công suất lớn, pin sạc và cổng Grove.",
+    "display": {
+      "driver": "ST7789 1.14 inch 135x240",
+      "bus": "SPI nội bộ",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 39",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 40",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 41",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 45",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 21",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 38",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím M5 (CHỌN/OK)",
+        "gpio": "GPIO 11",
+        "note": "Nút bấm lớn trên mặt"
+      },
+      {
+        "name": "Phím B (XUỐNG/NEXT)",
+        "gpio": "GPIO 12",
+        "note": "Nút bấm cạnh hông"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Hồng ngoại phát (IR TX)",
+        "gpio": "GPIO 19",
+        "note": "Đèn phát hồng ngoại phía đầu"
+      },
+      {
+        "name": "Cổng Grove",
+        "gpio": "SDA=9, SCL=10",
+        "note": "Cắm module ngoài"
+      },
+      {
+        "name": "Hàng chân mở rộng phía đầu",
+        "gpio": "GPIO 8, 1, 0, 5",
+        "note": "Header cắm module RF"
+      }
+    ],
+    "tips": "Thanh StickS3 cực kỳ nhỏ gọn, bỏ túi áo hoặc đeo cổ tay rất thuận tiện cho các bài test không dây!"
+  },
+  "m5stack-core2": {
+    "name": "M5Stack Core2",
+    "chip": "ESP32 Classic (16MB Flash + 8MB PSRAM)",
+    "type": "Hộp điều khiển màn hình cảm ứng",
+    "usb": "USB-C CP2104",
+    "desc": "Hộp pentest kinh điển với màn hình cảm ứng 2.0 inch, motor rung phản hồi xúc giác, khe cắm MicroSD và chip quản lý nguồn AXP192.",
+    "display": {
+      "driver": "ILI9342C 2.0 inch (240x320) + Cảm ứng FT6336U",
+      "bus": "SPI nội bộ + I2C",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 23",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 38",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 18",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 5",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 15",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Nối qua Cổng Grove & M5 Bus)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 23",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 38",
+          "note": "Chung SPI MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 18",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 33",
+          "note": "Chân SCL Grove"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 32",
+          "note": "Chân SDA Grove"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 4",
+          "note": "Khe cắm MicroSD tích hợp bên dưới đáy"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Màn hình cảm ứng 2.0 inch",
+        "gpio": "FT6336U",
+        "note": "Chạm trực tiếp trên kính"
+      },
+      {
+        "name": "3 Phím cảm ứng viền dưới (A, B, C)",
+        "gpio": "Chân cảm ứng",
+        "note": "3 phím tròn dưới màn hình"
+      }
+    ],
+    "tips": "Core2 trang bị sẵn 8MB PSRAM giúp tải toàn bộ bảng từ điển WiFi và danh sách thiết bị BLE mượt mà."
+  },
+  "m5stack-cplus1_1": {
+    "name": "M5StickC Plus 1.1",
+    "chip": "ESP32 Classic (4MB Flash)",
+    "type": "Thiết bị đeo tay nhỏ gọn",
+    "usb": "USB-C",
+    "desc": "Thiết bị nhỏ gọn dạng thanh đồng hồ, tích hợp màn hình màu 1.14 inch, mắt phát hồng ngoại và pin sạc.",
+    "display": {
+      "driver": "ST7789 1.14 inch 135x240",
+      "bus": "SPI nội bộ",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 15",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 5",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 23",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 18",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Nối qua Header 8 chân)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 26",
+          "note": "Chân G26 phía đầu"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 36",
+          "note": "Chân G36 phía đầu"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 0",
+          "note": "Chân G0 phía đầu"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 26",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 25",
+          "note": "Chân G25 phía đầu"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím M5 (CHỌN/OK)",
+        "gpio": "GPIO 37",
+        "note": "Nút bấm lớn trên mặt"
+      },
+      {
+        "name": "Phím B (XUỐNG)",
+        "gpio": "GPIO 39",
+        "note": "Nút bấm cạnh hông"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Đèn hồng ngoại IR TX",
+        "gpio": "GPIO 9",
+        "note": "Phát lệnh điều khiển từ xa"
+      },
+      {
+        "name": "Cổng Grove",
+        "gpio": "SDA=32, SCL=33",
+        "note": "Cắm module ngoài"
+      }
+    ],
+    "tips": "Cực kỳ thích hợp kết hợp với module hồng ngoại để điều khiển TV và máy chiếu trong các phòng họp."
+  },
+  "m5stack-cplus2": {
+    "name": "M5StickC Plus 2",
+    "chip": "ESP32 Classic (8MB Flash)",
+    "type": "Thiết bị đeo tay nâng cấp pin",
+    "usb": "USB-C",
+    "desc": "Phiên bản nâng cấp của StickC Plus với dung lượng Flash 8MB, pin sạc lớn hơn 200mAh và còi Buzzer âm lượng lớn.",
+    "display": {
+      "driver": "ST7789 1.14 inch 135x240",
+      "bus": "SPI nội bộ",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 15",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 5",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 14",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 12",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 27",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím M5 (OK)",
+        "gpio": "GPIO 37",
+        "note": "Nút bấm lớn mặt trước"
+      },
+      {
+        "name": "Phím B (XUỐNG)",
+        "gpio": "GPIO 39",
+        "note": "Nút bấm cạnh bên"
+      },
+      {
+        "name": "Phím C (LÊN)",
+        "gpio": "GPIO 35",
+        "note": "Nút nguồn / phím thứ 3"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Đèn hồng ngoại IR TX",
+        "gpio": "GPIO 19",
+        "note": "Đèn phát hồng ngoại"
+      },
+      {
+        "name": "Cổng Grove",
+        "gpio": "SDA=32, SCL=33",
+        "note": "Cổng cắm I2C"
+      }
+    ],
+    "tips": "Plus 2 có 3 phím bấm độc lập (GPIO 37, 39, 35) giúp điều hướng menu lên/xuống/chọn cực kỳ thuận tiện!"
+  },
+  "CYD-2432S028": {
+    "name": "CYD (Cheap Yellow Display 2.8\" 1USB / 2USB)",
+    "chip": "ESP32 WROOM-32 (4MB Flash)",
+    "type": "Bo mạch màn hình giá rẻ phổ biến",
+    "usb": "Micro-USB / Type-C (CH340)",
+    "desc": "Bo mạch Cheap Yellow Display 2.8 inch cảm ứng điện trở XPT2046, có sẵn khe thẻ nhớ MicroSD và cổng mở rộng CN1.",
+    "display": {
+      "driver": "ILI9341 2.8 inch 240x320 + Cảm ứng điện trở XPT2046",
+      "bus": "SPI nội bộ",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA / DIN",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn trên mạch"
+        },
+        {
+          "code": "TFT_MISO",
+          "real": "SDO / DO",
+          "gpio": "GPIO 12",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL / CLK",
+          "gpio": "GPIO 14",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 15",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 2",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 21",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TOUCH_CS",
+          "real": "T_CS",
+          "gpio": "GPIO 33",
+          "note": "Cảm ứng điện trở XPT2046"
+        },
+        {
+          "code": "TOUCH_IRQ",
+          "real": "T_IRQ",
+          "gpio": "GPIO 36",
+          "note": "Ngắt cảm ứng"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Nối qua Cổng CN1 cạnh khe thẻ nhớ)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 23",
+          "note": "Chân MOSI chia sẻ từ thẻ nhớ"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 19",
+          "note": "Chân MISO chia sẻ từ thẻ nhớ"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 18",
+          "note": "Chân SCK chia sẻ từ thẻ nhớ"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 27",
+          "note": "Chân SDA trên cổng CN1"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 22",
+          "note": "Chân SCL trên cổng CN1"
+        },
+        {
+          "code": "VCC / GND",
+          "real": "VCC / GND",
+          "gpio": "3.3V / GND",
+          "note": "Lấy nguồn 3.3V từ cổng CN1"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 23",
+          "note": "Chung đường thẻ nhớ"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 19",
+          "note": "Chung đường thẻ nhớ"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 18",
+          "note": "Chung đường thẻ nhớ"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 27",
+          "note": "Chân SDA cổng CN1"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 22",
+          "note": "Chân SCL cổng CN1"
+        },
+        {
+          "code": "VCC / GND",
+          "real": "VCC / GND",
+          "gpio": "3.3V / GND",
+          "note": "⚠️ CẤM cắm 5V vào NRF24"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 5",
+          "note": "Khe thẻ nhớ MicroSD tích hợp"
+        },
+        {
+          "code": "SDCARD_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 23",
+          "note": "SPI thẻ nhớ"
+        },
+        {
+          "code": "SDCARD_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 19",
+          "note": "SPI thẻ nhớ"
+        },
+        {
+          "code": "SDCARD_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 18",
+          "note": "SPI thẻ nhớ"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Cảm ứng màn hình",
+        "gpio": "XPT2046",
+        "note": "Chạm bằng ngón tay hoặc bút cảm ứng"
+      },
+      {
+        "name": "Phím BOOT",
+        "gpio": "GPIO 0",
+        "note": "Nút bấm mặt sau"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Cổng mở rộng CN1",
+        "gpio": "SDA=27, SCL=22",
+        "note": "Cổng 4 chân kế khe cắm thẻ nhớ"
+      }
+    ],
+    "tips": "Cách nối RF cho CYD: Cổng 4 chân CN1 (GND, 3V3, GPIO 27, GPIO 22) kết hợp với các chân SPI của khe thẻ nhớ (GPIO 18, 19, 23) tạo thành bộ cắm module RF hoàn chỉnh!"
+  },
+  "CYD-2USB": {
+    "name": "CYD 2USB (Cheap Yellow Display Bản 2 Cổng USB)",
+    "chip": "ESP32 WROOM-32",
+    "type": "Bo mạch màn hình giá rẻ",
+    "usb": "Dual Type-C",
+    "desc": "Phiên bản CYD nâng cấp trang bị 2 cổng Type-C, màn hình 2.8 inch ILI9341 và đảo màu màn hình TFT_INVERSION_ON.",
+    "display": {
+      "driver": "ILI9341 2.8 inch (240x320) Đảo màu",
+      "bus": "SPI nội bộ",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_MISO",
+          "real": "SDO",
+          "gpio": "GPIO 12",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 14",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 15",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 2",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 21 / 27",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Nối qua Cổng CN1)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 23",
+          "note": "Chân SPI MOSI thẻ nhớ"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 19",
+          "note": "Chân SPI MISO thẻ nhớ"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 18",
+          "note": "Chân SPI SCK thẻ nhớ"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 27",
+          "note": "Chân SDA CN1"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 22",
+          "note": "Chân SCL CN1"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 5",
+          "note": "Khe thẻ nhớ MicroSD"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Cảm ứng điện trở",
+        "gpio": "XPT2046",
+        "note": "Chạm ngón tay hoặc bút stylus"
+      }
+    ],
+    "tips": "Nếu bạn nạp bản CYD tiêu chuẩn mà màn hình bị sai màu hoặc tối, hãy chọn nạp bản CYD-2USB này!"
+  },
+  "CYD-2432W328C": {
+    "name": "CYD Cảm ứng Điện dung (2.8\" Capacitive Touch)",
+    "chip": "ESP32 WROOM-32",
+    "type": "Bo mạch màn hình cảm ứng điện dung",
+    "usb": "Type-C",
+    "desc": "Phiên bản CYD cao cấp trang bị màn hình cảm ứng điện dung CST816T siêu nhạy, hỗ trợ vuốt chạm động học ProTouch.",
+    "display": {
+      "driver": "ST7789 / ILI9341 2.8\" + CST816T Capacitive Touch",
+      "bus": "SPI Màn hình + I2C Cảm ứng",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 14",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 15",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 2",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 27",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TOUCH_I2C",
+          "real": "CST816T",
+          "gpio": "I2C nội bộ",
+          "note": "Cảm ứng điện dung vuốt lướt siêu êm"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 23",
+          "note": "Chân MOSI thẻ nhớ"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 19",
+          "note": "Chân MISO thẻ nhớ"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 18",
+          "note": "Chân SCK thẻ nhớ"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 27",
+          "note": "Chân SDA CN1"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 22",
+          "note": "Chân SCL CN1"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 5",
+          "note": "Khe thẻ nhớ MicroSD"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Cảm ứng điện dung",
+        "gpio": "CST816T",
+        "note": "Chạm ngón tay nhẹ nhàng như smartphone"
+      }
+    ],
+    "tips": "Bản màn hình cảm ứng điện dung không cần dùng bút, chạm vuốt nhạy gấp 10 lần bản điện trở!"
+  },
+  "CYD-2432W328R-or-S024R": {
+    "name": "CYD 2.4\" / 2.8\" W328R hoặc S024R",
+    "chip": "ESP32 WROOM-32",
+    "type": "Bo mạch màn hình CYD biến thể",
+    "usb": "Type-C",
+    "desc": "Biến thể CYD 2.4 inch hoặc 2.8 inch W328R với góc xoay màn hình bù offset và cảm ứng XPT2046.",
+    "display": {
+      "driver": "ILI9341 240x320 + Offset Rotation",
+      "bus": "SPI nội bộ",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 14",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 15",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 2",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 27",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TOUCH_CS",
+          "real": "T_CS",
+          "gpio": "GPIO 33",
+          "note": "Cảm ứng điện trở"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 23",
+          "note": "SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 19",
+          "note": "SPI MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 18",
+          "note": "SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 27",
+          "note": "Chân SDA CN1"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 22",
+          "note": "Chân SCL CN1"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 5",
+          "note": "Khe thẻ nhớ MicroSD"
+        }
+      ]
+    },
+    "tips": "Dành cho các bo mạch CYD 2.4 inch (S024R) hoặc 2.8 inch có mã W328R."
+  },
+  "CYD-3248S035C": {
+    "name": "CYD 3.5\" Màn hình lớn Cảm ứng Điện dung (3248S035C)",
+    "chip": "ESP32 WROOM-32",
+    "type": "Bo mạch màn hình lớn 3.5 inch",
+    "usb": "Type-C",
+    "desc": "Bo mạch CYD cỡ lớn 3.5 inch độ phân giải 320x480 trang bị driver ST7796 và cảm ứng điện dung GT911 cực nhạy.",
+    "display": {
+      "driver": "ST7796 3.5 inch 320x480 + Cảm ứng điện dung GT911",
+      "bus": "SPI Màn hình + I2C Cảm ứng",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_MISO",
+          "real": "SDO",
+          "gpio": "GPIO 12",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 14",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 15",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 2",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 27",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "GT911_SDA",
+          "real": "SDA",
+          "gpio": "GPIO 33",
+          "note": "Cảm ứng điện dung GT911"
+        },
+        {
+          "code": "GT911_SCL",
+          "real": "SCL",
+          "gpio": "GPIO 32",
+          "note": "Cảm ứng điện dung GT911"
+        },
+        {
+          "code": "GT911_INT",
+          "real": "INT",
+          "gpio": "GPIO 25",
+          "note": "Ngắt cảm ứng"
+        },
+        {
+          "code": "GT911_RST",
+          "real": "RST",
+          "gpio": "GPIO 21",
+          "note": "Reset cảm ứng"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 23",
+          "note": "SPI thẻ nhớ"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 19",
+          "note": "SPI thẻ nhớ"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 18",
+          "note": "SPI thẻ nhớ"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 27",
+          "note": "Chân SDA CN1"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 22",
+          "note": "Chân SCL CN1"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 5",
+          "note": "Khe cắm MicroSD"
+        }
+      ]
+    },
+    "tips": "Màn hình 3.5 inch độ phân giải 320x480 to và rõ nét nhất trong toàn bộ gia đình Cheap Yellow Display!"
+  },
+  "bruce-c5-1_47": {
+    "name": "Bruce C5 1.47\" (ESP32-C5 Dual-Band WiFi 6)",
+    "chip": "ESP32-C5 (RISC-V 240MHz, 2.4/5GHz Dual-Band)",
+    "type": "Bo mạch thế hệ mới WiFi 6 (C5 Generation)",
+    "usb": "Native USB-C (GPIO 13/14)",
+    "desc": "Bo mạch thế hệ mới trang bị chip ESP32-C5 kiến trúc RISC-V 32-bit hỗ trợ cả băng tần WiFi 2.4GHz và 5GHz (WiFi 6).",
+    "display": {
+      "driver": "ST7789 1.47 inch 170x320",
+      "bus": "SPI Bus",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA / DIN",
+          "gpio": "GPIO 7",
+          "note": "Dữ liệu SPI"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL / CLK",
+          "gpio": "GPIO 6",
+          "note": "Xung nhịp SPI"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 23",
+          "note": "Chọn chip màn hình"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 24",
+          "note": "Lệnh / dữ liệu"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 25",
+          "note": "Đèn nền"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 7",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 2",
+          "note": "Chân MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 6",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 9",
+          "note": "Chọn chip CC1101"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 8",
+          "note": "Xung ngắt RF"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 7",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 2",
+          "note": "Chung SPI MISO"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 6",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 9",
+          "note": "Chọn chip NRF24"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 8",
+          "note": "Kích hoạt sóng"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 10",
+          "note": "Chọn thẻ MicroSD"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím OK / CHỌN",
+        "gpio": "GPIO 28",
+        "note": "Nút nhấn nối GND"
+      },
+      {
+        "name": "Phím LÊN / UP",
+        "gpio": "GPIO 0",
+        "note": "Nút nhấn nối GND"
+      },
+      {
+        "name": "Phím XUỐNG / DOWN",
+        "gpio": "GPIO 1",
+        "note": "Nút nhấn nối GND"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Cổng I2C SDA / SCL",
+        "gpio": "GPIO 4 / 5",
+        "note": "Mở rộng cảm biến ngoài"
+      }
+    ],
+    "tips": "ESP32-C5 là dòng chip đầu tiên hỗ trợ bắt và kiểm thử mạng WiFi 5GHz (802.11ax WiFi 6)!"
+  },
+  "lilygo-c5-1_9-inch": {
+    "name": "LilyGO T-Display C5 (1.9\")",
+    "chip": "ESP32-C5 (Dual-Band WiFi 6)",
+    "type": "Màn hình 1.9 inch WiFi 6",
+    "usb": "Native USB-C",
+    "desc": "Bo mạch phát triển chính thức từ LilyGO trang bị chip ESP32-C5, màn hình ST7789 1.9 inch 170x320 và 3 phím bấm tiện lợi.",
+    "display": {
+      "driver": "ST7789 1.9 inch (170x320)",
+      "bus": "SPI",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 9",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 7",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 26",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 8",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 23",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 25",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím OK / CHỌN",
+        "gpio": "GPIO 27",
+        "note": "Nút bấm mặt trước"
+      },
+      {
+        "name": "Phím LÊN / UP",
+        "gpio": "GPIO 28",
+        "note": "Nút bấm cạnh hông"
+      },
+      {
+        "name": "Phím XUỐNG / DW",
+        "gpio": "GPIO 0",
+        "note": "Nút bấm cạnh hông"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "I2C SDA / SCL",
+        "gpio": "GPIO 2 / 3",
+        "note": "Cổng cắm I2C"
+      }
+    ],
+    "tips": "Màn hình 1.9 inch hiển thị các mạng WiFi 5GHz cực kỳ trực quan và sinh động!"
+  },
+  "mywatch-c5": {
+    "name": "MyWatch C5 (Đồng hồ ESP32-C5 N16R8)",
+    "chip": "ESP32-C5 (16MB Flash + 8MB PSRAM)",
+    "type": "Đồng hồ thông minh WiFi 6 đeo tay",
+    "usb": "USB-C",
+    "desc": "Mẫu smartwatch thử nghiệm đầu tiên trên thế giới chạy chip ESP32-C5 Dual-Band WiFi 6, màn hình cong 240x296 và cảm ứng CST816S Pro.",
+    "display": {
+      "driver": "ST7789 240x296 + Cảm ứng điện dung CST816S",
+      "bus": "SPI + I2C",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 7",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 6",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 23",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 24",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 10",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 25",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TOUCH_I2C",
+          "real": "CST816S",
+          "gpio": "SDA=8, SCL=9",
+          "note": "Cảm ứng điện dung"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Mặt kính cảm ứng",
+        "gpio": "CST816S",
+        "note": "Vuốt chạm toàn bộ mặt đồng hồ"
+      }
+    ],
+    "tips": "Đồng hồ WiFi 6 đeo tay độc nhất vô nhị quét sóng 2.4GHz & 5GHz ngay trên cổ tay của bạn!"
+  },
+  "ESP32-C5-tft": {
+    "name": "ESP32-C5 Generic / TFT Dev Board",
+    "chip": "ESP32-C5 DevKitC",
+    "type": "Bo mạch phát triển mở rộng",
+    "usb": "USB-C",
+    "desc": "Cấu hình chuẩn cho kit phát triển ESP32-C5 DevKit cắm màn hình SPI rời và các module thử nghiệm.",
+    "display": {
+      "driver": "ST7789 240x296 SPI",
+      "bus": "SPI",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 7",
+          "note": "Chân MOSI"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 6",
+          "note": "Chân SCLK"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 23",
+          "note": "Chân CS"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 24",
+          "note": "Chân DC"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 25",
+          "note": "Chân BL"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 7",
+          "note": "SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 15",
+          "note": "SPI MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 6",
+          "note": "SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 3",
+          "note": "Chọn chip CC1101"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 2",
+          "note": "Xung RF"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 7",
+          "note": "SPI MOSI"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 15",
+          "note": "SPI MISO"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 6",
+          "note": "SPI SCK"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 4",
+          "note": "Chân CS"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 2",
+          "note": "Chân CE"
+        }
+      ]
+    },
+    "tips": "Dành cho các nhà phát triển muốn thử nghiệm module ngoài trên nền tảng chip ESP32-C5."
+  },
+  "lilygo-t-display-ttgo": {
+    "name": "LilyGO T-Display TTGO (16MB Flash Edition)",
+    "chip": "ESP32 Classic (16MB Flash)",
+    "type": "Bo mạch cổ điển nhỏ gọn",
+    "usb": "Type-C (CP2104 / CH9102)",
+    "desc": "Bo mạch T-Display TTGO kinh điển chạy chip ESP32 đời đầu với màn hình 1.14 inch và dung lượng Flash lớn 16MB.",
+    "display": {
+      "driver": "ST7789 1.14 inch IPS (135x240)",
+      "bus": "SPI nội bộ",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 19",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 18",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 5",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 16",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 23",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 4",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101 (Nối qua hàng chân header ngoài)",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 26",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 27",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 25",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 32",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 39",
+          "note": "Header ngoài"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 26",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 27",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 25",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 38",
+          "note": "Header ngoài"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 37",
+          "note": "Header ngoài"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím KEY 1 (LÊN/OK)",
+        "gpio": "GPIO 35",
+        "note": "Nút bấm cạnh màn hình"
+      },
+      {
+        "name": "Phím KEY 2 (XUỐNG)",
+        "gpio": "GPIO 0",
+        "note": "Nút BOOT"
+      }
+    ],
+    "tips": "Hàng chân header bên hông có sẵn các chân SPI độc lập (GPIO 25, 26, 27) cắm CC1101 cực kỳ dễ dàng."
+  },
+  "Marauder-Mini": {
+    "name": "Marauder Mini",
+    "chip": "ESP32 Classic",
+    "type": "Bộ kiểm thử mạng không dây mini",
+    "usb": "Micro-USB / Type-C",
+    "desc": "Thiết bị kiểm thử bảo mật WiFi bỏ túi với màn hình nhỏ 1.8 inch ST7735 và cụm 3 phím điều hướng.",
+    "display": {
+      "driver": "ST7735 1.8 inch (128x160)",
+      "bus": "SPI",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA / DIN",
+          "gpio": "GPIO 23",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL / CLK",
+          "gpio": "GPIO 18",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 17",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 16",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 5",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 32",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 23",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 19",
+          "note": "Chân MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 18",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 2",
+          "note": "Chọn chip CC1101"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 4",
+          "note": "Xung RF"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 23",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 19",
+          "note": "Chung SPI MISO"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 18",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 33",
+          "note": "Chân CS NRF24"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 26",
+          "note": "Chân CE"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím OK / CHỌN",
+        "gpio": "GPIO 34",
+        "note": "Nút nhấn"
+      },
+      {
+        "name": "Phím LÊN / UP",
+        "gpio": "GPIO 36",
+        "note": "Nút nhấn"
+      },
+      {
+        "name": "Phím XUỐNG / DOWN",
+        "gpio": "GPIO 35",
+        "note": "Nút nhấn"
+      }
+    ],
+    "tips": "Marauder Mini là kit nhỏ gọn kinh điển dành cho kiểm tra độ an toàn của hệ thống mạng WiFi không dây."
+  },
+  "Phantom_S024R": {
+    "name": "Phantom S024R (2.4\" SPI Instrument)",
+    "chip": "ESP32 Classic",
+    "type": "Bo mạch kiểm thử phần cứng",
+    "usb": "Type-C",
+    "desc": "Thiết bị phần cứng trang bị màn hình 2.4 inch ST7789, hỗ trợ khe thẻ MicroSD và module RF ngoài.",
+    "display": {
+      "driver": "ST7789 2.4 inch 240x320",
+      "bus": "SPI",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 13",
+          "note": "Dữ liệu màn hình"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 14",
+          "note": "Xung nhịp màn hình"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 15",
+          "note": "Chọn chip màn hình"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 2",
+          "note": "Lệnh / dữ liệu"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 27",
+          "note": "Đèn nền"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 23",
+          "note": "SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 19",
+          "note": "SPI MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 18",
+          "note": "SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 21",
+          "note": "Chân CS"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 22",
+          "note": "Chân ngắt RF"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 5",
+          "note": "Chọn thẻ MicroSD"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím BOOT",
+        "gpio": "GPIO 0",
+        "note": "Phím nhấn mặt sau"
+      }
+    ],
+    "tips": "Đã được biên dịch với bản vá tối ưu bộ nhớ 4MB chạy mượt mà không lo tràn flash!"
+  },
+  "xk404": {
+    "name": "XK404 Pentest Device",
+    "chip": "ESP32-S3",
+    "type": "Bo mạch phần cứng chuyên dụng",
+    "usb": "USB-C",
+    "desc": "Thiết bị nghiên cứu bảo mật cầm tay hỗ trợ màn hình 240x280 ST7789, cụm phím 5 hướng D-Pad, khe thẻ nhớ và mắt hồng ngoại kép.",
+    "display": {
+      "driver": "ST7789 240x280 LCD",
+      "bus": "SPI",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA / DIN",
+          "gpio": "GPIO 18",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_MISO",
+          "real": "SDO",
+          "gpio": "GPIO 8",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL / CLK",
+          "gpio": "GPIO 17",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 7",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 15",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 16",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 6",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 18",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 8",
+          "note": "Chung SPI MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 17",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 46",
+          "note": "Chân CS Sub-GHz"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 9",
+          "note": "Chân ngắt RF"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 18",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 8",
+          "note": "Chung SPI MISO"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 17",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 12",
+          "note": "Chân CS NRF24"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 13",
+          "note": "Chân kích hoạt sóng"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 3",
+          "note": "Khe cắm MicroSD"
+        },
+        {
+          "code": "SDCARD_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 18",
+          "note": "SPI MOSI"
+        },
+        {
+          "code": "SDCARD_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 8",
+          "note": "SPI MISO"
+        },
+        {
+          "code": "SDCARD_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 17",
+          "note": "SPI SCK"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím OK / CHỌN",
+        "gpio": "GPIO 0",
+        "note": "Phím bấm trung tâm"
+      },
+      {
+        "name": "Phím LÊN / UP",
+        "gpio": "GPIO 39",
+        "note": "Nút nhấn hướng lên"
+      },
+      {
+        "name": "Phím XUỐNG / DOWN",
+        "gpio": "GPIO 38",
+        "note": "Nút nhấn hướng xuống"
+      },
+      {
+        "name": "Phím TRÁI / LEFT",
+        "gpio": "GPIO 10",
+        "note": "Nút nhấn sang trái"
+      },
+      {
+        "name": "Phím PHẢI / RIGHT",
+        "gpio": "GPIO 11",
+        "note": "Nút nhấn sang phải"
+      }
+    ],
+    "peripherals": [
+      {
+        "name": "Cổng I2C Grove (SDA/SCL)",
+        "gpio": "GPIO 47 / 48",
+        "note": "Cổng cảm biến"
+      },
+      {
+        "name": "Mắt thu hồng ngoại (IR RX)",
+        "gpio": "GPIO 1",
+        "note": "Đầu thu hồng ngoại"
+      },
+      {
+        "name": "Đèn phát hồng ngoại (IR TX)",
+        "gpio": "GPIO 2",
+        "note": "Đèn phát hồng ngoại"
+      }
+    ],
+    "tips": "XK404 sở hữu cụm 5 phím D-Pad và màn hình 240x280 góc nhìn rộng, hỗ trợ đầy đủ các module RF và thẻ nhớ!"
+  },
+  "CYD-2432W328C_2": {
+    "name": "CYD Cảm ứng Điện dung (2.8\" Capacitive Touch)",
+    "chip": "ESP32 WROOM-32",
+    "type": "Bo mạch màn hình cảm ứng điện dung",
+    "usb": "Type-C",
+    "desc": "Phiên bản CYD cao cấp trang bị màn hình cảm ứng điện dung CST816T siêu nhạy, hỗ trợ vuốt chạm động học ProTouch.",
+    "display": {
+      "driver": "ST7789 / ILI9341 2.8\" + CST816T Capacitive Touch",
+      "bus": "SPI Màn hình + I2C Cảm ứng",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 13",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 14",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 15",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 2",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 27",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TOUCH_I2C",
+          "real": "CST816T",
+          "gpio": "I2C nội bộ",
+          "note": "Cảm ứng điện dung vuốt lướt siêu êm"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 23",
+          "note": "Chân MOSI thẻ nhớ"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 19",
+          "note": "Chân MISO thẻ nhớ"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 18",
+          "note": "Chân SCK thẻ nhớ"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 27",
+          "note": "Chân SDA CN1"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 22",
+          "note": "Chân SCL CN1"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 5",
+          "note": "Khe thẻ nhớ MicroSD"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Cảm ứng điện dung",
+        "gpio": "CST816T",
+        "note": "Chạm ngón tay nhẹ nhàng như smartphone"
+      }
+    ],
+    "tips": "Bản màn hình cảm ứng điện dung không cần dùng bút, chạm vuốt nhạy gấp 10 lần bản điện trở!"
+  },
+  "marauder-mini": {
+    "name": "Marauder Mini",
+    "chip": "ESP32 Classic",
+    "type": "Bộ kiểm thử mạng không dây mini",
+    "usb": "Micro-USB / Type-C",
+    "desc": "Thiết bị kiểm thử bảo mật WiFi bỏ túi với màn hình nhỏ 1.8 inch ST7735 và cụm 3 phím điều hướng.",
+    "display": {
+      "driver": "ST7735 1.8 inch (128x160)",
+      "bus": "SPI",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA / DIN",
+          "gpio": "GPIO 23",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL / CLK",
+          "gpio": "GPIO 18",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 17",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC / RS",
+          "gpio": "GPIO 16",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_RST",
+          "real": "RES",
+          "gpio": "GPIO 5",
+          "note": "Tích hợp sẵn"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 32",
+          "note": "Tích hợp sẵn"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 23",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 19",
+          "note": "Chân MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 18",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 2",
+          "note": "Chọn chip CC1101"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 4",
+          "note": "Xung RF"
+        }
+      ]
+    },
+    "rf_nrf24": {
+      "name": "Mô-đun NRF24L01+",
+      "available": true,
+      "pins": [
+        {
+          "code": "NRF24_MOSI",
+          "real": "MOSI",
+          "gpio": "GPIO 23",
+          "note": "Chung SPI MOSI"
+        },
+        {
+          "code": "NRF24_MISO",
+          "real": "MISO",
+          "gpio": "GPIO 19",
+          "note": "Chung SPI MISO"
+        },
+        {
+          "code": "NRF24_SCK",
+          "real": "SCK",
+          "gpio": "GPIO 18",
+          "note": "Chung SPI SCK"
+        },
+        {
+          "code": "NRF24_SS",
+          "real": "CSN",
+          "gpio": "GPIO 33",
+          "note": "Chân CS NRF24"
+        },
+        {
+          "code": "NRF24_CE",
+          "real": "CE",
+          "gpio": "GPIO 26",
+          "note": "Chân CE"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím OK / CHỌN",
+        "gpio": "GPIO 34",
+        "note": "Nút nhấn"
+      },
+      {
+        "name": "Phím LÊN / UP",
+        "gpio": "GPIO 36",
+        "note": "Nút nhấn"
+      },
+      {
+        "name": "Phím XUỐNG / DOWN",
+        "gpio": "GPIO 35",
+        "note": "Nút nhấn"
+      }
+    ],
+    "tips": "Marauder Mini là kit nhỏ gọn kinh điển dành cho kiểm tra độ an toàn của hệ thống mạng WiFi không dây."
+  },
+  "phantom": {
+    "name": "Phantom S024R (2.4\" SPI Instrument)",
+    "chip": "ESP32 Classic",
+    "type": "Bo mạch kiểm thử phần cứng",
+    "usb": "Type-C",
+    "desc": "Thiết bị phần cứng trang bị màn hình 2.4 inch ST7789, hỗ trợ khe thẻ MicroSD và module RF ngoài.",
+    "display": {
+      "driver": "ST7789 2.4 inch 240x320",
+      "bus": "SPI",
+      "pins": [
+        {
+          "code": "TFT_MOSI",
+          "real": "SDA",
+          "gpio": "GPIO 13",
+          "note": "Dữ liệu màn hình"
+        },
+        {
+          "code": "TFT_SCLK",
+          "real": "SCL",
+          "gpio": "GPIO 14",
+          "note": "Xung nhịp màn hình"
+        },
+        {
+          "code": "TFT_CS",
+          "real": "CS",
+          "gpio": "GPIO 15",
+          "note": "Chọn chip màn hình"
+        },
+        {
+          "code": "TFT_DC",
+          "real": "DC",
+          "gpio": "GPIO 2",
+          "note": "Lệnh / dữ liệu"
+        },
+        {
+          "code": "TFT_BL",
+          "real": "BL",
+          "gpio": "GPIO 27",
+          "note": "Đèn nền"
+        }
+      ]
+    },
+    "rf_cc1101": {
+      "name": "Mô-đun Sub-GHz CC1101",
+      "available": true,
+      "pins": [
+        {
+          "code": "CC1101_MOSI",
+          "real": "SI",
+          "gpio": "GPIO 23",
+          "note": "SPI MOSI"
+        },
+        {
+          "code": "CC1101_MISO",
+          "real": "SO",
+          "gpio": "GPIO 19",
+          "note": "SPI MISO"
+        },
+        {
+          "code": "CC1101_SCK",
+          "real": "SCLK",
+          "gpio": "GPIO 18",
+          "note": "SPI SCK"
+        },
+        {
+          "code": "CC1101_SS",
+          "real": "CSN",
+          "gpio": "GPIO 21",
+          "note": "Chân CS"
+        },
+        {
+          "code": "CC1101_GDO0",
+          "real": "GD0",
+          "gpio": "GPIO 22",
+          "note": "Chân ngắt RF"
+        }
+      ]
+    },
+    "sdcard": {
+      "available": true,
+      "pins": [
+        {
+          "code": "SDCARD_CS",
+          "real": "CS",
+          "gpio": "GPIO 5",
+          "note": "Chọn thẻ MicroSD"
+        }
+      ]
+    },
+    "controls": [
+      {
+        "name": "Phím BOOT",
+        "gpio": "GPIO 0",
+        "note": "Phím nhấn mặt sau"
+      }
+    ],
+    "tips": "Đã được biên dịch với bản vá tối ưu bộ nhớ 4MB chạy mượt mà không lo tràn flash!"
+  }
+};
+
+
+    // Component hiển thị Sơ đồ chân & Hướng dẫn nối dây chi tiết cho từng Bo mạch
+    function PinoutViewer({ boardId, lang }) {
+      const bData = BOARD_PINOUTS[boardId] || BOARD_PINOUTS['Morph-s3'];
+      const isVi = (lang === 'vi');
+
+      return (
+        <div className="h-full flex flex-col overflow-y-auto custom-scrollbar p-3 sm:p-4 text-xs font-sans leading-relaxed select-text space-y-3.5 bg-[#0a0a0c]">
+          
+          {/* Header Card của Bo mạch */}
+          <div className="bg-zinc-900/90 border border-zinc-800 rounded-lg p-3 sm:p-4 shadow-lg">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-zinc-800">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></div>
+                <h3 className="text-sm font-bold text-zinc-100 font-mono tracking-wide">{bData.name}</h3>
+              </div>
+              <div className="flex flex-wrap items-center gap-1.5 font-mono text-[10px]">
+                <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/30 font-semibold">{bData.chip}</span>
+                <span className="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">{bData.type}</span>
+                {bData.usb && <span className="px-2 py-0.5 rounded bg-zinc-800 text-zinc-400 border border-zinc-700">{bData.usb}</span>}
+              </div>
+            </div>
+            <p className="mt-2 text-zinc-400 text-xs leading-relaxed">{bData.desc}</p>
+          </div>
+
+          {/* Banner Lưu ý Ký hiệu Chân Ngoài Đời Thực */}
+          <div className="bg-amber-950/20 border border-amber-500/40 rounded-lg p-3">
+            <div className="flex items-center gap-2 text-amber-400 font-bold font-mono text-[11px] mb-1.5">
+              <i className="fa-solid fa-triangle-exclamation text-xs"></i>
+              <span>{isVi ? "LƯU Ý QUAN TRỌNG VỀ TÊN CHÂN IN TRÊN MODULE THỰC TẾ" : "CRITICAL REAL-WORLD PIN SILKSCREEN NAMING"}</span>
+            </div>
+            <ul className="text-zinc-300 text-[11px] space-y-1 list-disc list-inside">
+              <li><strong className="text-amber-300">Màn hình SPI:</strong> Trong code ghi là <code className="text-cyan-300">TFT_MOSI</code> nhưng trên mạch màn hình luôn in là <strong className="text-emerald-400 font-mono">SDA / DIN / SDI</strong>; <code className="text-cyan-300">TFT_SCLK</code> in là <strong className="text-emerald-400 font-mono">SCL / CLK / SCK</strong>; <code className="text-cyan-300">TFT_DC</code> in là <strong className="text-emerald-400 font-mono">DC / RS</strong>; <code className="text-cyan-300">TFT_BL</code> in là <strong className="text-emerald-400 font-mono">BLK / LED</strong>.</li>
+              <li><strong className="text-amber-300">Mô-đun CC1101 Sub-GHz:</strong> Chân MOSI trên module in là <strong className="text-emerald-400 font-mono">SI (Serial In)</strong>; chân MISO in là <strong className="text-emerald-400 font-mono">SO (Serial Out)</strong>; chân SCK in là <strong className="text-emerald-400 font-mono">SCLK</strong>; chân SS in là <strong className="text-emerald-400 font-mono">CSN / CS</strong>; chân ngắt in là <strong className="text-emerald-400 font-mono">GD0 / GDO0</strong>.</li>
+              <li><strong className="text-amber-300">Mô-đun NRF24L01+:</strong> <span className="text-rose-400 font-semibold font-mono">⚠️ BẮT BUỘC CẤP NGUỒN 3.3V</span> (Tuyệt đối không nối 5V vào chân VCC của NRF24, chip sẽ cháy ngay lập tức!). Chân <strong className="text-emerald-400 font-mono">CE</strong> và <strong className="text-emerald-400 font-mono">CSN</strong> là 2 chân điều khiển riêng.</li>
+            </ul>
+          </div>
+
+          {/* Khối Màn hình hiển thị (Display) */}
+          {bData.display && (
+            <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg overflow-hidden">
+              <div className="bg-zinc-950/70 px-3 py-2 border-b border-zinc-800 flex items-center justify-between">
+                <span className="font-mono font-bold text-amber-400 flex items-center gap-1.5">
+                  <i className="fa-solid fa-tv text-xs"></i>
+                  <span>{isVi ? "1. MÀN HÌNH HIỂN THỊ (DISPLAY & BACKLIGHT)" : "1. DISPLAY & BACKLIGHT PINOUT"}</span>
+                </span>
+                <span className="font-mono text-[10px] text-zinc-400">{bData.display.driver} • {bData.display.bus}</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-mono text-[11px]">
+                  <thead className="bg-zinc-950/40 text-zinc-400 border-b border-zinc-800/60">
+                    <tr>
+                      <th className="p-2 pl-3">{isVi ? "Tên trong Code" : "Code Macro"}</th>
+                      <th className="p-2 text-emerald-400">{isVi ? "Ký hiệu in trên màn hình" : "Actual Silkscreen"}</th>
+                      <th className="p-2 text-amber-300">{isVi ? "Chân ESP GPIO" : "ESP32 GPIO"}</th>
+                      <th className="p-2 pr-3 text-zinc-400 font-sans">{isVi ? "Ghi chú nối dây" : "Wiring Note"}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/40">
+                    {bData.display.pins.map((p, idx) => (
+                      <tr key={idx} className="hover:bg-zinc-800/30 transition-colors">
+                        <td className="p-2 pl-3 text-cyan-300 font-semibold">{p.code}</td>
+                        <td className="p-2 text-emerald-400 font-bold bg-emerald-950/10">{p.real}</td>
+                        <td className="p-2 text-amber-300 font-bold">{p.gpio}</td>
+                        <td className="p-2 pr-3 text-zinc-400 font-sans text-[11px]">{p.note}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Khối Mô-đun Sub-GHz CC1101 */}
+          {bData.rf_cc1101 && (
+            <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg overflow-hidden">
+              <div className="bg-zinc-950/70 px-3 py-2 border-b border-zinc-800 flex items-center justify-between">
+                <span className="font-mono font-bold text-cyan-400 flex items-center gap-1.5">
+                  <i className="fa-solid fa-tower-broadcast text-xs"></i>
+                  <span>{isVi ? "2. MÔ-ĐUN SUB-GHZ CC1101 (300 - 928 MHz)" : "2. SUB-GHZ CC1101 TRANSCEIVER"}</span>
+                </span>
+                <span className="font-mono text-[10px] text-zinc-400">{bData.rf_cc1101.name}</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-mono text-[11px]">
+                  <thead className="bg-zinc-950/40 text-zinc-400 border-b border-zinc-800/60">
+                    <tr>
+                      <th className="p-2 pl-3">{isVi ? "Tên trong Code" : "Code Macro"}</th>
+                      <th className="p-2 text-emerald-400">{isVi ? "Chân in trên module CC1101" : "CC1101 Pin Label"}</th>
+                      <th className="p-2 text-cyan-300">{isVi ? "Chân ESP GPIO" : "ESP32 GPIO"}</th>
+                      <th className="p-2 pr-3 text-zinc-400 font-sans">{isVi ? "Ghi chú kết nối" : "Wiring Note"}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/40">
+                    {bData.rf_cc1101.pins.map((p, idx) => (
+                      <tr key={idx} className="hover:bg-zinc-800/30 transition-colors">
+                        <td className="p-2 pl-3 text-cyan-300 font-semibold">{p.code}</td>
+                        <td className="p-2 text-emerald-400 font-bold bg-emerald-950/10">{p.real}</td>
+                        <td className="p-2 text-cyan-300 font-bold">{p.gpio}</td>
+                        <td className="p-2 pr-3 text-zinc-400 font-sans text-[11px]">{p.note}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Khối Mô-đun NRF24L01+ */}
+          {bData.rf_nrf24 && (
+            <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg overflow-hidden">
+              <div className="bg-zinc-950/70 px-3 py-2 border-b border-zinc-800 flex items-center justify-between">
+                <span className="font-mono font-bold text-rose-400 flex items-center gap-1.5">
+                  <i className="fa-solid fa-wifi text-xs"></i>
+                  <span>{isVi ? "3. MÔ-ĐUN 2.4GHz NRF24L01+ (SNIFFER / BLE / JAMMER)" : "3. 2.4GHz NRF24L01+ MODULE"}</span>
+                </span>
+                <span className="font-mono text-[10px] text-zinc-400">{bData.rf_nrf24.name}</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left font-mono text-[11px]">
+                  <thead className="bg-zinc-950/40 text-zinc-400 border-b border-zinc-800/60">
+                    <tr>
+                      <th className="p-2 pl-3">{isVi ? "Tên trong Code" : "Code Macro"}</th>
+                      <th className="p-2 text-emerald-400">{isVi ? "Chân in trên module NRF24" : "NRF24 Pin Label"}</th>
+                      <th className="p-2 text-rose-300">{isVi ? "Chân ESP GPIO" : "ESP32 GPIO"}</th>
+                      <th className="p-2 pr-3 text-zinc-400 font-sans">{isVi ? "Ghi chú kết nối" : "Wiring Note"}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-800/40">
+                    {bData.rf_nrf24.pins.map((p, idx) => (
+                      <tr key={idx} className="hover:bg-zinc-800/30 transition-colors">
+                        <td className="p-2 pl-3 text-cyan-300 font-semibold">{p.code}</td>
+                        <td className="p-2 text-emerald-400 font-bold bg-emerald-950/10">{p.real}</td>
+                        <td className="p-2 text-rose-300 font-bold">{p.gpio}</td>
+                        <td className="p-2 pr-3 text-zinc-400 font-sans text-[11px]">{p.note}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* Khối Thẻ nhớ MicroSD & Phím bấm */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Thẻ nhớ MicroSD */}
+            {bData.sdcard && (
+              <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-3">
+                <div className="font-mono font-bold text-amber-300 flex items-center gap-1.5 pb-2 border-b border-zinc-800 mb-2">
+                  <i className="fa-solid fa-sd-card text-xs"></i>
+                  <span>{isVi ? "4. KHE THẺ NHỚ MICROSD" : "4. MICROSD CARD SLOT"}</span>
+                </div>
+                <ul className="space-y-1 font-mono text-[11px]">
+                  {bData.sdcard.pins.map((p, idx) => (
+                    <li key={idx} className="flex justify-between items-center py-0.5 border-b border-zinc-800/30">
+                      <span className="text-zinc-400">{p.code} ({p.real}):</span>
+                      <span className="text-amber-300 font-bold">{p.gpio}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Phím bấm & Điều hướng */}
+            {bData.controls && bData.controls.length > 0 && (
+              <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-3">
+                <div className="font-mono font-bold text-emerald-300 flex items-center gap-1.5 pb-2 border-b border-zinc-800 mb-2">
+                  <i className="fa-solid fa-gamepad text-xs"></i>
+                  <span>{isVi ? "5. PHÍM BẤM & ĐIỀU HƯỚNG" : "5. CONTROLS & BUTTONS"}</span>
+                </div>
+                <ul className="space-y-1 font-mono text-[11px]">
+                  {bData.controls.map((c, idx) => (
+                    <li key={idx} className="flex justify-between items-center py-0.5 border-b border-zinc-800/30">
+                      <span className="text-zinc-300">{c.name}:</span>
+                      <div className="text-right">
+                        <span className="text-emerald-400 font-bold">{c.gpio}</span>
+                        {c.note && <div className="text-[10px] text-zinc-500 font-sans">{c.note}</div>}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {/* Ngoại vi & Cổng I2C / Cảm biến */}
+          {bData.peripherals && bData.peripherals.length > 0 && (
+            <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-3">
+              <div className="font-mono font-bold text-cyan-300 flex items-center gap-1.5 pb-2 border-b border-zinc-800 mb-2">
+                <i className="fa-solid fa-microchip text-xs"></i>
+                <span>{isVi ? "6. CỔNG MỞ RỘNG I2C / CẢM BIẾN / ĐÈN LED" : "6. I2C GROVE / SENSORS / LEDS"}</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 font-mono text-[11px]">
+                {bData.peripherals.map((pe, idx) => (
+                  <div key={idx} className="flex justify-between items-center p-1.5 bg-zinc-950/40 rounded border border-zinc-800/50">
+                    <span className="text-zinc-300">{pe.name}:</span>
+                    <span className="text-cyan-400 font-bold">{pe.gpio}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Lời khuyên & Ghi chú thực tế */}
+          {bData.tips && (
+            <div className="bg-emerald-950/20 border border-emerald-500/30 rounded-lg p-3 text-[11px]">
+              <div className="font-mono font-bold text-emerald-400 flex items-center gap-1.5 mb-1">
+                <i className="fa-solid fa-lightbulb text-xs"></i>
+                <span>{isVi ? "MẸO KẾT NỐI & VẬN HÀNH THỰC TẾ CHO BO MẠCH NÀY" : "PRACTICAL HARDWARE WIRING TIPS"}</span>
+              </div>
+              <p className="text-zinc-300 leading-relaxed font-sans">{bData.tips}</p>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
     // Danh sách toàn bộ các Bo mạch hỗ trợ trong dự án
-    const MASTER_BOARDS = [
+        const MASTER_BOARDS = [
       // 1. VIP HERO PROFILES (FEATURED HARDWARE)
       { 
         id: 'Morph-s3', 
@@ -316,6 +5248,15 @@
       },
 
       // 2. C5 Series (RISC-V Dual-Band WiFi 6)
+      { 
+        id: 'bruce-c5-1_47', 
+        name: 'Bruce C5 1.47" (N8)', 
+        chip: 'ESP32-C5', 
+        category: 'c5', 
+        desc: 'ST7789 1.47 inch 170x320. RISC-V 240MHz, Dual-Band WiFi 6, 8MB Flash, 3-Key Navigation.',
+        url: 'Bruce-bruce-c5-1_47.bin',
+        icon: 'fa-bolt'
+      },
       { 
         id: 'lilygo-c5-1_9-inch', 
         name: 'LilyGO T-Display C5 (1.9")', 
@@ -343,15 +5284,6 @@
         url: 'Bruce-ESP32-C5-tft.bin',
         icon: 'fa-microchip'
       },
-      { 
-        id: 'bruce-c5-1_47', 
-        name: 'Bruce C5 1.47" (N8)', 
-        chip: 'ESP32-C5', 
-        category: 'c5', 
-        desc: 'ST7789 1.47 inch 170x320. RISC-V 240MHz, Dual-Band WiFi 6, 8MB Flash, 3-Key Navigation.',
-        url: 'Bruce-bruce-c5-1_47.bin',
-        icon: 'fa-bolt'
-      },
 
       // 3. ESP32-S3 Series
       { 
@@ -371,33 +5303,6 @@
         desc: 'Bruce Pentest firmware for Xingzhi Cube S3, ST7789 240x240 LCD.',
         url: 'Bruce-xingzhi-cube-s3.bin',
         icon: 'fa-cube'
-      },
-      { 
-        id: 'lilygo-t-embed-cc1101', 
-        name: 'LilyGO T-Embed CC1101', 
-        chip: 'ESP32-S3', 
-        category: 's3', 
-        desc: 'Rotary encoder, built-in CC1101 Sub-GHz transceiver, horizontal 170x320 LCD.',
-        url: 'Bruce-lilygo-t-embed-cc1101.bin',
-        icon: 'fa-tower-broadcast'
-      },
-      { 
-        id: 'lilygo-t-display-s3', 
-        name: 'LilyGO T-Display S3', 
-        chip: 'ESP32-S3', 
-        category: 's3', 
-        desc: '1.9 inch ST7789 8-bit parallel display, high-speed dual buttons.',
-        url: 'Bruce-lilygo-t-display-s3.bin',
-        icon: 'fa-tv'
-      },
-      { 
-        id: 'lilygo-t-display-s3-touch', 
-        name: 'LilyGO T-Display S3 Touch', 
-        chip: 'ESP32-S3', 
-        category: 's3', 
-        desc: '1.9 inch ST7789, CST816S Capacitive Touch with ProTouch kinetic engine, dual buttons.',
-        url: 'Bruce-lilygo-t-display-s3-touch.bin',
-        icon: 'fa-mobile-screen'
       },
       { 
         id: 'ES3C28P', 
@@ -427,13 +5332,22 @@
         icon: 'fa-microchip'
       },
       { 
-        id: 'lilygo-t-deck', 
-        name: 'LilyGO T-Deck / Plus', 
+        id: 'lilygo-t-display-s3', 
+        name: 'LilyGO T-Display S3', 
         chip: 'ESP32-S3', 
         category: 's3', 
-        desc: 'Physical QWERTY keyboard, trackball, SX1262 LoRa & I2S microphone.',
-        url: 'Bruce-lilygo-t-deck.bin',
-        icon: 'fa-keyboard'
+        desc: '1.9 inch ST7789 8-bit parallel display, high-speed dual buttons.',
+        url: 'Bruce-lilygo-t-display-s3.bin',
+        icon: 'fa-tv'
+      },
+      { 
+        id: 'lilygo-t-display-s3-touch', 
+        name: 'LilyGO T-Display S3 Touch', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: '1.9 inch ST7789, CST816S Capacitive Touch with ProTouch kinetic engine, dual buttons.',
+        url: 'Bruce-lilygo-t-display-s3-touch.bin',
+        icon: 'fa-mobile-screen'
       },
       { 
         id: 'lilygo-t-display-s3-pro', 
@@ -445,6 +5359,33 @@
         icon: 'fa-mobile-screen'
       },
       { 
+        id: 'lilygo-t-embed-cc1101', 
+        name: 'LilyGO T-Embed CC1101', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Rotary encoder, built-in CC1101 Sub-GHz transceiver, horizontal 170x320 LCD.',
+        url: 'Bruce-lilygo-t-embed-cc1101.bin',
+        icon: 'fa-tower-broadcast'
+      },
+      { 
+        id: 'lilygo-t-embed', 
+        name: 'LilyGO T-Embed', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Rotary encoder, horizontal 170x320 LCD, external RF header and MicroSD.',
+        url: 'Bruce-lilygo-t-embed.bin',
+        icon: 'fa-tower-broadcast'
+      },
+      { 
+        id: 'lilygo-t-deck', 
+        name: 'LilyGO T-Deck / Plus', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Physical QWERTY keyboard, trackball, SX1262 LoRa & I2S microphone.',
+        url: 'Bruce-lilygo-t-deck.bin',
+        icon: 'fa-keyboard'
+      },
+      { 
         id: 'lilygo-t-watch-s3', 
         name: 'LilyGO T-Watch S3', 
         chip: 'ESP32-S3', 
@@ -452,6 +5393,15 @@
         desc: 'Wearable smartwatch platform with capacitive touch & RTC.',
         url: 'Bruce-lilygo-t-watch-s3.bin',
         icon: 'fa-stopwatch'
+      },
+      { 
+        id: 'm5stack-cardputer', 
+        name: 'M5Stack Cardputer', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Credit-card sized terminal with 56-key keyboard, speaker & SD slot.',
+        url: 'Bruce-m5stack-cardputer.bin',
+        icon: 'fa-calculator'
       },
       { 
         id: 'm5stack-cores3', 
@@ -471,15 +5421,33 @@
         url: 'Bruce-m5stack-sticks3.bin',
         icon: 'fa-pager'
       },
+      { 
+        id: 'xk404', 
+        name: 'XK404 Pentest Device', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Portable hardware research node with 240x280 LCD and 5-way D-Pad.',
+        url: 'Bruce-xk404.bin',
+        icon: 'fa-terminal'
+      },
 
       // 4. Classic ESP32 Series
       { 
         id: 'CYD-2432S028', 
-        name: 'CYD (Cheap Yellow Display 2USB)', 
+        name: 'CYD (Cheap Yellow Display 2.8")', 
         chip: 'ESP32', 
         category: 'esp32', 
-        desc: '2.8 inch ILI9341 resistive touch 2USB classic dev kit.',
+        desc: '2.8 inch ILI9341 resistive touch classic dev kit.',
         url: 'Bruce-CYD-2432S028.bin',
+        icon: 'fa-desktop'
+      },
+      { 
+        id: 'CYD-2USB', 
+        name: 'CYD 2USB (2.8" Dual USB)', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.8 inch ILI9341 Dual-USB with inverted colors support.',
+        url: 'Bruce-CYD-2USB.bin',
         icon: 'fa-desktop'
       },
       { 
@@ -492,6 +5460,24 @@
         icon: 'fa-hand-pointer'
       },
       { 
+        id: 'CYD-2432W328R-or-S024R', 
+        name: 'CYD 2.4" / 2.8" W328R / S024R', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.4 inch or 2.8 inch CYD variant with offset rotation support.',
+        url: 'Bruce-CYD-2432W328R-or-S024R.bin',
+        icon: 'fa-desktop'
+      },
+      { 
+        id: 'CYD-3248S035C', 
+        name: 'CYD 3.5" Capacitive (3248S035C)', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '3.5 inch 320x480 ST7796 with GT911 Capacitive Touch.',
+        url: 'Bruce-CYD-3248S035C.bin',
+        icon: 'fa-hand-pointer'
+      },
+      { 
         id: 'lilygo-t-display-ttgo', 
         name: 'LilyGO T-Display TTGO (16MB)', 
         chip: 'ESP32', 
@@ -501,13 +5487,13 @@
         icon: 'fa-tablet-screen-button'
       },
       { 
-        id: 'm5stack-cardputer', 
-        name: 'M5Stack Cardputer', 
-        chip: 'ESP32-S3', 
+        id: 'm5stack-core2', 
+        name: 'M5Stack Core2', 
+        chip: 'ESP32', 
         category: 'esp32', 
-        desc: 'Credit-card sized terminal with 56-key keyboard, speaker & SD slot.',
-        url: 'Bruce-m5stack-cardputer.bin',
-        icon: 'fa-calculator'
+        desc: '2.0 inch touch LCD, vibration motor, RTC BM8563 & AXP192.',
+        url: 'Bruce-m5stack-core2.bin',
+        icon: 'fa-cube'
       },
       { 
         id: 'm5stack-cplus1_1', 
@@ -528,58 +5514,22 @@
         icon: 'fa-pager'
       },
       { 
-        id: 'm5stack-core2', 
-        name: 'M5Stack Core2', 
-        chip: 'ESP32', 
-        category: 'esp32', 
-        desc: '2.0 inch touch LCD, vibration motor, RTC BM8563 & AXP192.',
-        url: 'Bruce-m5stack-core2.bin',
-        icon: 'fa-cube'
-      },
-      { 
-        id: 'smoochiee-board', 
-        name: 'Smoochiee Board', 
-        chip: 'ESP32', 
-        category: 'esp32', 
-        desc: 'Dedicated RF pentesting hardware with 5-button D-Pad navigation.',
-        url: 'Bruce-smoochiee-board.bin',
-        icon: 'fa-shield-halved'
-      },
-      { 
-        id: 'marauder-mini', 
+        id: 'Marauder-Mini', 
         name: 'Marauder Mini', 
         chip: 'ESP32', 
         category: 'esp32', 
         desc: 'Handheld mini wireless security auditing toolkit.',
-        url: 'Bruce-marauder-mini.bin',
+        url: 'Bruce-Marauder-Mini.bin',
         icon: 'fa-skull'
       },
       { 
-        id: 'marauder-touch', 
-        name: 'Marauder Touch', 
-        chip: 'ESP32', 
-        category: 'esp32', 
-        desc: 'Touchscreen edition Marauder interface.',
-        url: 'Bruce-marauder-touch.bin',
-        icon: 'fa-hand-pointer'
-      },
-      { 
-        id: 'phantom', 
+        id: 'Phantom_S024R', 
         name: 'Phantom S024R', 
         chip: 'ESP32', 
         category: 'esp32', 
         desc: '2.4 inch SPI ST7789 display instrument.',
-        url: 'Bruce-phantom.bin',
+        url: 'Bruce-Phantom_S024R.bin',
         icon: 'fa-ghost'
-      },
-      { 
-        id: 'xk404', 
-        name: 'XK404 Pentest Device', 
-        chip: 'ESP32', 
-        category: 'esp32', 
-        desc: 'Portable hardware research node.',
-        url: 'Bruce-xk404.bin',
-        icon: 'fa-terminal'
       }
     ];
 
@@ -605,7 +5555,7 @@
       const [isFlashing, setIsFlashing] = useState(false);
       const [isErasingOnly, setIsErasingOnly] = useState(false);
       const [progress, setProgress] = useState(0);
-      const [logTab, setLogTab] = useState('sys');
+      const [logTab, setLogTab] = useState('pinout');
       const [sysLogs, setSysLogs] = useState([]);
       const [devLogs, setDevLogs] = useState([]);
       const [isMonitor, setIsMonitor] = useState(false);
@@ -769,6 +5719,7 @@
           const port = e.target;
           portRef.current = port;
           setIsConnected(true);
+        setLogTab('sys');
 
           if (autoResumeMonitorRef.current || logTabRef.current === 'dev') {
             setTimeout(async () => {
@@ -816,6 +5767,7 @@
         if (port) {
           portRef.current = port;
           setIsConnected(true);
+        setLogTab('sys');
         }
         return port;
       };
@@ -833,6 +5785,7 @@
           await releaseAndClosePort(port);
           portRef.current = port;
           setIsConnected(true);
+        setLogTab('sys');
           logSys(t.logPortSuccess, "success");
 
           // Tự động nhận diện Chip
@@ -985,6 +5938,7 @@
         if (!confirm(t.eraseConfirm)) return;
 
         setIsErasingOnly(true);
+      setLogTab('sys');
         setLogTab('sys');
         logSys(t.logEraseStart, "warning");
 
@@ -1039,6 +5993,7 @@
         }
 
         setIsFlashing(true);
+      setLogTab('sys');
         setProgress(0);
         setLogTab('sys');
 
@@ -1578,16 +6533,23 @@
               <div className="flex items-center justify-between px-3 border-b border-zinc-800 bg-zinc-900/80 shrink-0 font-mono">
                 <div className="flex">
                   <button 
+                    onClick={() => setLogTab('pinout')} 
+                    className={`py-2 px-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
+                      logTab === 'pinout' ? 'text-amber-400 border-amber-500 bg-amber-500/10' : 'text-zinc-500 border-transparent hover:text-zinc-300'
+                    }`}>
+                    <i className="fa-solid fa-diagram-project text-[11px]"></i> {t.pinoutTab}
+                  </button>
+                  <button 
                     onClick={() => setLogTab('sys')} 
                     className={`py-2 px-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
-                      logTab === 'sys' ? 'text-amber-400 border-amber-500' : 'text-zinc-500 border-transparent hover:text-zinc-300'
+                      logTab === 'sys' ? 'text-amber-400 border-amber-500 bg-amber-500/10' : 'text-zinc-500 border-transparent hover:text-zinc-300'
                     }`}>
                     <i className="fa-solid fa-terminal text-[10px]"></i> {t.sysLogTab}
                   </button>
                   <button 
                     onClick={() => setLogTab('dev')} 
                     className={`py-2 px-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
-                      logTab === 'dev' ? 'text-cyan-400 border-cyan-500' : 'text-zinc-500 border-transparent hover:text-zinc-300'
+                      logTab === 'dev' ? 'text-cyan-400 border-cyan-500 bg-cyan-500/10' : 'text-zinc-500 border-transparent hover:text-zinc-300'
                     }`}>
                     <i className="fa-solid fa-tv text-[10px]"></i> {t.serialMonTab}
                   </button>
@@ -1627,30 +6589,36 @@
                 </div>
               </div>
 
-              {/* Console Log Area (0 border radius, 11px font) */}
-              <div 
-                ref={termRef} 
-                className="flex-1 p-3 overflow-y-auto font-mono text-[11px] leading-relaxed custom-scrollbar break-all text-zinc-300 select-text bg-[#0a0a0c]">
-                {(logTab === 'sys' ? sysLogs : devLogs).length === 0 ? (
-                  <div className="text-zinc-700 select-none">
-                    {logTab === 'sys' ? t.sysPlaceholder : t.monPlaceholder}
-                  </div>
-                ) : (
-                  (logTab === 'sys' ? sysLogs : devLogs).map((l, i) => (
-                    <div key={i} className="flex gap-2 mb-0.5">
-                      <span className="text-zinc-600 shrink-0 select-none">[{l.time}]</span>
-                      <span className={`${
-                        l.type === 'error' ? 'text-rose-500 font-semibold' : 
-                        l.type === 'success' ? 'text-emerald-500 font-semibold' : 
-                        l.type === 'warning' ? 'text-amber-500' : 
-                        'text-zinc-300'
-                      }`}>
-                        {l.msg}
-                      </span>
+              {/* Console Log Area / Pinout Diagram Area */}
+              {logTab === 'pinout' ? (
+                <div className="flex-1 overflow-hidden bg-[#0a0a0c]">
+                  <PinoutViewer boardId={selectedBoardId} lang={lang} />
+                </div>
+              ) : (
+                <div 
+                  ref={termRef} 
+                  className="flex-1 p-3 overflow-y-auto font-mono text-[11px] leading-relaxed custom-scrollbar break-all text-zinc-300 select-text bg-[#0a0a0c]">
+                  {(logTab === 'sys' ? sysLogs : devLogs).length === 0 ? (
+                    <div className="text-zinc-700 select-none">
+                      {logTab === 'sys' ? t.sysPlaceholder : t.monPlaceholder}
                     </div>
-                  ))
-                )}
-              </div>
+                  ) : (
+                    (logTab === 'sys' ? sysLogs : devLogs).map((l, i) => (
+                      <div key={i} className="flex gap-2 mb-0.5">
+                        <span className="text-zinc-600 shrink-0 select-none">[{l.time}]</span>
+                        <span className={`${
+                          l.type === 'error' ? 'text-rose-500 font-semibold' : 
+                          l.type === 'success' ? 'text-emerald-500 font-semibold' : 
+                          l.type === 'warning' ? 'text-amber-500' : 
+                          'text-zinc-300'
+                        }`}>
+                          {l.msg}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
 
               {/* HUD Status Bar */}
               <div className="px-3 py-1.5 border-t border-zinc-800 bg-zinc-900 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
