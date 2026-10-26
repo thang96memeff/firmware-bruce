@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html lang="vi" class="dark">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DUSCU FLASHER | Industrial Hardware Utility</title>
+  <title>DUSCU FLASHER | Hardware Utility</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
-          colors: {
-            zinc: { 850: '#191a1d', 900: '#121316', 950: '#090a0c' },
-            amber: { 500: '#f59e0b', 400: '#fbbf24' },
-            cyan: { 500: '#06b6d4', 400: '#22d3ee' }
-          },
           fontFamily: {
-            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Consolas', 'monospace'],
-            sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+            sans: ['-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'Plus Jakarta Sans', 'Inter', 'sans-serif'],
+            mono: ['SF Mono', 'JetBrains Mono', 'ui-monospace', 'monospace'],
           }
         }
       }
@@ -29,18 +23,17 @@
   <!-- Google Fonts & Icons -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-  <!-- ESPTOOL-JS v0.7.0 (Hỗ trợ ESP32, ESP32-S3, ESP32-C3, ESP32-C5, ESP32-C6...) -->
+  <!-- ESPTOOL-JS v0.7.0 -->
   <script type="module">
     import { Transport, ESPLoader, bstrToUi8 } from 'https://cdn.jsdelivr.net/npm/esptool-js@0.7.0/+esm';
 
-    // Helper tạo Uint8Array đồng bộ chính xác với Realm / Scope của ESPLoader module
     const toModuleUint8Array = (input) => {
       if (!input) return new Uint8Array(0);
       if (input instanceof Uint8Array) {
@@ -58,7 +51,6 @@
       return new Uint8Array(input);
     };
 
-    // Monkey-patch writeFlash prototype để bảo đảm cross-realm compatibility với Babel Standalone
     const origWriteFlash = ESPLoader.prototype.writeFlash;
     ESPLoader.prototype.writeFlash = async function(options) {
       if (options && Array.isArray(options.fileArray)) {
@@ -82,46 +74,203 @@
   </script>
 
   <style>
-    /* Rainbow Shimmer viền 2px cho Morph S3 */
-    @keyframes rainbowShimmer {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    /* ==========================================================
+       ULTRA-TRANSLUCENT LIQUID GLASS SYSTEM
+       ========================================================== */
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: #0f172a;
+      background: #bce3f5;
     }
-    .morph-rainbow-border {
-      position: relative;
-      border-radius: 8px;
-      background: linear-gradient(90deg, #ff0055, #ff7700, #ffdd00, #00ff66, #00ccff, #a855f7, #ff0055);
-      background-size: 300% 300%;
-      animation: rainbowShimmer 3.5s linear infinite;
-      padding: 2px;
+
+    /* Khung nền lớn bên ngoài: Siêu trong suốt để nhìn rõ sóng nước */
+    .liquid-shell {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.20) 0%, rgba(255, 255, 255, 0.08) 100%);
+      backdrop-filter: blur(14px) saturate(160%);
+      -webkit-backdrop-filter: blur(14px) saturate(160%);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      box-shadow:
+        0 20px 50px rgba(15, 23, 42, 0.06),
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.75),
+        inset 0 -1px 1.5px rgba(255, 255, 255, 0.25);
     }
-    /* Cyber Gradient viền 2px cho Xingzhi Cube S3 Launcher */
-    @keyframes cyberShimmer {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+
+    /* Các mục Kết nối Thiết bị, Bo mạch Đích: Hiệu ứng kính mờ xuyên thấu như nền cũ */
+    .liquid-card {
+      background: linear-gradient(155deg, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0.18) 100%);
+      backdrop-filter: blur(28px) saturate(195%);
+      -webkit-backdrop-filter: blur(28px) saturate(195%);
+      border: 1px solid rgba(255, 255, 255, 0.68);
+      border-radius: 24px;
+      box-shadow:
+        0 10px 28px -6px rgba(15, 23, 42, 0.06),
+        0 2px 6px rgba(15, 23, 42, 0.03),
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.85),
+        inset 0 -1px 1px rgba(255, 255, 255, 0.35);
+      transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .launcher-cyber-border {
-      position: relative;
-      border-radius: 8px;
-      background: linear-gradient(90deg, #06b6d4, #3b82f6, #ec4899, #f59e0b, #10b981, #06b6d4);
-      background-size: 300% 300%;
-      animation: cyberShimmer 3.5s linear infinite;
-      padding: 2px;
+
+    /* Thẻ con bên trong (Morph S3, Xingzhi, Info box) */
+    .liquid-subcard {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.14) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .hero-inner-card {
-      background-color: #141416;
-      border-radius: 6px;
+
+    .liquid-subcard:hover {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.48) 0%, rgba(255, 255, 255, 0.26) 100%);
+      border-color: rgba(255, 255, 255, 0.85);
+      transform: translateY(-1px);
     }
+
+    /* Thẻ khi đang được chọn (Active Specular) */
+    .liquid-card-active {
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.58) 0%, rgba(224, 242, 254, 0.38) 100%);
+      backdrop-filter: blur(28px) saturate(200%);
+      -webkit-backdrop-filter: blur(28px) saturate(200%);
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      box-shadow:
+        0 14px 32px -6px rgba(37, 99, 235, 0.16),
+        0 4px 12px rgba(59, 130, 246, 0.08),
+        inset 0 2px 2px rgba(255, 255, 255, 0.95),
+        0 0 0 2px rgba(59, 130, 246, 0.25);
+      transform: translateY(-1px);
+    }
+
+    /* Nút bấm kính lỏng (Tactile Pill Button) */
+    .liquid-btn {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.28) 100%);
+      backdrop-filter: blur(22px) saturate(190%);
+      -webkit-backdrop-filter: blur(22px) saturate(190%);
+      border: 1px solid rgba(255, 255, 255, 0.78);
+      border-radius: 9999px;
+      color: #0f172a;
+      font-weight: 600;
+      box-shadow:
+        0 6px 16px -3px rgba(15, 23, 42, 0.07),
+        0 2px 4px rgba(15, 23, 42, 0.03),
+        inset 0 1.5px 0.5px rgba(255, 255, 255, 0.9),
+        inset 0 -1px 1px rgba(255, 255, 255, 0.4);
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .liquid-btn:hover:not(:disabled) {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.45) 100%);
+      transform: translateY(-1.5px);
+      box-shadow:
+        0 10px 22px -4px rgba(15, 23, 42, 0.12),
+        inset 0 2px 1px rgba(255, 255, 255, 1);
+    }
+
+    .liquid-btn:active:not(:disabled) {
+      transform: scale(0.95) translateY(0);
+    }
+
+    /* Nút bấm chính nổi bật (Primary Liquid Action Pill) */
+    .liquid-btn-primary {
+      background: linear-gradient(180deg, rgba(59, 130, 246, 0.88) 0%, rgba(79, 70, 229, 0.82) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.65);
+      border-radius: 9999px;
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow:
+        0 12px 26px -6px rgba(59, 130, 246, 0.42),
+        0 4px 10px rgba(79, 70, 229, 0.22),
+        inset 0 1.5px 1px rgba(255, 255, 255, 0.7),
+        inset 0 -2px 4px rgba(30, 58, 138, 0.35);
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .liquid-btn-primary:hover:not(:disabled) {
+      background: linear-gradient(180deg, rgba(96, 165, 250, 0.94) 0%, rgba(99, 102, 241, 0.88) 100%);
+      transform: translateY(-1.5px) scale(1.01);
+      box-shadow:
+        0 16px 32px -6px rgba(59, 130, 246, 0.52),
+        inset 0 2px 1.5px rgba(255, 255, 255, 0.85);
+    }
+
+    .liquid-btn-primary:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    /* Ô chọn / Input kính mờ */
+    .liquid-input {
+      background: rgba(255, 255, 255, 0.35);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 16px;
+      color: #0f172a;
+      box-shadow:
+        inset 0 2px 4px rgba(15, 23, 42, 0.03),
+        0 1px 2px rgba(255, 255, 255, 0.75);
+      transition: all 0.2s ease;
+    }
+
+    .liquid-input:focus {
+      background: rgba(255, 255, 255, 0.62);
+      border-color: rgba(59, 130, 246, 0.65);
+      box-shadow:
+        0 0 0 3px rgba(59, 130, 246, 0.15),
+        inset 0 1px 2px rgba(15, 23, 42, 0.02);
+    }
+
+    /* ==========================================================
+       ANIMATION CHUYỂN TAB (SƠ ĐỒ / NHẬT KÝ / SERIAL)
+       ========================================================== */
+    @keyframes liquidTabEnter {
+      0% {
+        opacity: 0;
+        transform: translateY(14px) scale(0.982);
+        filter: blur(8px);
+      }
+      60% {
+        opacity: 1;
+        filter: blur(0px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0px);
+      }
+    }
+
+    .tab-pane-animate {
+      animation: liquidTabEnter 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      will-change: transform, opacity, filter;
+    }
+
+    /* Viên thuốc kính trượt mượt dưới thanh Tab */
+    .sliding-glass-pill {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.82) 0%, rgba(255, 255, 255, 0.52) 100%);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.95);
+      box-shadow:
+        0 4px 14px rgba(37, 99, 235, 0.12),
+        0 1px 3px rgba(15, 23, 42, 0.05),
+        inset 0 1.5px 1px rgba(255, 255, 255, 1);
+      transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), width 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    /* Thanh cuộn tinh tế */
     .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
-    .custom-scrollbar::-webkit-scrollbar-track { background: #090a0c; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #27272a; border-radius: 2px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(15, 23, 42, 0.14);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(59, 130, 246, 0.45);
+    }
   </style>
 </head>
-<body class="bg-zinc-950 text-zinc-300 font-sans antialiased m-0 p-0 h-screen overflow-hidden flex flex-col select-none">
-  <div id="root" class="h-full flex flex-col"></div>
+<body class="m-0 p-0 h-screen overflow-hidden flex flex-col select-none relative">
+  <div id="root" class="h-full flex flex-col relative z-10"></div>
 
   <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
@@ -129,165 +278,165 @@
     const GITHUB_API_URL = "https://api.github.com/repos/thang96memeff/firmware-bruce/contents";
     const GITHUB_RAW_BASE = "https://thang96memeff.github.io/firmware-bruce/";
 
-    // Đa ngôn ngữ (i18n): Tự động phát hiện theo IP người dùng hoặc chuyển đổi thủ công
+    // Đa ngôn ngữ (i18n)
     const I18N = {
       vi: {
-        appSub: "CÔNG CỤ NẠP PHẦN CỨNG // ESP32 • ESP32-S3 • ESP32-C5 (WIFI 6)",
-        syncBtn: "GITHUB SYNC",
+        appSub: "Tiện ích nạp Firmware phần cứng • ESP32 • S3 • C5 (WiFi 6)",
+        syncBtn: "Đồng bộ Cloud",
         syncTooltip: "Đồng bộ danh sách file từ GitHub",
-        serialSec: "[01] GIAO TIẾP SERIAL",
-        connectBtn: "KẾT NỐI THIẾT BỊ",
-        disconnectBtn: "NGẮT KẾT NỐI",
+        serialSec: "Kết nối Thiết bị",
+        connectBtn: "Kết nối Cổng USB",
+        disconnectBtn: "Ngắt kết nối",
         baudTooltip: "Tốc độ nạp Bootloader",
-        hardwareSec: "[02] BO MẠCH ĐÍCH",
-        profilesCount: "CẤU HÌNH PHẦN CỨNG",
-        morphTitle: "MORPH S3 FLAGSHIP",
+        hardwareSec: "Bo mạch Đích",
+        profilesCount: "thiết bị",
+        morphTitle: "Morph S3 Flagship",
         morphDesc: "ESP32-S3 N16R8 • Sniffer / Sub-GHz / BLE",
-        morphGuideBtn: "HƯỚNG DẪN MORPH",
-        morphGuideBadge: "HƯỚNG DẪN",
-        morphGuideCardHint: "XEM HƯỚNG DẪN",
-        morphGuideTitle: "HƯỚNG DẪN SỬ DỤNG MORPH S3 FLAGSHIP",
-        morphGuideSub: "CẨM NANG PHẦN CỨNG • THAO TÁC PHÍM • WEB CONFIG • NẠP FIRMWARE",
-        morphTabControls: "🎮 THAO TÁC PHÍM",
-        morphTabHardware: "🎯 PHẦN CỨNG & CHÂN",
-        morphTabWebui: "🌐 WEB CONFIG",
-        morphTabFlash: "⚡ HƯỚNG DẪN NẠP",
-        morphSelectNow: "CHỌN NẠP MORPH S3 NGAY",
-        morphCloseBtn: "ĐÓNG",
-        launcherTitle: "XINGZHI CUBE LAUNCHER",
+        morphGuideBtn: "Sổ tay Morph",
+        morphGuideBadge: "Hướng dẫn",
+        morphGuideCardHint: "Xem chi tiết",
+        morphGuideTitle: "Cẩm nang sử dụng Morph S3 Flagship",
+        morphGuideSub: "Sơ đồ phần cứng • Thao tác phím • Cấu hình Web • Nạp Firmware",
+        morphTabControls: "Thao tác Phím",
+        morphTabHardware: "Phần cứng & Chân",
+        morphTabWebui: "Web Config",
+        morphTabFlash: "Hướng dẫn Nạp",
+        morphSelectNow: "Chọn nạp Morph S3 ngay",
+        morphCloseBtn: "Đóng",
+        launcherTitle: "Xingzhi Cube Launcher",
         launcherDesc: "ESP32-S3 • Trình khởi chạy đa ứng dụng",
-        selectBtn: "CHỌN",
-        activeBtn: "[ĐANG CHỌN]",
-        readyBadge: "SẴN SÀNG",
-        cloudReadyBadge: "CLOUD SẴN SÀNG",
-        customLocalBadge: "TỰ CHỌN / CỤC BỘ",
-        externalTitle: "FIRMWARE NGOÀI (.BIN)",
-        offsetLabel: "OFFSET:",
-        dropHint: "CHỌN FILE .BIN TỪ MÁY TÍNH",
-        localLoaded: "ĐÃ TẢI TỆP CỤC BỘ",
-        deselectFile: "[BỎ CHỌN FILE CỤC BỘ]",
-        eraseBefore: "XÓA TRƯỚC KHI NẠP",
-        eraseAllBtn: "XÓA SẠCH",
-        eraseConfirm: "XÁC NHẬN: XÓA SẠCH TOÀN BỘ BỘ NHỚ FLASH (Full Chip Erase)?\nToàn bộ NVS, WiFi, cài đặt và phân vùng sẽ bị xóa trắng!",
-        flashBtn: "NẠP FIRMWARE",
-        flashingBtn: "ĐANG NẠP...",
-        sodoTab: "SƠ ĐỒ CHÂN",
-        sodoSearching: "Đang tìm file sơ đồ đấu nối...",
-        sodoNotFound: "Chưa tìm thấy sơ đồ cho bo mạch này",
-        sodoColPin: "TÊN CHÂN (PIN NAME)",
-        sodoColEsp: "CHÂN KẾT NỐI ĐẾN ESP",
-        sodoNoteTitle: "LƯU Ý KẾT NỐI",
-        sodoModulesTitle: "CHI TIẾT ĐẤU NỐI CÁC MODULE",
-        sodoUnconnectedHint: "Chưa kết nối thiết bị. Đang hiển thị sơ đồ chân phần cứng.",
-        sysLogTab: "NHẬT KÝ HỆ THỐNG",
-        serialMonTab: "SERIAL MONITOR",
-        clearLogTooltip: "Xóa màn hình console",
-        startMon: "BẮT ĐẦU",
-        stopMon: "DỪNG",
-        sysPlaceholder: "// Chờ kết nối thiết bị hoặc lệnh nạp firmware...",
-        monPlaceholder: "// Chưa có dữ liệu Serial (Bấm 'BẮT ĐẦU' để mở monitor)...",
-        portOnline: "CỔNG TRỰC TUYẾN",
-        portOffline: "CỔNG NGOẠI TUYẾN",
-        catAll: "TẤT CẢ",
+        selectBtn: "Chọn",
+        activeBtn: "Đang chọn",
+        readyBadge: "Sẵn sàng",
+        cloudReadyBadge: "Cloud Sẵn sàng",
+        customLocalBadge: "Tệp Cục bộ",
+        externalTitle: "Nạp tệp .BIN ngoài",
+        offsetLabel: "Offset:",
+        dropHint: "Chạm để chọn tệp .bin từ máy tính",
+        localLoaded: "Đã nạp tệp cục bộ",
+        deselectFile: "Bỏ chọn tệp này",
+        eraseBefore: "Xóa sạch bộ nhớ trước khi nạp",
+        eraseAllBtn: "Xóa trắng Chip",
+        eraseConfirm: "XÁC NHẬN: Xóa sạch toàn bộ bộ nhớ Flash (Full Chip Erase)?\nToàn bộ NVS, WiFi, cài đặt và phân vùng sẽ bị xóa trắng!",
+        flashBtn: "Bắt đầu Nạp Firmware",
+        flashingBtn: "Đang nạp vào thiết bị...",
+        sodoTab: "Sơ đồ Đấu nối",
+        sodoSearching: "Đang tải sơ đồ đấu nối phần cứng...",
+        sodoNotFound: "Chưa có sơ đồ chân cho bo mạch này",
+        sodoColPin: "Chân Module (Signal)",
+        sodoColEsp: "Chân kết nối ESP (GPIO)",
+        sodoNoteTitle: "Lưu ý kỹ thuật",
+        sodoModulesTitle: "Chi tiết đấu nối các Module",
+        sodoUnconnectedHint: "Đang hiển thị sơ đồ chân tiêu chuẩn",
+        sysLogTab: "Nhật ký Hệ thống",
+        serialMonTab: "Serial Monitor",
+        clearLogTooltip: "Xóa màn hình nhật ký",
+        startMon: "Mở Monitor",
+        stopMon: "Dừng",
+        sysPlaceholder: "// Chờ kết nối thiết bị USB hoặc lệnh nạp firmware...",
+        monPlaceholder: "// Chưa có dữ liệu Serial (Bấm 'Mở Monitor' để theo dõi)...",
+        portOnline: "Đã kết nối USB",
+        portOffline: "Chưa kết nối",
+        catAll: "Tất cả",
         catS3: "ESP32-S3",
-        catC5: "C5 (WIFI 6)",
+        catC5: "C5 (WiFi 6)",
         catEsp32: "ESP32",
-        vipGroup: "★ CẤU HÌNH VIP / HERO",
-        standardGroup: "CẤU HÌNH PHẦN CỨNG TIÊU CHUẨN",
-        logInit: "[INIT] DUSCU FLASHER v2.5 sẵn sàng (ESP32 / ESP32-S3 / ESP32-C5 / Multi-App Launcher).",
-        logSyncSuccess: (count) => `[SYNC] Đã đồng bộ ${count} file firmware từ GitHub repository.`,
+        vipGroup: "★ Dòng máy Flagship / Nổi bật",
+        standardGroup: "Bo mạch Phần cứng Tiêu chuẩn",
+        logInit: "[INIT] DUSCU FLASHER v2.7 đã sẵn sàng.",
+        logSyncSuccess: (count) => `[SYNC] Đã đồng bộ ${count} bản dựng firmware từ GitHub.`,
         logSyncWarn: (err) => `[WARN] GitHub API: Sử dụng danh mục mặc định (${err})`,
-        logPortSuccess: "[PORT] Đã kết nối cổng COM thành công.",
-        logPortDisconnect: "[PORT] Đã ngắt kết nối cổng COM.",
+        logPortSuccess: "[PORT] Đã kết nối cổng USB Serial thành công.",
+        logPortDisconnect: "[PORT] Đã ngắt kết nối cổng USB Serial.",
         logPortErr: (err) => `[ERR] Lỗi kết nối cổng: ${err}`,
-        logNoWebSerial: "Trình duyệt không hỗ trợ Web Serial API. Vui lòng mở bằng Google Chrome hoặc MS Edge trên PC.",
+        logNoWebSerial: "Trình duyệt không hỗ trợ Web Serial API. Vui lòng mở bằng Chrome hoặc Edge trên máy tính.",
         logNoEsptool: "Thư viện ESPLoader chưa sẵn sàng. Kiểm tra kết nối mạng.",
         logEraseStart: "[CMD] Bắt đầu tiến trình xóa sạch Flash (Full Chip Erase)...",
         logEraseExec: "[EXEC] Đang phát lệnh xóa chip qua Bootloader...",
-        logEraseSuccess: "[SUCCESS] XÓA SẠCH BỘ NHỚ FLASH THÀNH CÔNG.",
+        logEraseSuccess: "[SUCCESS] ĐÃ XÓA SẠCH BỘ NHỚ FLASH THÀNH CÔNG.",
         logEraseFail: (err) => `[FAIL] Lỗi xóa Flash: ${err}`,
-        logNoTarget: "[ERR] Chưa chọn bo mạch đích hoặc file firmware .bin!",
-        logLocalFile: (name, mb) => `[FILE] Nạp file cục bộ: ${name} [${mb} MB]`,
+        logNoTarget: "[ERR] Chưa chọn bo mạch đích hoặc tệp firmware .bin!",
+        logLocalFile: (name, mb) => `[FILE] Nạp tệp cục bộ: ${name} [${mb} MB]`,
         logFetching: (file) => `[FETCH] Đang tải firmware: ${file}...`,
-        logFetchFail: (file) => `File ${file} chưa có sẵn trên GitHub. Bạn có thể dùng ô nạp file ngoài để chọn file .bin cục bộ.`,
+        logFetchFail: (file) => `Tệp ${file} chưa có sẵn trên GitHub. Bạn có thể chọn tệp .bin từ máy tính.`,
         logSyncBootloader: (baud) => `[SYNC] Đồng bộ bootloader @ ${baud} baud...`,
-        logWriteFlash: (addr, erase) => `[WRITE] Ghi bộ nhớ tại địa chỉ 0x${addr} ${erase ? '(Xóa toàn bộ Flash)' : ''}...`,
-        logFlashSuccess: "[SUCCESS] GHI FIRMWARE HOÀN TẤT THÀNH CÔNG 100%.",
+        logWriteFlash: (addr, erase) => `[WRITE] Ghi bộ nhớ tại địa chỉ 0x${addr} ${erase ? '(Kèm xóa toàn bộ Flash)' : ''}...`,
+        logFlashSuccess: "[SUCCESS] NẠP FIRMWARE HOÀN TẤT 100%.",
         logReboot: "[REBOOT] Đang khởi động lại thiết bị...",
         logFlashFail: (err) => `[FAIL] Ghi Firmware thất bại: ${err}`,
         logMonitorStart: (baud) => `[MONITOR] Bắt đầu đọc Serial @ ${baud} baud.`,
         logMonitorErr: (err) => `[ERR] Serial Monitor: ${err}`
       },
       en: {
-        appSub: "HARDWARE PROGRAMMING INSTRUMENT // ESP32 • ESP32-S3 • ESP32-C5 (WIFI 6)",
-        syncBtn: "GITHUB SYNC",
-        syncTooltip: "Synchronize firmware file list from GitHub",
-        serialSec: "[01] SERIAL INTERFACE",
-        connectBtn: "CONNECT DEVICE",
-        disconnectBtn: "DISCONNECT",
-        baudTooltip: "Bootloader flash baud rate",
-        hardwareSec: "[02] TARGET HARDWARE",
-        profilesCount: "HARDWARE PROFILES",
-        morphTitle: "MORPH S3 FLAGSHIP",
+        appSub: "Hardware Firmware Utility • ESP32 • S3 • C5 (WiFi 6)",
+        syncBtn: "Cloud Sync",
+        syncTooltip: "Synchronize firmware list from GitHub",
+        serialSec: "Device Connection",
+        connectBtn: "Connect USB Port",
+        disconnectBtn: "Disconnect",
+        baudTooltip: "Bootloader flash baudrate",
+        hardwareSec: "Target Hardware",
+        profilesCount: "profiles",
+        morphTitle: "Morph S3 Flagship",
         morphDesc: "ESP32-S3 N16R8 • Sniffer / Sub-GHz / BLE",
-        morphGuideBtn: "MORPH GUIDE",
-        morphGuideBadge: "GUIDE",
-        morphGuideCardHint: "VIEW MANUAL",
-        morphGuideTitle: "MORPH S3 FLAGSHIP USER MANUAL",
-        morphGuideSub: "HARDWARE OVERVIEW • BUTTON CONTROLS • WEB CONFIG • FLASHING GUIDE",
-        morphTabControls: "🎮 CONTROLS",
-        morphTabHardware: "🎯 HARDWARE & PINS",
-        morphTabWebui: "🌐 WEB CONFIG",
-        morphTabFlash: "⚡ FLASHING GUIDE",
-        morphSelectNow: "SELECT MORPH S3 NOW",
-        morphCloseBtn: "CLOSE",
-        launcherTitle: "XINGZHI CUBE LAUNCHER",
-        launcherDesc: "ESP32-S3 • Official Multi-App Launcher",
-        selectBtn: "SELECT",
-        activeBtn: "[ACTIVE]",
-        readyBadge: "READY",
-        cloudReadyBadge: "CLOUD READY",
-        customLocalBadge: "CUSTOM / LOCAL",
-        externalTitle: "EXTERNAL FIRMWARE (.BIN)",
-        offsetLabel: "OFFSET:",
-        dropHint: "SELECT .BIN FILE FROM COMPUTER",
-        localLoaded: "LOCAL LOADED",
-        deselectFile: "[DESELECT LOCAL FILE]",
-        eraseBefore: "ERASE BEFORE FLASH",
-        eraseAllBtn: "ERASE ALL",
-        eraseConfirm: "CONFIRM: FULL CHIP ERASE?\nAll NVS data, WiFi credentials, settings and partitions will be permanently erased!",
-        flashBtn: "FLASH FIRMWARE",
-        flashingBtn: "PROGRAMMING...",
-        sodoTab: "PINOUT DIAGRAM",
-        sodoSearching: "Searching wiring diagram...",
+        morphGuideBtn: "Morph Guide",
+        morphGuideBadge: "Manual",
+        morphGuideCardHint: "View Details",
+        morphGuideTitle: "Morph S3 Flagship User Manual",
+        morphGuideSub: "Hardware Pinout • Button Controls • Web Config • Flashing Guide",
+        morphTabControls: "Controls",
+        morphTabHardware: "Hardware & Pins",
+        morphTabWebui: "Web Config",
+        morphTabFlash: "Flashing Guide",
+        morphSelectNow: "Select Morph S3 Now",
+        morphCloseBtn: "Close",
+        launcherTitle: "Xingzhi Cube Launcher",
+        launcherDesc: "ESP32-S3 • Multi-App Partition Launcher",
+        selectBtn: "Select",
+        activeBtn: "Selected",
+        readyBadge: "Ready",
+        cloudReadyBadge: "Cloud Ready",
+        customLocalBadge: "Local File",
+        externalTitle: "External Firmware (.BIN)",
+        offsetLabel: "Offset:",
+        dropHint: "Tap to choose a .bin file from computer",
+        localLoaded: "Local binary loaded",
+        deselectFile: "Remove local file",
+        eraseBefore: "Erase flash memory before writing",
+        eraseAllBtn: "Wipe Chip",
+        eraseConfirm: "CONFIRM FULL CHIP ERASE?\nAll NVS data, WiFi credentials, settings and partitions will be permanently erased!",
+        flashBtn: "Flash Firmware Now",
+        flashingBtn: "Programming Device...",
+        sodoTab: "Pinout Diagram",
+        sodoSearching: "Loading hardware wiring diagram...",
         sodoNotFound: "No wiring diagram found for this board",
-        sodoColPin: "PIN NAME",
-        sodoColEsp: "CONNECTED TO ESP",
-        sodoNoteTitle: "WIRING NOTES",
-        sodoModulesTitle: "MODULE PINOUT DETAILS",
-        sodoUnconnectedHint: "Device offline. Displaying hardware pinout diagram.",
-        sysLogTab: "SYSTEM LOG",
-        serialMonTab: "SERIAL MONITOR",
+        sodoColPin: "Module Pin (Signal)",
+        sodoColEsp: "ESP32 GPIO Pin",
+        sodoNoteTitle: "Wiring Notes",
+        sodoModulesTitle: "Module Pinout Details",
+        sodoUnconnectedHint: "Displaying standard hardware pinout",
+        sysLogTab: "System Log",
+        serialMonTab: "Serial Monitor",
         clearLogTooltip: "Clear console output",
-        startMon: "START",
-        stopMon: "STOP",
-        sysPlaceholder: "// Waiting for device connection or flash command...",
-        monPlaceholder: "// No Serial data (Click 'START' to open monitor)...",
-        portOnline: "PORT ONLINE",
-        portOffline: "PORT OFFLINE",
-        catAll: "ALL",
+        startMon: "Open Monitor",
+        stopMon: "Stop",
+        sysPlaceholder: "// Waiting for USB device connection or flash command...",
+        monPlaceholder: "// No Serial data (Click 'Open Monitor' to start)...",
+        portOnline: "USB Connected",
+        portOffline: "Disconnected",
+        catAll: "All",
         catS3: "ESP32-S3",
-        catC5: "C5 (WIFI 6)",
+        catC5: "C5 (WiFi 6)",
         catEsp32: "ESP32",
-        vipGroup: "★ VIP / HERO PROFILES",
-        standardGroup: "STANDARD HARDWARE PROFILES",
-        logInit: "[INIT] DUSCU FLASHER v2.5 ready (ESP32 / ESP32-S3 / ESP32-C5 / Multi-App Launcher).",
-        logSyncSuccess: (count) => `[SYNC] Synchronized ${count} firmware files from GitHub repository.`,
+        vipGroup: "★ Flagship / Featured Profiles",
+        standardGroup: "Standard Hardware Profiles",
+        logInit: "[INIT] DUSCU FLASHER v2.7 ready.",
+        logSyncSuccess: (count) => `[SYNC] Synchronized ${count} firmware files from GitHub.`,
         logSyncWarn: (err) => `[WARN] GitHub API: Using default profiles (${err})`,
-        logPortSuccess: "[PORT] Connected to COM port successfully.",
-        logPortDisconnect: "[PORT] Disconnected from COM port.",
+        logPortSuccess: "[PORT] Connected to USB Serial port successfully.",
+        logPortDisconnect: "[PORT] Disconnected from USB Serial port.",
         logPortErr: (err) => `[ERR] Port connection failed: ${err}`,
-        logNoWebSerial: "Browser does not support Web Serial API. Please open in Google Chrome or MS Edge on PC.",
+        logNoWebSerial: "Browser does not support Web Serial API. Please open in Chrome or Edge on Desktop.",
         logNoEsptool: "ESPLoader library is not ready. Check network connection.",
         logEraseStart: "[CMD] Starting Full Chip Erase process...",
         logEraseExec: "[EXEC] Sending erase command via Bootloader...",
@@ -296,7 +445,7 @@
         logNoTarget: "[ERR] No target hardware or firmware .bin file selected!",
         logLocalFile: (name, mb) => `[FILE] Loading local file: ${name} [${mb} MB]`,
         logFetching: (file) => `[FETCH] Downloading firmware: ${file}...`,
-        logFetchFail: (file) => `File ${file} not available on GitHub. You can use external file loader to select a local .bin file.`,
+        logFetchFail: (file) => `File ${file} not available on GitHub. Please use local .bin loader.`,
         logSyncBootloader: (baud) => `[SYNC] Syncing bootloader @ ${baud} baud...`,
         logWriteFlash: (addr, erase) => `[WRITE] Writing memory at 0x${addr} ${erase ? '(Full Chip Erase)' : ''}...`,
         logFlashSuccess: "[SUCCESS] FIRMWARE PROGRAMMING COMPLETED 100%.",
@@ -307,9 +456,8 @@
       }
     };
 
-    // Danh sách toàn bộ các Bo mạch hỗ trợ trong dự án (34 Bo Mạch Hoàn Thiện)
+    // Danh sách 34 Bo mạch hỗ trợ
     const MASTER_BOARDS = [
-      // 1. VIP HERO PROFILES (FEATURED HARDWARE)
       { 
         id: 's3-mini-1_47-inch', 
         name: 'ESP32-S3 Super Mini 1.47"', 
@@ -340,8 +488,6 @@
         url: 'Launcher-xingzhi-cube-s3.bin',
         icon: 'fa-cubes-stacked'
       },
-
-      // 2. C5 Series (RISC-V Dual-Band WiFi 6 2.4/5GHz)
       { 
         id: 'bruce-c5-1_47', 
         name: 'Bruce C5 1.47" (N8)', 
@@ -378,8 +524,6 @@
         url: 'Bruce-esp32-c5-tft.bin',
         icon: 'fa-microchip'
       },
-
-      // 3. ESP32-S3 Series
       { 
         id: 'lilygo-t-display-s3', 
         name: 'LilyGO T-Display S3', 
@@ -506,8 +650,6 @@
         url: 'Bruce-esp32-s3-devkitc-1.bin',
         icon: 'fa-microchip'
       },
-
-      // 4. Classic ESP32 Series
       { 
         id: 'CYD-2432S028', 
         name: 'CYD (Cheap Yellow Display 2.8")', 
@@ -614,7 +756,7 @@
         category: 'esp32', 
         desc: 'Handheld mini wireless security auditing toolkit.',
         url: 'Bruce-Marauder-Mini.bin',
-        icon: 'fa-skull'
+        icon: 'fa-microchip'
       },
       { 
         id: 'Phantom_S024R', 
@@ -623,7 +765,7 @@
         category: 'esp32', 
         desc: '2.4 inch SPI ST7789 display instrument.',
         url: 'Bruce-Phantom_S024R.bin',
-        icon: 'fa-ghost'
+        icon: 'fa-wave-square'
       },
       { 
         id: 'xk404', 
@@ -636,6 +778,150 @@
       }
     ];
 
+    // ============================================================================
+    // WEBGL WATER CAUSTICS SHADER (Mặc định: Sóng Đại Dương - Crystal Aqua)
+    // ============================================================================
+    function WaterCausticsBackground({ theme = 'aqua', isFlashing = false }) {
+      const canvasRef = useRef(null);
+
+      useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) return;
+
+        const vertexShaderSrc = `
+          attribute vec2 a_position;
+          void main() {
+            gl_Position = vec4(a_position, 0.0, 1.0);
+          }
+        `;
+
+        const fragmentShaderSrc = `
+          precision highp float;
+          uniform vec2 u_resolution;
+          uniform float u_time;
+          uniform int u_theme;
+
+          #define TAU 6.28318530718
+          #define MAX_ITER 5
+
+          void main() {
+            float time = u_time * 0.45 + 23.0;
+            vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+            vec2 p = mod(uv * TAU, TAU) - 250.0;
+            vec2 i = vec2(p);
+            float c = 1.0;
+            float inten = 0.005;
+
+            for (int n = 0; n < MAX_ITER; n++) {
+              float t = time * (1.0 - (3.5 / float(n + 1)));
+              i = p + vec2(
+                cos(t - i.x) + sin(t + i.y),
+                sin(t - i.y) + cos(t + i.x)
+              );
+              c += 1.0 / length(vec2(
+                p.x / (sin(i.x + t) / inten),
+                p.y / (cos(i.y + t) / inten)
+              ));
+            }
+
+            c /= float(MAX_ITER);
+            c = 1.17 - pow(c, 1.4);
+            float caustic = pow(abs(c), 8.0);
+
+            vec3 baseColor;
+
+            if (u_theme == 1) {
+              // Crystal Aqua (Sóng Đại Dương - Mặc định)
+              baseColor = mix(vec3(0.72, 0.90, 0.97), vec3(0.58, 0.81, 0.96), uv.y);
+              vec3 col = baseColor + vec3(caustic * 0.88, caustic * 0.94, caustic * 1.0);
+              col -= (1.0 - clamp(c * 1.08, 0.0, 1.0)) * vec3(0.18, 0.22, 0.30);
+              gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+            } else if (u_theme == 0) {
+              // Pearl Daylight (Sóng Băng Ngọc)
+              baseColor = mix(vec3(0.84, 0.90, 0.98), vec3(0.88, 0.85, 0.97), uv.x * 0.7 + uv.y * 0.3);
+              vec3 col = mix(baseColor, vec3(1.0, 1.0, 1.0), clamp(caustic * 1.15, 0.0, 1.0));
+              col -= (1.0 - clamp(c * 1.1, 0.0, 1.0)) * vec3(0.14, 0.12, 0.22);
+              gl_FragColor = vec4(col, 1.0);
+            } else {
+              // Bruce Violet (Sóng Tím Bruce)
+              baseColor = vec3(0.18, 0.02, 0.32);
+              vec3 col = baseColor + vec3(caustic * 0.58, caustic * 0.28, caustic * 0.82);
+              gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+            }
+          }
+        `;
+
+        const compileShader = (type, source) => {
+          const s = gl.createShader(type);
+          gl.shaderSource(s, source);
+          gl.compileShader(s);
+          return s;
+        };
+
+        const vs = compileShader(gl.VERTEX_SHADER, vertexShaderSrc);
+        const fs = compileShader(gl.FRAGMENT_SHADER, fragmentShaderSrc);
+        const prog = gl.createProgram();
+        gl.attachShader(prog, vs);
+        gl.attachShader(prog, fs);
+        gl.linkProgram(prog);
+        gl.useProgram(prog);
+
+        const buf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(
+          gl.ARRAY_BUFFER,
+          new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
+          gl.STATIC_DRAW
+        );
+
+        const posLoc = gl.getAttribLocation(prog, 'a_position');
+        gl.enableVertexAttribArray(posLoc);
+        gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+        const resLoc = gl.getUniformLocation(prog, 'u_resolution');
+        const timeLoc = gl.getUniformLocation(prog, 'u_time');
+        const themeLoc = gl.getUniformLocation(prog, 'u_theme');
+
+        const resize = () => {
+          const scale = 0.75;
+          canvas.width = window.innerWidth * scale;
+          canvas.height = window.innerHeight * scale;
+          gl.viewport(0, 0, canvas.width, canvas.height);
+        };
+        resize();
+        window.addEventListener('resize', resize);
+
+        let animId;
+        let startTime = performance.now();
+
+        const render = (now) => {
+          const elapsed = ((now - startTime) / 1000.0) * (isFlashing ? 1.8 : 1.0);
+          gl.uniform2f(resLoc, canvas.width, canvas.height);
+          gl.uniform1f(timeLoc, elapsed);
+          const themeIdx = theme === 'pearl' ? 0 : theme === 'aqua' ? 1 : 2;
+          gl.uniform1i(themeLoc, themeIdx);
+
+          gl.drawArrays(gl.TRIANGLES, 0, 6);
+          animId = requestAnimationFrame(render);
+        };
+
+        animId = requestAnimationFrame(render);
+        return () => {
+          cancelAnimationFrame(animId);
+          window.removeEventListener('resize', resize);
+        };
+      }, [theme, isFlashing]);
+
+      return (
+        <canvas
+          ref={canvasRef}
+          className="fixed inset-0 w-full h-full pointer-events-none z-0 object-cover"
+        />
+      );
+    }
+
     function App() {
       const [isConnected, setIsConnected] = useState(false);
       const [baudRate, setBaudRate] = useState(921600);
@@ -646,10 +932,13 @@
       const [localFile, setLocalFile] = useState(null);
       const [flashOffset, setFlashOffset] = useState('0x0000');
       
+      // Mặc định là 'aqua' (Sóng Đại Dương) theo đúng hình ảnh yêu cầu
+      const [waterTheme, setWaterTheme] = useState('aqua');
+
       // GitHub live detection
       const [githubFiles, setGithubFiles] = useState({});
       const [isFetchingGithub, setIsFetchingGithub] = useState(false);
-      const [logoUrl, setLogoUrl] = useState(GITHUB_RAW_BASE + "IMG_4498.jpeg");
+      const [logoUrl] = useState(GITHUB_RAW_BASE + "IMG_4498.jpeg");
 
       // Chip info
       const [chipInfo, setChipInfo] = useState(null);
@@ -673,20 +962,51 @@
       const [showMorphGuide, setShowMorphGuide] = useState(false);
       const [guideTab, setGuideTab] = useState('controls');
 
-      // Quản lý Ngôn ngữ (Mặc định Tiếng Anh, cho phép chuyển đổi)
+      // Quản lý Ngôn ngữ
       const [lang, setLang] = useState(() => {
         const saved = localStorage.getItem('duscu_lang');
         if (saved === 'vi' || saved === 'en') return saved;
-        return 'en';
+        return 'vi';
       });
 
-      const t = I18N[lang] || I18N.en;
+      const t = I18N[lang] || I18N.vi;
 
       const toggleLang = () => {
         const nextLang = lang === 'vi' ? 'en' : 'vi';
         setLang(nextLang);
         localStorage.setItem('duscu_lang', nextLang);
       };
+
+      const cycleWaterTheme = () => {
+        setWaterTheme(prev => prev === 'aqua' ? 'pearl' : prev === 'pearl' ? 'bruce' : 'aqua');
+      };
+
+      // Refs cho thanh trượt Tab (Sliding Pill Indicator)
+      const tabContainerRef = useRef(null);
+      const tabRefs = {
+        sodo: useRef(null),
+        sys: useRef(null),
+        dev: useRef(null)
+      };
+      const [pillStyle, setPillStyle] = useState({ left: 4, width: 120 });
+
+      useEffect(() => {
+        const updatePill = () => {
+          const activeEl = tabRefs[logTab]?.current;
+          const containerEl = tabContainerRef.current;
+          if (activeEl && containerEl) {
+            const cRect = containerEl.getBoundingClientRect();
+            const aRect = activeEl.getBoundingClientRect();
+            setPillStyle({
+              left: aRect.left - cRect.left,
+              width: aRect.width
+            });
+          }
+        };
+        updatePill();
+        window.addEventListener('resize', updatePill);
+        return () => window.removeEventListener('resize', updatePill);
+      }, [logTab, lang]);
 
       const termRef = useRef(null);
       const portRef = useRef(null);
@@ -695,7 +1015,6 @@
       const activeTransportRef = useRef(null);
       const isMonitorRef = useRef(false);
 
-      // Tự động chuyển tab: Chưa kết nối -> Sơ đồ; Đã kết nối -> Nhật ký hệ thống
       useEffect(() => {
         if (isConnected) {
           setLogTab('sys');
@@ -704,7 +1023,6 @@
         }
       }, [isConnected]);
 
-      // Tải file sơ đồ chân tương ứng khi chọn board
       const loadSodo = async (boardId) => {
         if (!boardId) return;
         setIsLoadingSodo(true);
@@ -723,27 +1041,18 @@
         for (const cand of uniqueCandidates) {
           try {
             let res = await fetch(`./sodo/${cand}.json?t=${Date.now()}`);
-            if (res.ok) {
-              loaded = await res.json();
-              break;
-            }
+            if (res.ok) { loaded = await res.json(); break; }
             res = await fetch(`${GITHUB_RAW_BASE}sodo/${cand}.json?t=${Date.now()}`);
-            if (res.ok) {
-              loaded = await res.json();
-              break;
-            }
+            if (res.ok) { loaded = await res.json(); break; }
             res = await fetch(`https://raw.githubusercontent.com/thang96memeff/firmware-bruce/main/sodo/${cand}.json?t=${Date.now()}`);
-            if (res.ok) {
-              loaded = await res.json();
-              break;
-            }
+            if (res.ok) { loaded = await res.json(); break; }
           } catch(e) {}
         }
 
         if (loaded) {
           setSodoData(loaded);
         } else {
-          setSodoError(`Chưa có file sơ đồ sodo/${boardId}.json (Đang cập nhật bởi cụm máy chủ)`);
+          setSodoError(`sodo/${boardId}.json`);
         }
         setIsLoadingSodo(false);
       };
@@ -751,45 +1060,32 @@
       useEffect(() => {
         loadSodo(selectedBoardId);
       }, [selectedBoardId]);
-      const logTabRef = useRef(logTab);
-      useEffect(() => { logTabRef.current = logTab; }, [logTab]);
+
       const monitorBaudRef = useRef(monitorBaud);
       useEffect(() => { monitorBaudRef.current = monitorBaud; }, [monitorBaud]);
 
-      // Đảm bảo đóng và giải phóng hoàn toàn cổng Serial
       const releaseAndClosePort = async (port) => {
         if (!port) return;
         if (activeTransportRef.current) {
-          try {
-            await activeTransportRef.current.disconnect();
-          } catch(e) {}
+          try { await activeTransportRef.current.disconnect(); } catch(e) {}
           activeTransportRef.current = null;
         }
         if (transportRef.current) {
-          try {
-            await transportRef.current.disconnect();
-          } catch(e) {}
+          try { await transportRef.current.disconnect(); } catch(e) {}
           transportRef.current = null;
         }
         if (readerRef.current) {
-          try {
-            await readerRef.current.cancel();
-          } catch(e) {}
-          try {
-            readerRef.current.releaseLock();
-          } catch(e) {}
+          try { await readerRef.current.cancel(); } catch(e) {}
+          try { readerRef.current.releaseLock(); } catch(e) {}
           readerRef.current = null;
         }
         try {
           if (port.readable || port.writable) {
             await port.close();
           }
-        } catch(e) {
-          console.warn("close port warning:", e);
-        }
+        } catch(e) {}
       };
 
-      // Log utilities
       const logSys = (msg, type = 'info') => {
         setSysLogs(prev => [...prev, { time: new Date().toLocaleTimeString('en-GB'), msg, type }]);
       };
@@ -797,7 +1093,6 @@
         setDevLogs(prev => [...prev, { time: new Date().toLocaleTimeString('en-GB'), msg }]);
       };
 
-      // Check GitHub repo contents on mount
       const fetchGithubContents = async () => {
         setIsFetchingGithub(true);
         try {
@@ -830,41 +1125,15 @@
         }
       };
 
-      // Tự động nhận diện IP người dùng để đặt Tiếng Việt hoặc Tiếng Anh
       useEffect(() => {
-        const detectUserCountry = async () => {
-          try {
-            const res = await fetch('https://api.country.is', { signal: AbortSignal.timeout(3500) });
-            if (res.ok) {
-              const data = await res.json();
-              const autoLang = (data.country === 'VN') ? 'vi' : 'en';
-              setLang(autoLang);
-              logSys(`[IP-GEO] Country: ${data.country || 'GLOBAL'} | Language: ${autoLang === 'vi' ? 'Tiếng Việt' : 'English'}`, 'info');
-              return;
-            }
-          } catch(e1) {
-            try {
-              const res2 = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(3500) });
-              if (res2.ok) {
-                const data2 = await res2.json();
-                const autoLang = (data2.country_code === 'VN') ? 'vi' : 'en';
-                setLang(autoLang);
-                logSys(`[IP-GEO] Country: ${data2.country_code || 'GLOBAL'} | Language: ${autoLang === 'vi' ? 'Tiếng Việt' : 'English'}`, 'info');
-                return;
-              }
-            } catch(e2) {}
-          }
-        };
-
         logSys(t.logInit, "info");
-        detectUserCountry();
         fetchGithubContents();
       }, []);
 
       useEffect(() => {
         const handleUsbDisconnect = (e) => {
           if (portRef.current && e.target && e.target !== portRef.current) return;
-          logSys("[PORT] Thiết bị đã ngắt kết nối.", "warning");
+          logSys("[USB] Thiết bị đã ngắt kết nối.", "warning");
           isMonitorRef.current = false;
           setIsMonitor(false);
           if (readerRef.current) {
@@ -876,8 +1145,8 @@
           setChipInfo(null);
         };
 
-        const handleUsbConnect = (e) => {
-          logSys("[PORT] Phát hiện thiết bị vừa cắm vào cổng USB. Bấm 'KẾT NỐI THIẾT BỊ' để thao tác.", "info");
+        const handleUsbConnect = () => {
+          logSys("[USB] Phát hiện thiết bị USB mới. Bấm 'Kết nối Cổng USB' để bắt đầu.", "info");
         };
 
         if ('serial' in navigator) {
@@ -894,7 +1163,6 @@
         if (termRef.current) termRef.current.scrollTop = termRef.current.scrollHeight;
       }, [sysLogs, devLogs, logTab]);
 
-      // Tìm và kết nối cổng COM gần nhất (nếu có cấp quyền trước) hoặc yêu cầu chọn cổng
       const ensurePortConnected = async (promptUser = false) => {
         if (!('serial' in navigator)) {
           throw new Error(t.logNoWebSerial);
@@ -904,7 +1172,7 @@
           try {
             const ports = await navigator.serial.getPorts();
             if (ports && ports.length > 0) {
-              port = ports[ports.length - 1]; // Chọn cổng gần nhất đã cấp quyền
+              port = ports[ports.length - 1];
             }
           } catch(e) {}
         }
@@ -918,22 +1186,16 @@
         return port;
       };
 
-      // Serial Connection Logic
       const connectPort = async () => {
         try {
-          if (!('serial' in navigator)) {
-            throw new Error(t.logNoWebSerial);
-          }
-          if (!window.ESP_TOOLS) {
-            throw new Error(t.logNoEsptool);
-          }
+          if (!('serial' in navigator)) throw new Error(t.logNoWebSerial);
+          if (!window.ESP_TOOLS) throw new Error(t.logNoEsptool);
           const port = await ensurePortConnected(true);
           await releaseAndClosePort(port);
           portRef.current = port;
           setIsConnected(true);
           logSys(t.logPortSuccess, "success");
 
-          // Tự động nhận diện Chip
           let probeTransport = null;
           try {
             probeTransport = new window.ESP_TOOLS.Transport(port);
@@ -949,7 +1211,7 @@
             setChipInfo({ chip: chipDesc, mac: macStr });
             logSys(`[CHIP] Model: ${chipDesc} | MAC: ${macStr}`, "success");
           } catch(e) {
-            console.warn("Probe chip warning:", e);
+            console.warn("Probe warning:", e);
           } finally {
             if (probeTransport) {
               await probeTransport.disconnect().catch(()=>{});
@@ -958,7 +1220,6 @@
             }
             await releaseAndClosePort(port);
           }
-
         } catch (err) {
           logSys(t.logPortErr(err.message), "error");
         }
@@ -975,36 +1236,27 @@
         logSys(t.logPortDisconnect, "warning");
       };
 
-      // Serial Monitor Logic - Tự kết nối COM gần nhất, tự khôi phục khi cắm lại, hỗ trợ DTR kích hoạt ESP32-S3 & loop chống rớt
       const startMonitor = async (targetPort = null) => {
         if (isFlashing || isErasingOnly) return;
-                try {
+        try {
           let port = targetPort || portRef.current;
-          if (!port) {
-            port = await ensurePortConnected(false);
-          }
+          if (!port) port = await ensurePortConnected(false);
           if (!port) return;
 
-          // Mở port nếu chưa mở
           const baud = parseInt(monitorBaudRef.current) || 115200;
           try {
             if (!port.readable && !port.writable) {
               await port.open({ baudRate: baud });
             }
           } catch(openErr) {
-            // Nếu port đang bận hoặc cần refresh baud, giải phóng và mở lại
             await releaseAndClosePort(port);
             await new Promise(r => setTimeout(r, 120));
             await port.open({ baudRate: baud });
           }
 
-          // Tín hiệu phần cứng: DTR = true (BẮT BUỘC để ESP32-S3 USB CDC bắt đầu xuất dữ liệu Serial)
-          // RTS = false (đảm bảo chân EN ở mức HIGH, chip chạy bình thường không bị kẹt trong bootloader)
           try {
             await port.setSignals({ dataTerminalReady: true, requestToSend: false });
-          } catch(sigErr) {
-            console.warn("setSignals warning:", sigErr);
-          }
+          } catch(sigErr) {}
 
           isMonitorRef.current = true;
           setIsMonitor(true);
@@ -1014,8 +1266,6 @@
           const decoder = new TextDecoder();
           let partialLine = "";
 
-          // Vòng lặp đọc 2 tầng theo chuẩn Spacehuhn / Web Serial:
-          // Nếu gặp lỗi framing/parity tạm thời, tự động re-acquire reader mà không bao giờ đóng port hay mất icon
           while (isMonitorRef.current && (port.readable || portRef.current?.readable)) {
             const activePort = portRef.current || port;
             if (!activePort || !activePort.readable) break;
@@ -1030,7 +1280,7 @@
                 if (value) {
                   partialLine += decoder.decode(value, { stream: true });
                   const lines = partialLine.split(/\r?\n/);
-                  partialLine = lines.pop(); // Giữ lại phần chưa có ký tự xuống dòng
+                  partialLine = lines.pop();
                   for (const line of lines) {
                     if (line.length > 0) logDev(line);
                   }
@@ -1038,7 +1288,6 @@
               }
             } catch (readErr) {
               if (isMonitorRef.current) {
-                console.warn("Serial glitch recovered:", readErr);
                 await new Promise(r => setTimeout(r, 80));
               }
             } finally {
@@ -1055,9 +1304,7 @@
         }
       };
 
-      const stopMonitor = async (resetAutoResume = true) => {
-        if (resetAutoResume) {
-                  }
+      const stopMonitor = async () => {
         isMonitorRef.current = false;
         setIsMonitor(false);
         if (readerRef.current) {
@@ -1075,7 +1322,6 @@
         }
       };
 
-      // Full Chip Erase Only
       const handleEraseOnly = async () => {
         if (!isConnected || !portRef.current) return;
         if (!confirm(t.eraseConfirm)) return;
@@ -1102,19 +1348,14 @@
           await esploader.eraseFlash();
           logSys(t.logEraseSuccess, "success");
           try {
-            if (typeof esploader.after === 'function') {
-              await esploader.after("hard_reset");
-            } else if (typeof esploader.hardReset === 'function') {
-              await esploader.hardReset();
-            }
+            if (typeof esploader.after === 'function') await esploader.after("hard_reset");
+            else if (typeof esploader.hardReset === 'function') await esploader.hardReset();
           } catch(e) {}
         } catch (err) {
           logSys(t.logEraseFail(err.message), "error");
         } finally {
           if (eraseTransport) {
-            try {
-              await eraseTransport.disconnect();
-            } catch(e) {}
+            try { await eraseTransport.disconnect(); } catch(e) {}
             eraseTransport = null;
             activeTransportRef.current = null;
           }
@@ -1123,7 +1364,6 @@
         }
       };
 
-      // Flash Logic
       const handleFlash = async () => {
         const board = MASTER_BOARDS.find(b => b.id === selectedBoardId);
 
@@ -1131,7 +1371,7 @@
           return logSys(t.logNoTarget, "error");
         }
         if (!portRef.current) {
-          return logSys(t.logPortErr("Chưa kết nối cổng Serial!"), "error");
+          return logSys(t.logPortErr("Chưa kết nối cổng USB!"), "error");
         }
 
         setIsFlashing(true);
@@ -1167,7 +1407,7 @@
           }
 
           if (!fwData || (fwData.length === 0 && fwData.byteLength === 0)) {
-            throw new Error("Không thể tải nội dung firmware (Dữ liệu rỗng hoặc sai định dạng).");
+            throw new Error("Dữ liệu firmware trống hoặc không hợp lệ.");
           }
 
           logSys(t.logSyncBootloader(baudRate), "info");
@@ -1203,19 +1443,14 @@
           logSys("----------------------------------------", "success");
 
           try {
-            if (typeof esploader.after === 'function') {
-              await esploader.after("hard_reset");
-            } else if (typeof esploader.hardReset === 'function') {
-              await esploader.hardReset();
-            }
+            if (typeof esploader.after === 'function') await esploader.after("hard_reset");
+            else if (typeof esploader.hardReset === 'function') await esploader.hardReset();
           } catch(e) {}
         } catch (err) {
           logSys(t.logFlashFail(err.message), "error");
         } finally {
           if (flashTransport) {
-            try {
-              await flashTransport.disconnect();
-            } catch(e) {}
+            try { await flashTransport.disconnect(); } catch(e) {}
             flashTransport = null;
             activeTransportRef.current = null;
           }
@@ -1225,7 +1460,6 @@
         }
       };
 
-      // Filtered Board List
       const filteredBoards = useMemo(() => {
         if (selectedCategory === 'all') return MASTER_BOARDS.filter(b => !b.isHero);
         return MASTER_BOARDS.filter(b => b.category === selectedCategory && !b.isHero);
@@ -1235,479 +1469,481 @@
       const isLauncherSelected = selectedBoardId === 'Launcher-xingzhi-cube-s3' && !localFile;
 
       return (
-        <div className="flex-1 flex flex-col min-h-0 bg-zinc-950 text-zinc-300 font-sans">
-          
-          {/* HEADER (Industrial Instrument Console) */}
-          <header className="flex items-center justify-between px-5 py-3 border-b border-zinc-800 bg-zinc-900 shrink-0 z-20">
+        <div className="flex-1 flex flex-col min-h-0 relative p-2.5 sm:p-4 gap-3">
+          {/* NỀN SÓNG NƯỚC TỤ SÁNG (MẶC ĐỊNH: SÓNG ĐẠI DƯƠNG) */}
+          <WaterCausticsBackground theme={waterTheme} isFlashing={isFlashing} />
+
+          {/* THANH FLOATING HEADER TRONG SUỐT */}
+          <header className="liquid-shell rounded-full px-4 py-2.5 flex items-center justify-between shrink-0 z-20">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden">
-                {logoUrl ? <img src={logoUrl} className="w-full h-full object-cover" alt="logo" /> : <i className="fa-solid fa-microchip text-amber-500 text-sm"></i>}
+              <div className="w-10 h-10 rounded-full bg-white/45 border border-white/80 shadow-sm flex items-center justify-center overflow-hidden p-0.5">
+                {logoUrl ? (
+                  <img src={logoUrl} className="w-full h-full object-cover rounded-full" alt="logo" />
+                ) : (
+                  <i className="fa-solid fa-water text-blue-600 text-sm"></i>
+                )}
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-sm font-extrabold tracking-wider text-zinc-100 font-mono">DUSCU FLASHER</h1>
-                  <span className="text-[10px] bg-zinc-800 text-amber-400 border border-zinc-700 px-1.5 py-0.5 rounded font-mono font-bold">OPERATE v2.5</span>
+                  <h1 className="text-sm sm:text-base font-extrabold tracking-tight text-slate-900">
+                    Duscu Flasher
+                  </h1>
                 </div>
-                <p className="text-[11px] text-zinc-500 font-mono">{t.appSub}</p>
+                <p className="text-[11px] text-slate-700 font-medium hidden sm:block">
+                  {t.appSub}
+                </p>
               </div>
             </div>
 
+            {/* Cụm nút Pill Bo Tròn Nổi 3D trên Header */}
             <div className="flex items-center gap-2">
-              {/* GitHub Repo Button */}
-              <a 
-                href="https://github.com/thang96memeff/firmware-bruce" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                title="GitHub: thang96memeff/firmware-bruce"
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 hover:border-amber-500/60 text-xs font-mono text-zinc-300 hover:text-amber-400 transition-colors">
-                <i className="fa-brands fa-github text-amber-400 text-sm"></i>
-                <span className="font-bold">GitHub</span>
-              </a>
+              <button
+                onClick={cycleWaterTheme}
+                title="Đổi màu nền sóng nước (Sóng Đại Dương / Sóng Băng Ngọc / Sóng Tím Bruce)"
+                className="liquid-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5">
+                <i className="fa-solid fa-droplet text-blue-600"></i>
+                <span className="hidden md:inline">
+                  {waterTheme === 'aqua' ? 'Sóng Đại Dương' : waterTheme === 'pearl' ? 'Sóng Băng Ngọc' : 'Sóng Tím Bruce'}
+                </span>
+              </button>
 
-              {/* Morph S3 User Guide Button */}
               <button 
                 onClick={() => setShowMorphGuide(true)}
-                title={t.morphGuideTitle}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-rose-500/15 hover:from-amber-500/30 hover:to-orange-500/30 border border-amber-500/40 text-xs font-mono text-amber-300 font-bold transition-all shadow-sm">
-                <i className="fa-solid fa-book-open text-amber-400"></i>
+                className="liquid-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5 text-indigo-800">
+                <i className="fa-solid fa-book-open text-indigo-600"></i>
                 <span className="hidden sm:inline">{t.morphGuideBtn}</span>
-                <span className="sm:hidden">MORPH</span>
               </button>
 
               <button 
                 onClick={fetchGithubContents} 
                 disabled={isFetchingGithub}
                 title={t.syncTooltip}
-                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 text-xs font-mono text-zinc-300 transition-colors">
-                <i className={`fa-brands fa-github ${isFetchingGithub ? 'fa-spin text-amber-400' : 'text-zinc-400'}`}></i>
+                className="hidden lg:flex liquid-btn px-3.5 py-1.5 text-xs items-center gap-1.5">
+                <i className={`fa-solid fa-arrows-rotate text-slate-700 ${isFetchingGithub ? 'fa-spin text-blue-600' : ''}`}></i>
                 <span>{t.syncBtn}</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
               </button>
 
-              {/* Language Switcher Pill */}
+              <a 
+                href="https://github.com/thang96memeff/firmware-bruce" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="liquid-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5">
+                <i className="fa-brands fa-github text-slate-800 text-sm"></i>
+                <span className="hidden md:inline">GitHub</span>
+              </a>
+
               <button 
                 onClick={toggleLang}
-                title={lang === 'vi' ? 'Switch to English (Chuyển sang Tiếng Anh)' : 'Chuyển sang Tiếng Việt (Switch to Vietnamese)'}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-zinc-800 hover:bg-zinc-750 border border-zinc-700 text-xs font-mono text-zinc-300 transition-colors">
-                <i className="fa-solid fa-globe text-amber-400 text-[11px]"></i>
-                <span className="font-bold">{lang === 'vi' ? 'VI' : 'EN'}</span>
+                className="liquid-btn w-9 h-8 text-xs flex items-center justify-center font-bold text-slate-800">
+                {lang.toUpperCase()}
               </button>
             </div>
           </header>
 
-          {/* MAIN OPERATE WORKSPACE */}
-          <main className="flex-1 overflow-hidden flex flex-col lg:flex-row">
+          {/* KHÔNG GIAN LÀM VIỆC CHÍNH (2 CỘT KÍNH TRONG SUỐT) */}
+          <main className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-3.5 min-h-0 z-10">
             
-            {/* LEFT CONTROL PANEL (450px) */}
-            <div className="w-full lg:w-[450px] border-r border-zinc-800 flex flex-col bg-zinc-900/60 overflow-y-auto custom-scrollbar">
-              <div className="p-4 space-y-4">
-                
-                {/* PANEL 1: SERIAL CONNECTION */}
-                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="text-amber-500">[01]</span> {t.serialSec.replace('[01] ', '')}
+            {/* CỘT TRÁI: BẢNG ĐIỀU KHIỂN NẠP FIRMWARE (445px) */}
+            <div className="w-full lg:w-[445px] liquid-shell rounded-[32px] flex flex-col overflow-y-auto custom-scrollbar p-4 space-y-3.5">
+              
+              {/* THẺ 1: KẾT NỐI THIẾT BỊ (HIỆU ỨNG KÍNH MỜ XUYÊN THẤU) */}
+              <div className="liquid-card p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-700 flex items-center justify-center text-[11px]">
+                      <i className="fa-solid fa-usb"></i>
                     </span>
-                    {chipInfo && (
-                      <span className="text-[10px] bg-zinc-800 text-emerald-400 border border-zinc-700 px-2 py-0.5 rounded font-mono">
-                        {chipInfo.chip}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="flex gap-2">
-                    {!isConnected ? (
-                      <button 
-                        onClick={connectPort}
-                        className="flex-1 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold py-2 px-3 rounded text-xs font-mono tracking-wide transition-colors flex items-center justify-center gap-1.5">
-                        <i className="fa-solid fa-plug text-[11px]"></i> {t.connectBtn}
-                      </button>
-                    ) : (
-                      <button 
-                        onClick={disconnectPort} 
-                        disabled={isFlashing || isErasingOnly}
-                        className="flex-1 bg-zinc-800 hover:bg-zinc-750 text-rose-400 border border-zinc-700 font-bold py-2 px-3 rounded text-xs font-mono tracking-wide transition-colors disabled:opacity-50 flex items-center justify-center gap-1.5">
-                        <i className="fa-solid fa-power-off text-[11px]"></i> {t.disconnectBtn}
-                      </button>
-                    )}
-
-                    <select 
-                      value={baudRate} 
-                      onChange={e => setBaudRate(e.target.value)} 
-                      disabled={isFlashing || isErasingOnly}
-                      title={t.baudTooltip}
-                      className="w-28 bg-zinc-950 border border-zinc-800 rounded px-2 text-xs font-mono text-zinc-300 outline-none focus:border-amber-500 disabled:opacity-50">
-                      <option value="115200">115200</option>
-                      <option value="460800">460800</option>
-                      <option value="921600">921600</option>
-                      <option value="1500000">1500000</option>
-                      <option value="2000000">2000000</option>
-                    </select>
-                  </div>
+                    {t.serialSec}
+                  </span>
+                  <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
+                    isConnected 
+                      ? 'bg-emerald-500/20 text-emerald-800 border-emerald-400/60' 
+                      : 'bg-white/35 text-slate-700 border-white/70'
+                  }`}>
+                    {chipInfo ? chipInfo.chip : (isConnected ? t.portOnline : t.portOffline)}
+                  </span>
                 </div>
 
-                {/* PANEL 2: TARGET HARDWARE (VIP HEROES + ALL BOARDS) */}
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-mono font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="text-amber-500">[02]</span> {t.hardwareSec.replace('[02] ', '')}
-                    </span>
-                    <span className="text-[10px] font-mono text-zinc-500">{MASTER_BOARDS.length} {t.profilesCount}</span>
-                  </div>
-
-                  {/* VIP HERO SPOTLIGHT CARDS */}
-                  <div className="space-y-2">
-                    {/* VIP MORPH S3 HERO (RAINBOW SHIMMER BORDER) */}
-                    <div 
-                      onClick={() => { setSelectedBoardId('Morph-s3'); setLocalFile(null); }}
-                      className={`cursor-pointer transition-all ${isMorphSelected ? 'morph-rainbow-border' : 'p-[2px] rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900'}`}>
-                      <div className="hero-inner-card p-2.5 flex items-center justify-between gap-2.5">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-700/80 flex items-center justify-center text-amber-400 text-sm shrink-0">
-                            <i className="fa-solid fa-wand-magic-sparkles animate-pulse"></i>
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              <span className="text-xs font-bold font-mono text-zinc-100 tracking-wider truncate">MORPH S3 FLAGSHIP</span>
-                              <span className="text-[9px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-1 rounded">VIP</span>
-                              <button
-                                onClick={(e) => { e.stopPropagation(); setShowMorphGuide(true); }}
-                                className="text-[9px] font-mono font-bold bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 border border-amber-500/40 px-1.5 py-0.5 rounded transition-colors flex items-center gap-1 shadow-sm"
-                                title={t.morphGuideTitle}>
-                                <i className="fa-solid fa-book-open text-[8px]"></i>
-                                <span>{t.morphGuideBadge}</span>
-                              </button>
-                            </div>
-                            <p className="text-[11px] font-mono text-zinc-400 truncate">{t.morphDesc}</p>
-                          </div>
-                        </div>
-
-                        <div className="text-right shrink-0 font-mono">
-                          {githubFiles['Bruce-Morph-s3.bin'] ? (
-                            <span className="text-[10px] text-emerald-400 bg-zinc-900 border border-emerald-500/30 px-1.5 py-0.5 rounded">
-                              {(githubFiles['Bruce-Morph-s3.bin'].size / 1048576).toFixed(2)} MB
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded">
-                              {t.readyBadge}
-                            </span>
-                          )}
-                          <div className="mt-0.5 text-[10px] text-amber-400 font-bold">
-                            {isMorphSelected ? t.activeBtn : t.selectBtn}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* HERO XINGZHI CUBE S3 LAUNCHER (CYBER SHIMMER BORDER) */}
-                    <div 
-                      onClick={() => { setSelectedBoardId('Launcher-xingzhi-cube-s3'); setLocalFile(null); }}
-                      className={`cursor-pointer transition-all ${isLauncherSelected ? 'launcher-cyber-border' : 'p-[2px] rounded-lg border border-zinc-800 hover:border-zinc-700 bg-zinc-900'}`}>
-                      <div className="hero-inner-card p-2.5 flex items-center justify-between gap-2.5">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded bg-zinc-900 border border-zinc-700/80 flex items-center justify-center text-cyan-400 text-sm shrink-0">
-                            <i className="fa-solid fa-cubes-stacked animate-pulse"></i>
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-bold font-mono text-zinc-100 tracking-wider truncate">XINGZHI CUBE LAUNCHER</span>
-                              <span className="text-[9px] font-mono font-bold bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-1 rounded">HERO</span>
-                            </div>
-                            <p className="text-[11px] font-mono text-zinc-400 truncate">{t.launcherDesc}</p>
-                          </div>
-                        </div>
-
-                        <div className="text-right shrink-0 font-mono">
-                          {githubFiles['Launcher-xingzhi-cube-s3.bin'] ? (
-                            <span className="text-[10px] text-emerald-400 bg-zinc-900 border border-emerald-500/30 px-1.5 py-0.5 rounded">
-                              {(githubFiles['Launcher-xingzhi-cube-s3.bin'].size / 1048576).toFixed(2)} MB
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-zinc-400 bg-zinc-900 border border-zinc-800 px-1.5 py-0.5 rounded">
-                              {t.readyBadge}
-                            </span>
-                          )}
-                          <div className="mt-0.5 text-[10px] text-cyan-400 font-bold">
-                            {isLauncherSelected ? t.activeBtn : t.selectBtn}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* CATEGORY SWITCHERS */}
-                  <div className="flex gap-1 overflow-x-auto pb-0.5 custom-scrollbar font-mono text-[11px]">
-                    {[
-                      { id: 'all', label: t.catAll },
-                      { id: 's3', label: t.catS3 },
-                      { id: 'c5', label: t.catC5 },
-                      { id: 'esp32', label: t.catEsp32 }
-                    ].map(cat => (
-                      <button
-                        key={cat.id}
-                        onClick={() => setSelectedCategory(cat.id)}
-                        className={`px-2 py-1 rounded font-medium whitespace-nowrap transition-colors border ${selectedCategory === cat.id ? 'bg-zinc-800 text-zinc-100 border-zinc-700' : 'bg-zinc-950 text-zinc-500 border-zinc-850 hover:text-zinc-300'}`}>
-                        {cat.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* BOARD SELECTOR DROPDOWN & INFO */}
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 space-y-2">
-                    <select 
-                      value={selectedBoardId} 
-                      onChange={e => { setSelectedBoardId(e.target.value); setLocalFile(null); }}
-                      disabled={isFlashing || isErasingOnly}
-                      className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-xs font-mono text-zinc-200 outline-none focus:border-amber-500">
-                      <optgroup label={t.vipGroup}>
-                        {MASTER_BOARDS.filter(b => b.isHero).map(b => (
-                          <option key={b.id} value={b.id}>
-                            [{b.chip}] ★ {b.name} {githubFiles[b.url] ? `[${(githubFiles[b.url].size/1048576).toFixed(2)} MB]` : ''}
-                          </option>
-                        ))}
-                      </optgroup>
-                      <optgroup label={t.standardGroup}>
-                        {filteredBoards.map(b => (
-                          <option key={b.id} value={b.id}>
-                            [{b.chip}] {b.name} {githubFiles[b.url] ? `[${(githubFiles[b.url].size/1048576).toFixed(2)} MB]` : ''}
-                          </option>
-                        ))}
-                      </optgroup>
-                    </select>
-
-                    {/* Selected board technical details */}
-                    {(() => {
-                      const b = MASTER_BOARDS.find(item => item.id === selectedBoardId);
-                      if (!b) return null;
-                      const hasCloud = Boolean(githubFiles[b.url]);
-                      return (
-                        <div className="bg-zinc-950 rounded p-2 border border-zinc-800/60 flex items-start gap-2">
-                          <i className={`fa-solid ${b.icon || 'fa-microchip'} text-zinc-400 mt-0.5 text-xs`}></i>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-1 font-mono">
-                              <span className="text-[11px] font-bold text-zinc-200 truncate">{b.name}</span>
-                              {hasCloud ? (
-                                <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-1 rounded border border-emerald-500/20">
-                                  {t.cloudReadyBadge}
-                                </span>
-                              ) : (
-                                <span className="text-[10px] text-zinc-500 bg-zinc-900 px-1 rounded border border-zinc-800">
-                                  {t.customLocalBadge}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[11px] text-zinc-400 mt-0.5 leading-snug">{b.desc}</p>
-                            {b.id === 'Morph-s3' && (
-                              <div className="mt-3 pt-2.5 border-t border-zinc-800 space-y-2">
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="text-[11px] font-mono font-bold text-amber-400 flex items-center gap-1.5">
-                                    <i className="fa-solid fa-diagram-project text-amber-400"></i>
-                                    <span>{lang === 'vi' ? 'QUY TRÌNH NẠP & CẤU HÌNH MORPH S3:' : 'MORPH S3 SETUP WORKFLOW:'}</span>
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => setShowMorphGuide(true)}
-                                    className="text-[10px] font-mono font-bold text-amber-300 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 px-2 py-0.5 rounded transition-colors shrink-0 shadow-sm flex items-center gap-1">
-                                    <i className="fa-solid fa-book-open"></i>
-                                    {t.morphGuideCardHint}
-                                  </button>
-                                </div>
-
-                                {/* 4 Steps Flow */}
-                                <div className="grid grid-cols-1 sm:grid-cols-4 gap-1.5 text-[10px] font-mono">
-                                  <div className="bg-zinc-950/80 p-2 rounded border border-zinc-800/80">
-                                    <div className="text-emerald-400 font-bold flex items-center gap-1 mb-0.5">
-                                      <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[9px]">1</span>
-                                      <span>{lang === 'vi' ? 'NẠP CODE' : 'FLASH CODE'}</span>
-                                    </div>
-                                    <p className="text-zinc-400 text-[9.5px] leading-tight">
-                                      {lang === 'vi' ? 'Bấm Nạp Firmware trực tiếp trên web vào Morph S3' : 'Flash firmware directly via Web Flasher'}
-                                    </p>
-                                  </div>
-
-                                  <div className="bg-zinc-950/80 p-2 rounded border border-zinc-800/80">
-                                    <div className="text-cyan-400 font-bold flex items-center gap-1 mb-0.5">
-                                      <span className="w-4 h-4 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-[9px]">2</span>
-                                      <span>{lang === 'vi' ? 'KẾT NỐI WIFI' : 'CONNECT WIFI'}</span>
-                                    </div>
-                                    <p className="text-zinc-400 text-[9.5px] leading-tight">
-                                      {lang === 'vi' ? 'Bắt Wi-Fi "Morph-Config" (KHÔNG MẬT KHẨU)' : 'Connect "Morph-Config" AP (NO PASSWORD)'}
-                                    </p>
-                                  </div>
-
-                                  <div className="bg-zinc-950/80 p-2 rounded border border-zinc-800/80">
-                                    <div className="text-amber-400 font-bold flex items-center gap-1 mb-0.5">
-                                      <span className="w-4 h-4 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-[9px]">3</span>
-                                      <span>{lang === 'vi' ? 'TÙY CHỈNH' : 'CONFIGURE'}</span>
-                                    </div>
-                                    <p className="text-zinc-400 text-[9.5px] leading-tight">
-                                      {lang === 'vi' ? 'Vào 192.168.4.1 chỉnh phím, xoay màn hình, chân module' : 'Open 192.168.4.1 to configure buttons, screen & pins'}
-                                    </p>
-                                  </div>
-
-                                  <div className="bg-zinc-950/80 p-2 rounded border border-zinc-800/80">
-                                    <div className="text-purple-400 font-bold flex items-center gap-1 mb-0.5">
-                                      <span className="w-4 h-4 rounded-full bg-purple-500/20 text-purple-400 flex items-center justify-center text-[9px]">4</span>
-                                      <span>{lang === 'vi' ? 'LƯU CẤU HÌNH' : 'SAVE & REBOOT'}</span>
-                                    </div>
-                                    <p className="text-zinc-400 text-[9.5px] leading-tight">
-                                      {lang === 'vi' ? 'Bấm Save & Reboot để lưu vĩnh viễn vào chip' : 'Click Save & Reboot to save configuration'}
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-
-                  {/* LOCAL FILE UPLOAD (OPTIONAL) */}
-                  <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-2.5 space-y-2">
-                    <div className="flex items-center justify-between text-[11px] font-mono">
-                      <span className="text-zinc-400 font-bold flex items-center gap-1.5">
-                        <i className="fa-solid fa-file-code text-amber-500"></i> {t.externalTitle}
-                      </span>
-                      <div className="flex items-center gap-1 text-zinc-500">
-                        <span>{t.offsetLabel}</span>
-                        <input 
-                          type="text" 
-                          value={flashOffset} 
-                          onChange={e => setFlashOffset(e.target.value)} 
-                          disabled={isFlashing}
-                          className="w-16 bg-zinc-950 border border-zinc-800 rounded px-1.5 py-0.5 text-center text-amber-400 outline-none focus:border-amber-500" 
-                        />
-                      </div>
-                    </div>
-
-                    <label className="border border-dashed border-zinc-800 hover:border-zinc-700 rounded p-2.5 flex flex-col items-center justify-center cursor-pointer transition-colors bg-zinc-950 group">
-                      <input 
-                        type="file" 
-                        accept=".bin" 
-                        onChange={e => { if (e.target.files[0]) { setLocalFile(e.target.files[0]); } }}
-                        disabled={isFlashing || isErasingOnly}
-                        className="hidden" 
-                      />
-                      {localFile ? (
-                        <div className="text-center font-mono">
-                          <div className="text-xs font-bold text-zinc-200 truncate max-w-[320px]">{localFile.name}</div>
-                          <div className="text-[10px] text-emerald-400 mt-0.5">{(localFile.size / 1048576).toFixed(2)} MB // {t.localLoaded}</div>
-                        </div>
-                      ) : (
-                        <div className="text-center text-zinc-500 group-hover:text-zinc-400 font-mono text-[11px]">
-                          <i className="fa-solid fa-arrow-up-from-bracket mb-1 block"></i>
-                          <span>{t.dropHint}</span>
-                        </div>
-                      )}
-                    </label>
-                    {localFile && (
-                      <button 
-                        onClick={() => setLocalFile(null)} 
-                        className="text-[10px] font-mono text-rose-400 hover:underline block text-center w-full">
-                        {t.deselectFile}
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                {/* PANEL 3: FLASH & ERASE EXECUTION */}
-                <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-3 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2 cursor-pointer font-mono">
-                      <input 
-                        type="checkbox" 
-                        checked={eraseFlash} 
-                        onChange={e => setEraseFlash(e.target.checked)} 
-                        disabled={isFlashing || isErasingOnly} 
-                        className="w-3.5 h-3.5 rounded border-zinc-700 bg-zinc-950 text-amber-500 focus:ring-0 cursor-pointer" 
-                      />
-                      <span className="text-xs text-zinc-300 select-none">
-                        {t.eraseBefore}
-                      </span>
-                    </label>
-
-                    {/* ERASE ONLY BUTTON */}
-                    <button
-                      onClick={handleEraseOnly}
-                      disabled={!isConnected || isFlashing || isErasingOnly}
-                      title="Full Chip Erase"
-                      className="text-[10px] font-mono bg-zinc-950 hover:bg-zinc-850 text-rose-400 border border-rose-500/30 px-2 py-1 rounded transition-colors disabled:opacity-40">
-                      <i className="fa-solid fa-trash-can mr-1"></i>{t.eraseAllBtn}
+                <div className="flex gap-2">
+                  {!isConnected ? (
+                    <button 
+                      onClick={connectPort}
+                      className="flex-1 liquid-btn-primary py-2.5 px-4 text-xs flex items-center justify-center gap-2">
+                      <i className="fa-solid fa-plug text-[11px]"></i>
+                      <span>{t.connectBtn}</span>
                     </button>
+                  ) : (
+                    <button 
+                      onClick={disconnectPort} 
+                      disabled={isFlashing || isErasingOnly}
+                      className="flex-1 liquid-btn py-2.5 px-4 text-xs text-rose-600 font-bold flex items-center justify-center gap-2 disabled:opacity-50">
+                      <i className="fa-solid fa-power-off text-[11px]"></i>
+                      <span>{t.disconnectBtn}</span>
+                    </button>
+                  )}
+
+                  <select 
+                    value={baudRate} 
+                    onChange={e => setBaudRate(e.target.value)} 
+                    disabled={isFlashing || isErasingOnly}
+                    title={t.baudTooltip}
+                    className="w-28 liquid-input px-3 text-xs font-mono font-semibold text-slate-800 outline-none cursor-pointer">
+                    <option value="115200">115200</option>
+                    <option value="460800">460800</option>
+                    <option value="921600">921600</option>
+                    <option value="1500000">1500000</option>
+                    <option value="2000000">2000000</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* THẺ 2: BO MẠCH ĐÍCH (HIỆU ỨNG KÍNH MỜ XUYÊN THẤU) */}
+              <div className="liquid-card p-3.5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-700 flex items-center justify-center text-[11px]">
+                      <i className="fa-solid fa-microchip"></i>
+                    </span>
+                    {t.hardwareSec}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-700 bg-white/35 px-2.5 py-0.5 rounded-full border border-white/70">
+                    {MASTER_BOARDS.length} {t.profilesCount}
+                  </span>
+                </div>
+
+                {/* 2 THẺ HERO FLAGSHIP KÍNH MỜ */}
+                <div className="space-y-2">
+                  {/* MORPH S3 FLAGSHIP */}
+                  <div 
+                    onClick={() => { setSelectedBoardId('Morph-s3'); setLocalFile(null); }}
+                    className={`cursor-pointer p-3 rounded-2xl ${
+                      isMorphSelected ? 'liquid-card-active' : 'liquid-subcard'
+                    }`}>
+                    <div className="flex items-center justify-between gap-2.5">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-sm shrink-0 shadow-sm ${
+                          isMorphSelected ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white' : 'bg-white/50 text-indigo-700 border border-white/80'
+                        }`}>
+                          <i className="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-extrabold text-slate-900 truncate">
+                              {t.morphTitle}
+                            </span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setShowMorphGuide(true); }}
+                              className="text-[10px] font-semibold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-800 px-2 py-0.5 rounded-full transition-colors">
+                              {t.morphGuideBadge}
+                            </button>
+                          </div>
+                          <p className="text-[11px] text-slate-700 truncate">{t.morphDesc}</p>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full inline-block ${
+                          isMorphSelected 
+                            ? 'bg-blue-600 text-white shadow-sm' 
+                            : 'bg-white/45 text-slate-700 border border-white/80'
+                        }`}>
+                          {isMorphSelected ? t.activeBtn : t.selectBtn}
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* MAIN FLASH BUTTON */}
-                  <button 
-                    onClick={handleFlash} 
-                    disabled={!isConnected || isFlashing || isErasingOnly}
-                    className={`w-full relative overflow-hidden font-mono font-bold py-3 rounded transition-colors text-xs tracking-wider uppercase flex items-center justify-center gap-2 ${
-                      (!isConnected || isFlashing || isErasingOnly) 
-                        ? 'bg-zinc-800 text-zinc-600 border border-zinc-700/60 cursor-not-allowed' 
-                        : 'bg-emerald-600 hover:bg-emerald-500 text-white cursor-pointer'
+                  {/* XINGZHI CUBE LAUNCHER */}
+                  <div 
+                    onClick={() => { setSelectedBoardId('Launcher-xingzhi-cube-s3'); setLocalFile(null); }}
+                    className={`cursor-pointer p-3 rounded-2xl ${
+                      isLauncherSelected ? 'liquid-card-active' : 'liquid-subcard'
                     }`}>
-                    {isFlashing ? (
-                      <>
-                        <i className="fa-solid fa-circle-notch fa-spin"></i>
-                        <span>{t.flashingBtn} {progress}%</span>
-                        <div 
-                          className="absolute left-0 bottom-0 top-0 bg-white/15 transition-all duration-100" 
-                          style={{ width: `${progress}%` }} 
-                        />
-                      </>
-                    ) : (
-                      <>
-                        <i className="fa-solid fa-bolt"></i>
-                        <span>{t.flashBtn}</span>
-                      </>
-                    )}
+                    <div className="flex items-center justify-between gap-2.5">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-sm shrink-0 shadow-sm ${
+                          isLauncherSelected ? 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white' : 'bg-white/50 text-cyan-700 border border-white/80'
+                        }`}>
+                          <i className="fa-solid fa-cubes-stacked"></i>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-extrabold text-slate-900 truncate">
+                              {t.launcherTitle}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-700 truncate">{t.launcherDesc}</p>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full inline-block ${
+                          isLauncherSelected 
+                            ? 'bg-blue-600 text-white shadow-sm' 
+                            : 'bg-white/45 text-slate-700 border border-white/80'
+                        }`}>
+                          {isLauncherSelected ? t.activeBtn : t.selectBtn}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* THANH CHỌN DANH MỤC CHIP */}
+                <div className="flex gap-1.5 p-1 rounded-full bg-white/25 border border-white/60">
+                  {[
+                    { id: 'all', label: t.catAll },
+                    { id: 's3', label: t.catS3 },
+                    { id: 'c5', label: t.catC5 },
+                    { id: 'esp32', label: t.catEsp32 }
+                  ].map(cat => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(cat.id)}
+                      className={`flex-1 py-1.5 px-2 rounded-full text-[11px] font-bold transition-all duration-300 ${
+                        selectedCategory === cat.id 
+                          ? 'bg-white/75 text-blue-700 shadow-sm border border-white' 
+                          : 'text-slate-700 hover:text-slate-950'
+                      }`}>
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* DROPDOWN DANH SÁCH BO MẠCH */}
+                <div className="space-y-2">
+                  <select 
+                    value={selectedBoardId} 
+                    onChange={e => { setSelectedBoardId(e.target.value); setLocalFile(null); }}
+                    disabled={isFlashing || isErasingOnly}
+                    className="w-full liquid-input p-2.5 text-xs font-semibold text-slate-900 outline-none cursor-pointer">
+                    <optgroup label={t.vipGroup}>
+                      {MASTER_BOARDS.filter(b => b.isHero).map(b => (
+                        <option key={b.id} value={b.id}>
+                          [{b.chip}] ★ {b.name} {githubFiles[b.url] ? `(${(githubFiles[b.url].size/1048576).toFixed(2)} MB)` : ''}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label={t.standardGroup}>
+                      {filteredBoards.map(b => (
+                        <option key={b.id} value={b.id}>
+                          [{b.chip}] {b.name} {githubFiles[b.url] ? `(${(githubFiles[b.url].size/1048576).toFixed(2)} MB)` : ''}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+
+                  {/* THÔNG TIN CHI TIẾT BO MẠCH ĐANG CHỌN */}
+                  {(() => {
+                    const b = MASTER_BOARDS.find(item => item.id === selectedBoardId);
+                    if (!b) return null;
+                    const hasCloud = Boolean(githubFiles[b.url]);
+                    return (
+                      <div className="liquid-subcard rounded-2xl p-3 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-slate-900 truncate flex items-center gap-1.5">
+                            <i className={`fa-solid ${b.icon || 'fa-microchip'} text-blue-600`}></i>
+                            {b.name}
+                          </span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            hasCloud 
+                              ? 'bg-emerald-500/20 text-emerald-800 border border-emerald-400/50' 
+                              : 'bg-white/40 text-slate-700 border border-white/60'
+                          }`}>
+                            {hasCloud ? t.cloudReadyBadge : t.customLocalBadge}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-700 leading-relaxed">{b.desc}</p>
+
+                        {b.id === 'Morph-s3' && (
+                          <div className="pt-2 border-t border-white/50 flex items-center justify-between">
+                            <span className="text-[11px] font-semibold text-indigo-800">
+                              Wi-Fi AP: <code className="font-mono font-bold">Morph-Config</code> (192.168.4.1)
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setShowMorphGuide(true)}
+                              className="text-[11px] font-bold text-blue-700 hover:underline">
+                              {t.morphGuideCardHint} →
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* THẺ 3: NẠP TỆP .BIN TỪ MÁY TÍNH */}
+              <div className="liquid-card p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-800 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-sky-500/20 text-sky-700 flex items-center justify-center text-[11px]">
+                      <i className="fa-solid fa-file-arrow-up"></i>
+                    </span>
+                    {t.externalTitle}
+                  </span>
+                  <div className="flex items-center gap-1.5 text-slate-700 font-mono text-[11px]">
+                    <span>{t.offsetLabel}</span>
+                    <input 
+                      type="text" 
+                      value={flashOffset} 
+                      onChange={e => setFlashOffset(e.target.value)} 
+                      disabled={isFlashing}
+                      className="w-16 liquid-input px-2 py-0.5 text-center font-bold text-blue-700 outline-none" 
+                    />
+                  </div>
+                </div>
+
+                <label className="border-2 border-dashed border-white/75 hover:border-blue-400 rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all bg-white/25 hover:bg-white/40">
+                  <input 
+                    type="file" 
+                    accept=".bin" 
+                    onChange={e => { if (e.target.files[0]) setLocalFile(e.target.files[0]); }}
+                    disabled={isFlashing || isErasingOnly}
+                    className="hidden" 
+                  />
+                  {localFile ? (
+                    <div className="text-center">
+                      <div className="text-xs font-bold text-blue-800 truncate max-w-[300px]">{localFile.name}</div>
+                      <div className="text-[11px] text-emerald-700 font-semibold mt-0.5">
+                        {(localFile.size / 1048576).toFixed(2)} MB • {t.localLoaded}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center text-slate-700 text-xs font-medium py-0.5">
+                      <i className="fa-solid fa-cloud-arrow-up mr-1.5 text-blue-600"></i>
+                      <span>{t.dropHint}</span>
+                    </div>
+                  )}
+                </label>
+
+                {localFile && (
+                  <button 
+                    onClick={() => setLocalFile(null)} 
+                    className="text-[11px] font-semibold text-rose-600 hover:underline block text-center w-full">
+                    {t.deselectFile}
+                  </button>
+                )}
+              </div>
+
+              {/* THẺ 4: NÚT THỰC THI NẠP & XÓA CHIP */}
+              <div className="liquid-card p-3.5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={eraseFlash} 
+                      onChange={e => setEraseFlash(e.target.checked)} 
+                      disabled={isFlashing || isErasingOnly} 
+                      className="w-4 h-4 rounded accent-blue-600 cursor-pointer" 
+                    />
+                    <span className="text-xs font-semibold text-slate-800 select-none">
+                      {t.eraseBefore}
+                    </span>
+                  </label>
+
+                  <button
+                    onClick={handleEraseOnly}
+                    disabled={!isConnected || isFlashing || isErasingOnly}
+                    className="liquid-btn px-3 py-1 text-[11px] text-rose-600 font-bold disabled:opacity-40">
+                    <i className="fa-solid fa-trash-can mr-1"></i>
+                    {t.eraseAllBtn}
                   </button>
                 </div>
 
+                <button 
+                  onClick={handleFlash} 
+                  disabled={!isConnected || isFlashing || isErasingOnly}
+                  className={`w-full py-3.5 px-5 rounded-full text-xs sm:text-sm font-bold tracking-wide flex items-center justify-center gap-2 relative overflow-hidden ${
+                    (!isConnected || isFlashing || isErasingOnly) 
+                      ? 'bg-white/30 text-slate-500 border border-white/60 cursor-not-allowed' 
+                      : 'liquid-btn-primary cursor-pointer'
+                  }`}>
+                  {isFlashing ? (
+                    <>
+                      <i className="fa-solid fa-circle-notch fa-spin"></i>
+                      <span className="z-10">{t.flashingBtn} {progress}%</span>
+                      <div 
+                        className="absolute left-0 bottom-0 top-0 bg-white/25 transition-all duration-150" 
+                        style={{ width: `${progress}%` }} 
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa-solid fa-bolt"></i>
+                      <span>{t.flashBtn}</span>
+                    </>
+                  )}
+                </button>
               </div>
+
             </div>
 
-            {/* RIGHT CONSOLE & SERIAL MONITOR / SƠ ĐỒ CHÂN (PURE INDUSTRIAL BLACK) */}
-            <div className="flex-1 flex flex-col bg-[#0a0a0c]">
+            {/* CỘT PHẢI: KHUNG KÍNH TRONG SUỐT SƠ ĐỒ CHÂN & NHẬT KÝ */}
+            <div className="flex-1 liquid-shell rounded-[32px] flex flex-col overflow-hidden min-w-0">
               
-              {/* Terminal & Sơ Đồ Tab Bar */}
-              <div className="flex items-center justify-between px-3 border-b border-zinc-800 bg-zinc-900/80 shrink-0 font-mono">
-                <div className="flex">
+              {/* Thanh Tab Pill Bo Tròn có hiệu ứng Trượt Kính (Sliding Glass Pill) */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/45 bg-white/15 shrink-0 flex-wrap gap-2">
+                <div 
+                  ref={tabContainerRef}
+                  className="relative flex items-center gap-1 bg-white/25 p-1 rounded-full border border-white/65">
+                  
+                  {/* Viên thuốc kính trượt tự động theo Tab */}
+                  <div
+                    className="sliding-glass-pill absolute top-1 bottom-1 rounded-full pointer-events-none z-0"
+                    style={{
+                      width: `${pillStyle.width}px`,
+                      transform: `translateX(${pillStyle.left - 4}px)`
+                    }}
+                  />
+
                   <button 
+                    ref={tabRefs.sodo}
                     onClick={() => setLogTab('sodo')} 
-                    className={`py-2 px-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
-                      logTab === 'sodo' ? 'text-emerald-400 border-emerald-500 bg-emerald-500/5' : 'text-zinc-500 border-transparent hover:text-zinc-300'
+                    className={`relative z-10 py-1.5 px-4 rounded-full text-xs font-bold transition-colors duration-300 flex items-center gap-1.5 ${
+                      logTab === 'sodo' 
+                        ? 'text-blue-700' 
+                        : 'text-slate-700 hover:text-slate-950'
                     }`}>
-                    <i className="fa-solid fa-diagram-project text-[10px]"></i>
+                    <i className="fa-solid fa-diagram-project text-[11px]"></i>
                     <span>{t.sodoTab}</span>
-                    {!isConnected && (
-                      <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1 py-0.2 rounded font-mono">CHÍNH</span>
-                    )}
                   </button>
+
                   <button 
+                    ref={tabRefs.sys}
                     onClick={() => setLogTab('sys')} 
-                    className={`py-2 px-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
-                      logTab === 'sys' ? 'text-amber-400 border-amber-500 bg-amber-500/5' : 'text-zinc-500 border-transparent hover:text-zinc-300'
+                    className={`relative z-10 py-1.5 px-4 rounded-full text-xs font-bold transition-colors duration-300 flex items-center gap-1.5 ${
+                      logTab === 'sys' 
+                        ? 'text-blue-700' 
+                        : 'text-slate-700 hover:text-slate-950'
                     }`}>
-                    <i className="fa-solid fa-terminal text-[10px]"></i> {t.sysLogTab}
+                    <i className="fa-solid fa-terminal text-[11px]"></i>
+                    <span>{t.sysLogTab}</span>
                   </button>
+
                   <button 
+                    ref={tabRefs.dev}
                     onClick={() => setLogTab('dev')} 
-                    className={`py-2 px-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
-                      logTab === 'dev' ? 'text-cyan-400 border-cyan-500 bg-cyan-500/5' : 'text-zinc-500 border-transparent hover:text-zinc-300'
+                    className={`relative z-10 py-1.5 px-4 rounded-full text-xs font-bold transition-colors duration-300 flex items-center gap-1.5 ${
+                      logTab === 'dev' 
+                        ? 'text-blue-700' 
+                        : 'text-slate-700 hover:text-slate-950'
                     }`}>
-                    <i className="fa-solid fa-tv text-[10px]"></i> {t.serialMonTab}
+                    <i className="fa-solid fa-wave-square text-[11px]"></i>
+                    <span>{t.serialMonTab}</span>
                   </button>
                 </div>
 
-                <div className="flex items-center gap-1.5 py-1.5">
+                {/* Các nút điều khiển phụ bên phải */}
+                <div className="flex items-center gap-2">
                   {logTab === 'sodo' && (
                     <button 
                       onClick={() => loadSodo(selectedBoardId)} 
-                      className="px-2 py-1 rounded border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-amber-400 transition-colors text-xs flex items-center gap-1 font-mono"
-                      title="Tải lại sơ đồ">
-                      <i className={`fa-solid fa-arrows-rotate text-[10px] ${isLoadingSodo ? 'fa-spin text-amber-400' : ''}`}></i>
-                      <span className="hidden sm:inline">TẢI LẠI</span>
+                      className="liquid-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5">
+                      <i className={`fa-solid fa-arrows-rotate text-[11px] ${isLoadingSodo ? 'fa-spin text-blue-600' : ''}`}></i>
+                      <span className="hidden sm:inline">Làm mới</span>
                     </button>
                   )}
 
@@ -1717,7 +1953,7 @@
                         value={monitorBaud} 
                         onChange={e => setMonitorBaud(e.target.value)} 
                         disabled={isMonitor}
-                        className="bg-zinc-950 border border-zinc-800 rounded px-2 py-0.5 text-xs font-mono text-zinc-300 outline-none">
+                        className="liquid-input px-3 py-1.5 text-xs font-mono font-semibold text-slate-800 outline-none">
                         <option value="115200">115200</option>
                         <option value="9600">9600</option>
                         <option value="921600">921600</option>
@@ -1726,8 +1962,10 @@
                       <button 
                         onClick={isMonitor ? () => stopMonitor(true) : () => startMonitor()} 
                         disabled={isFlashing || isErasingOnly} 
-                        className={`px-2.5 py-1 rounded text-xs font-mono border transition-colors disabled:opacity-40 flex items-center gap-1 ${
-                          isMonitor ? 'bg-zinc-800 text-rose-400 border-rose-500/40 hover:bg-rose-950/40' : 'bg-zinc-800 text-cyan-400 border-cyan-500/40 hover:bg-cyan-950/40'
+                        className={`px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                          isMonitor 
+                            ? 'liquid-btn text-rose-600' 
+                            : 'liquid-btn-primary'
                         }`}>
                         <i className={`fa-solid ${isMonitor ? 'fa-stop' : 'fa-play'} text-[10px]`}></i>
                         <span>{isMonitor ? t.stopMon : t.startMon}</span>
@@ -1738,7 +1976,7 @@
                   {(logTab === 'sys' || logTab === 'dev') && (
                     <button 
                       onClick={() => logTab === 'sys' ? setSysLogs([]) : setDevLogs([])} 
-                      className="p-1 px-2 rounded border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200 transition-colors" 
+                      className="liquid-btn w-8 h-8 flex items-center justify-center text-slate-700" 
                       title={t.clearLogTooltip}>
                       <i className="fa-solid fa-trash-can text-xs"></i>
                     </button>
@@ -1746,154 +1984,142 @@
                 </div>
               </div>
 
-              {/* MAIN DISPLAY: SƠ ĐỒ CHÂN (KHI LOGTAB === 'SODO') HOẶC CONSOLE LOG */}
+              {/* NỘI DUNG CHÍNH CÓ ANIMATION MỖI KHI CHUYỂN TAB (key={logTab}) */}
               {logTab === 'sodo' ? (
-                <div className="flex-1 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-[#0a0a0c] select-text">
+                <div key="tab-sodo" className="tab-pane-animate flex-1 p-4 sm:p-5 overflow-y-auto custom-scrollbar select-text">
                   {isLoadingSodo ? (
-                    <div className="h-full flex flex-col items-center justify-center text-zinc-500 font-mono space-y-3 py-16">
-                      <i className="fa-solid fa-circle-notch fa-spin text-2xl text-amber-500"></i>
-                      <div className="text-xs">{t.sodoSearching}</div>
-                      <div className="text-[10px] text-zinc-600">sodo/{selectedBoardId}.json</div>
+                    <div className="h-full flex flex-col items-center justify-center text-slate-700 space-y-3 py-16">
+                      <i className="fa-solid fa-circle-notch fa-spin text-2xl text-blue-600"></i>
+                      <div className="text-xs font-semibold">{t.sodoSearching}</div>
                     </div>
                   ) : sodoData ? (
-                    <div className="space-y-3.5 max-w-5xl mx-auto">
-                      {/* Board Info Header Banner */}
-                      <div className="bg-zinc-900/90 border border-zinc-800 rounded-lg p-3">
+                    <div className="space-y-4 max-w-5xl mx-auto">
+                      {/* Thẻ tiêu đề Bo mạch */}
+                      <div className="liquid-card p-4">
                         <div className="flex items-center justify-between gap-2 flex-wrap">
-                          <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                            <h2 className="text-sm font-bold font-mono text-zinc-100 uppercase tracking-wider">
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></span>
+                            <h2 className="text-base font-extrabold text-slate-900">
                               {sodoData.board_name || sodoData.board || selectedBoardId}
                             </h2>
-                            <span className="text-[10px] font-mono bg-zinc-800 text-amber-400 border border-zinc-700 px-2 py-0.5 rounded font-bold">
+                            <span className="text-xs font-bold bg-blue-500/20 text-blue-800 px-2.5 py-0.5 rounded-full">
                               {sodoData.chip || 'ESP32'}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono text-zinc-400 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">
-                              <i className="fa-solid fa-microchip mr-1 text-emerald-400"></i>
-                              {sodoData.modules ? sodoData.modules.length : 0} MODULES
+                            <span className="text-xs font-semibold text-slate-700 bg-white/45 px-3 py-1 rounded-full border border-white/75">
+                              <i className="fa-solid fa-microchip mr-1.5 text-blue-600"></i>
+                              {sodoData.modules ? sodoData.modules.length : 0} Modules
                             </span>
-                            {!isConnected && (
-                              <span className="text-[10px] font-mono text-amber-400/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                                <i className="fa-solid fa-circle-info mr-1"></i>
-                                {t.sodoUnconnectedHint}
-                              </span>
-                            )}
                           </div>
                         </div>
                         {sodoData.notes && (
-                          <p className="mt-2 text-xs font-mono text-zinc-400 leading-relaxed border-t border-zinc-800/80 pt-2">
+                          <p className="mt-2.5 text-xs text-slate-700 leading-relaxed border-t border-white/50 pt-2.5">
                             {sodoData.notes}
                           </p>
                         )}
                       </div>
 
-                      {/* Modules Grid with 2-Column Pinout Tables */}
-                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                      {/* Danh sách các bảng đấu nối Module */}
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3.5">
                         {sodoData.modules && sodoData.modules.map((mod, modIdx) => (
-                          <div key={modIdx} className="bg-zinc-900/70 border border-zinc-800/90 rounded-lg overflow-hidden flex flex-col shadow-sm">
-                            {/* Module Title Header */}
-                            <div className="p-2.5 px-3 bg-zinc-950/90 border-b border-zinc-800 flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <div className="w-6 h-6 rounded bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xs shrink-0">
+                          <div key={modIdx} className="liquid-card overflow-hidden flex flex-col">
+                            <div className="p-3.5 bg-white/25 border-b border-white/60 flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-700 flex items-center justify-center text-xs shrink-0">
                                   <i className={`fa-solid ${mod.icon || 'fa-microchip'}`}></i>
                                 </div>
                                 <div className="min-w-0">
-                                  <span className="text-xs font-bold font-mono text-zinc-100 block truncate">
+                                  <span className="text-xs font-extrabold text-slate-900 block truncate">
                                     {mod.name || mod.title}
                                   </span>
                                   {mod.subtitle && (
-                                    <span className="text-[10px] font-mono text-zinc-400 block truncate">
+                                    <span className="text-[11px] text-slate-600 block truncate">
                                       {mod.subtitle}
                                     </span>
                                   )}
                                 </div>
                               </div>
-                              <span className="text-[9px] font-mono bg-zinc-900 text-zinc-500 px-1.5 py-0.5 rounded border border-zinc-800 shrink-0">
-                                {mod.pins ? `${mod.pins.length} PINS` : ''}
+                              <span className="text-[10px] font-bold bg-white/45 text-slate-700 px-2.5 py-0.5 rounded-full border border-white/75 shrink-0">
+                                {mod.pins ? `${mod.pins.length} chân` : ''}
                               </span>
                             </div>
 
-                            {/* Warning Box (e.g., NRF24 3.3V) */}
                             {mod.warning && (
-                              <div className="m-2.5 mb-0 p-2 rounded bg-amber-500/10 border border-amber-500/40 text-amber-300 font-mono text-[11px] flex items-center gap-2">
-                                <i className="fa-solid fa-triangle-exclamation text-amber-400 text-xs shrink-0 animate-pulse"></i>
+                              <div className="mx-3.5 mt-3 p-2.5 rounded-xl bg-amber-500/20 border border-amber-400/50 text-amber-950 text-xs font-medium flex items-center gap-2">
+                                <i className="fa-solid fa-triangle-exclamation text-amber-600 shrink-0"></i>
                                 <span>{mod.warning}</span>
                               </div>
                             )}
 
-                            {/* Two-Column Pinout Table */}
-                            <div className="p-2.5 flex-1">
-                              <table className="w-full text-left font-mono text-xs border border-zinc-800 rounded overflow-hidden">
-                                <thead className="bg-zinc-950 text-zinc-400 uppercase text-[10px] tracking-wider border-b border-zinc-800">
-                                  <tr>
-                                    <th className="py-1.5 px-3 w-1/2 text-zinc-400 bg-zinc-950/80">
-                                      {t.sodoColPin}
-                                    </th>
-                                    <th className="py-1.5 px-3 w-1/2 text-zinc-400 bg-zinc-950/80">
-                                      {t.sodoColEsp}
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody className="divide-y divide-zinc-850">
-                                  {mod.pins && mod.pins.map((p, pIdx) => (
-                                    <tr key={pIdx} className="hover:bg-zinc-800/40 transition-colors">
-                                      <td className="py-1.5 px-3 font-medium text-zinc-300 border-r border-zinc-850/60">
-                                        {p.pin || p.name}
-                                      </td>
-                                      <td className="py-1.5 px-3 text-amber-400 font-bold flex items-center gap-1.5">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500/70 shrink-0"></span>
-                                        <span className="break-all">{p.esp || p.gpio || p.pin_esp}</span>
-                                      </td>
+                            <div className="p-3.5 flex-1">
+                              <div className="rounded-2xl overflow-hidden border border-white/65 bg-white/25">
+                                <table className="w-full text-left text-xs">
+                                  <thead className="bg-white/40 text-slate-600 uppercase text-[10px] font-bold border-b border-white/65">
+                                    <tr>
+                                      <th className="py-2 px-3.5 w-1/2">{t.sodoColPin}</th>
+                                      <th className="py-2 px-3.5 w-1/2">{t.sodoColEsp}</th>
                                     </tr>
-                                  ))}
-                                </tbody>
-                              </table>
+                                  </thead>
+                                  <tbody className="divide-y divide-white/45 font-mono">
+                                    {mod.pins && mod.pins.map((p, pIdx) => (
+                                      <tr key={pIdx} className="hover:bg-white/35 transition-colors">
+                                        <td className="py-2 px-3.5 font-semibold text-slate-800 border-r border-white/45">
+                                          {p.pin || p.name}
+                                        </td>
+                                        <td className="py-2 px-3.5 text-blue-700 font-bold flex items-center gap-2">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
+                                          <span>{p.esp || p.gpio || p.pin_esp}</span>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
                   ) : (
-                    /* Fallback when file not found yet */
-                    <div className="h-full flex flex-col items-center justify-center p-6 text-center font-mono space-y-3 py-16">
-                      <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-amber-500 text-xl">
+                    <div className="h-full flex flex-col items-center justify-center p-6 text-center space-y-3 py-16">
+                      <div className="w-12 h-12 rounded-2xl bg-white/45 border border-white/80 shadow-sm flex items-center justify-center text-blue-600 text-xl">
                         <i className="fa-solid fa-folder-open"></i>
                       </div>
-                      <div className="text-zinc-200 text-xs font-bold uppercase tracking-wider">
+                      <div className="text-slate-900 text-sm font-bold">
                         {t.sodoNotFound}
                       </div>
-                      <p className="text-zinc-500 text-[11px] max-w-md leading-relaxed">
-                        File <code className="text-amber-400 bg-zinc-900 px-1 py-0.5 rounded border border-zinc-800">sodo/{selectedBoardId}.json</code> chưa có sẵn trên kho lưu trữ hoặc đang được cụm máy chủ cập nhật.
+                      <p className="text-slate-700 text-xs max-w-md">
+                        Tệp <code className="text-blue-700 font-mono bg-white/45 px-2.5 py-0.5 rounded-full border border-white/70">sodo/{selectedBoardId}.json</code> đang được cập nhật.
                       </p>
                       <button 
                         onClick={() => loadSodo(selectedBoardId)} 
-                        className="px-3 py-1.5 rounded bg-zinc-900 hover:bg-zinc-800 text-amber-400 border border-zinc-700 text-xs flex items-center gap-1.5 transition-colors">
-                        <i className="fa-solid fa-arrows-rotate text-[10px]"></i>
+                        className="liquid-btn px-4 py-2 text-xs flex items-center gap-1.5">
+                        <i className="fa-solid fa-arrows-rotate text-[11px]"></i>
                         <span>Thử tải lại</span>
                       </button>
                     </div>
                   )}
                 </div>
               ) : (
-                /* Console Log Area (0 border radius, 11px font) */
+                /* MÀN HÌNH CONSOLE TRONG SUỐT CÓ ANIMATION KHI CHUYỂN TAB */
                 <div 
+                  key={`tab-${logTab}`}
                   ref={termRef} 
-                  className="flex-1 p-3 overflow-y-auto font-mono text-[11px] leading-relaxed custom-scrollbar break-all text-zinc-300 select-text bg-[#0a0a0c]">
+                  className="tab-pane-animate flex-1 p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar break-all select-text bg-white/10">
                   {(logTab === 'sys' ? sysLogs : devLogs).length === 0 ? (
-                    <div className="text-zinc-700 select-none">
+                    <div className="text-slate-600 select-none italic">
                       {logTab === 'sys' ? t.sysPlaceholder : t.monPlaceholder}
                     </div>
                   ) : (
                     (logTab === 'sys' ? sysLogs : devLogs).map((l, i) => (
-                      <div key={i} className="flex gap-2 mb-0.5">
-                        <span className="text-zinc-600 shrink-0 select-none">[{l.time}]</span>
+                      <div key={i} className="flex gap-2.5 mb-1 py-1 px-2.5 rounded-xl hover:bg-white/25 transition-colors">
+                        <span className="text-slate-500 shrink-0 select-none">[{l.time}]</span>
                         <span className={`${
-                          l.type === 'error' ? 'text-rose-500 font-semibold' : 
-                          l.type === 'success' ? 'text-emerald-500 font-semibold' : 
-                          l.type === 'warning' ? 'text-amber-500' : 
-                          'text-zinc-300'
+                          l.type === 'error' ? 'text-rose-700 font-bold' : 
+                          l.type === 'success' ? 'text-emerald-800 font-bold' : 
+                          l.type === 'warning' ? 'text-amber-800 font-semibold' : 
+                          'text-slate-900'
                         }`}>
                           {l.msg}
                         </span>
@@ -1903,46 +2129,38 @@
                 </div>
               )}
 
-              {/* HUD Status Bar */}
-              <div className="px-3 py-1.5 border-t border-zinc-800 bg-zinc-900 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
-                <div className="flex items-center gap-2">
-                  <span className="flex items-center gap-1.5">
-                    <span className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-zinc-600'}`}></span>
+              {/* Thanh trạng thái dưới cùng */}
+              <div className="px-5 py-2.5 border-t border-white/45 bg-white/20 flex items-center justify-between text-xs text-slate-700 font-medium">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex items-center gap-1.5 font-semibold">
+                    <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
                     <span>{isConnected ? t.portOnline : t.portOffline}</span>
                   </span>
-                  {chipInfo && <span className="text-zinc-400">// {chipInfo.chip} [{chipInfo.mac}]</span>}
+                  {chipInfo && <span className="text-slate-800 font-mono">• {chipInfo.chip} [{chipInfo.mac}]</span>}
                 </div>
-                <div>ESPLoader 0.7.0</div>
+                <div className="font-mono text-[11px] text-slate-600">ESPLoader v0.7.0</div>
               </div>
 
             </div>
 
           </main>
 
-          {/* MORPH S3 USER GUIDE MODAL */}
+          {/* MODAL CẨM NANG MORPH S3 */}
           {showMorphGuide && (
-            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 select-text">
-              <div className="bg-zinc-900 border border-zinc-700/80 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="fixed inset-0 z-50 bg-slate-900/20 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-text">
+              <div className="liquid-shell rounded-[32px] max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden shadow-2xl bg-white/45">
                 
-                {/* Rainbow Accent Top Border */}
-                <div className="h-1 w-full bg-gradient-to-r from-pink-500 via-amber-500 via-emerald-500 to-cyan-500"></div>
-
                 {/* Modal Header */}
-                <div className="p-4 border-b border-zinc-800 flex items-center justify-between gap-3 bg-zinc-950/80">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-8 h-8 rounded bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-sm shrink-0">
+                <div className="p-4 sm:p-5 border-b border-white/60 bg-white/35 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-base shrink-0 shadow-md">
                       <i className="fa-solid fa-wand-magic-sparkles"></i>
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h2 className="text-xs sm:text-sm font-bold font-mono text-zinc-100 tracking-wider truncate">
-                          {t.morphGuideTitle}
-                        </h2>
-                        <span className="text-[9px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded shrink-0">
-                          ESP32-S3
-                        </span>
-                      </div>
-                      <p className="text-[10px] sm:text-[11px] font-mono text-zinc-400 truncate">
+                      <h2 className="text-sm sm:text-base font-extrabold text-slate-900 truncate">
+                        {t.morphGuideTitle}
+                      </h2>
+                      <p className="text-xs text-slate-700 truncate">
                         {t.morphGuideSub}
                       </p>
                     </div>
@@ -1950,221 +2168,115 @@
 
                   <button 
                     onClick={() => setShowMorphGuide(false)}
-                    className="w-7 h-7 rounded border border-zinc-800 hover:border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 flex items-center justify-center transition-colors shrink-0">
-                    <i className="fa-solid fa-xmark text-xs"></i>
+                    className="liquid-btn w-9 h-9 flex items-center justify-center text-slate-800 shrink-0">
+                    <i className="fa-solid fa-xmark"></i>
                   </button>
                 </div>
 
-                {/* Modal Tab Switchers */}
-                <div className="flex border-b border-zinc-800 bg-zinc-950 px-3 overflow-x-auto custom-scrollbar font-mono text-xs gap-1 py-1.5 shrink-0">
+                {/* Modal Tab Bar */}
+                <div className="flex border-b border-white/60 bg-white/25 px-4 py-2 gap-1.5 overflow-x-auto custom-scrollbar shrink-0">
                   {[
-                    { id: 'controls', label: t.morphTabControls },
-                    { id: 'hardware', label: t.morphTabHardware },
-                    { id: 'webui',    label: t.morphTabWebui },
-                    { id: 'flash',    label: t.morphTabFlash }
+                    { id: 'controls', label: t.morphTabControls, icon: 'fa-gamepad' },
+                    { id: 'hardware', label: t.morphTabHardware, icon: 'fa-microchip' },
+                    { id: 'webui',    label: t.morphTabWebui,    icon: 'fa-wifi' },
+                    { id: 'flash',    label: t.morphTabFlash,    icon: 'fa-bolt' }
                   ].map(tab => (
                     <button
                       key={tab.id}
                       onClick={() => setGuideTab(tab.id)}
-                      className={`px-3 py-1.5 rounded font-medium whitespace-nowrap transition-colors border ${
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
                         guideTab === tab.id 
-                          ? 'bg-zinc-850 text-amber-300 border-amber-500/50 shadow-sm' 
-                          : 'bg-transparent text-zinc-400 border-transparent hover:text-zinc-200 hover:bg-zinc-900'
+                          ? 'bg-blue-600 text-white shadow-sm' 
+                          : 'bg-white/45 text-slate-800 hover:bg-white/75'
                       }`}>
-                      {tab.label}
+                      <i className={`fa-solid ${tab.icon} text-[11px]`}></i>
+                      <span>{tab.label}</span>
                     </button>
                   ))}
                 </div>
 
-                {/* Modal Scrollable Body */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4 font-mono text-xs text-zinc-300 custom-scrollbar leading-relaxed">
-                  
-                  {/* TAB 1: CONTROLS & NAVIGATION */}
+                {/* Modal Body */}
+                <div key={guideTab} className="tab-pane-animate flex-1 overflow-y-auto p-5 space-y-3.5 text-xs text-slate-800 custom-scrollbar leading-relaxed">
                   {guideTab === 'controls' && (
-                    <div className="space-y-3.5">
-                      <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800/80">
-                        <div className="flex items-center gap-2 text-amber-400 font-bold mb-2">
-                          <i className="fa-solid fa-gamepad"></i>
-                          <span>{lang === 'vi' ? '1. CHẾ ĐỘ 3 NÚT (TIÊU CHUẨN)' : '1. STANDARD 3-BUTTON MODE'}</span>
+                    <div className="space-y-3">
+                      <div className="liquid-card p-4">
+                        <div className="font-extrabold text-blue-800 mb-2 text-sm">
+                          1. Chế độ 3 Phím Tiêu chuẩn
                         </div>
-                        <ul className="space-y-1.5 text-zinc-300 text-[11px] list-disc list-inside">
-                          <li><b className="text-zinc-100">UP (GPIO 16):</b> {lang === 'vi' ? 'Di chuyển lên trên / Giảm giá trị.' : 'Navigate UP / Decrement value.'}</li>
-                          <li><b className="text-zinc-100">DOWN (GPIO 13):</b> {lang === 'vi' ? 'Di chuyển xuống dưới / Tăng giá trị.' : 'Navigate DOWN / Increment value.'}</li>
-                          <li><b className="text-zinc-100">OK (GPIO 0):</b> {lang === 'vi' ? 'Nhấn 1 lần: Chọn / Mở menu (Enter). Nhấn giữ > 1.2s: Thoát / Trở về menu trước (Back / ESC).' : 'Single click: Enter / Select. Hold > 1.2s: Back / ESC.'}</li>
+                        <ul className="space-y-1.5 list-disc list-inside">
+                          <li><b>UP (GPIO 16):</b> Di chuyển lên trên / Giảm giá trị.</li>
+                          <li><b>DOWN (GPIO 13):</b> Di chuyển xuống dưới / Tăng giá trị.</li>
+                          <li><b>OK (GPIO 0):</b> Nhấn 1 lần để Chọn (Enter). Nhấn giữ &gt; 1.2s để Thoát (Back).</li>
                         </ul>
                       </div>
 
-                      <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800/80">
-                        <div className="flex items-center gap-2 text-cyan-400 font-bold mb-2">
-                          <i className="fa-solid fa-sliders"></i>
-                          <span>{lang === 'vi' ? '2. CHẾ ĐỘ 2 NÚT (PHONG CÁCH T-DISPLAY S3)' : '2. 2-BUTTON MODE (T-DISPLAY S3 STYLE)'}</span>
+                      <div className="liquid-card p-4">
+                        <div className="font-extrabold text-indigo-800 mb-2 text-sm">
+                          2. Chế độ 2 Phím & Con lăn (Rotary Encoder)
                         </div>
-                        <ul className="space-y-1.5 text-zinc-300 text-[11px] list-disc list-inside">
-                          <li><b className="text-zinc-100">Nút Next (GPIO 13):</b> {lang === 'vi' ? 'Nhấn 1 lần: Di chuyển tới. Nhấp đúp (Double-click) hoặc Giữ: Chọn (OK / Enter).' : 'Single click: Next. Double-click or Hold: Select / Enter.'}</li>
-                          <li><b className="text-zinc-100">Nút Prev (GPIO 16):</b> {lang === 'vi' ? 'Nhấn 1 lần: Di chuyển lùi. Nhấp đúp (Double-click) hoặc Giữ: Trở về (Back / ESC).' : 'Single click: Prev. Double-click or Hold: Back / ESC.'}</li>
+                        <ul className="space-y-1.5 list-disc list-inside">
+                          <li><b>Nút Next (GPIO 13):</b> Nhấn 1 lần: Tới. Nhấp đúp hoặc Giữ: Chọn (OK).</li>
+                          <li><b>Nút Prev (GPIO 16):</b> Nhấn 1 lần: Lùi. Nhấp đúp hoặc Giữ: Thoát (ESC).</li>
+                          <li><b>Rotary Encoder:</b> Xoay để cuộn menu mượt mà, nhấn nút giữa để xác nhận.</li>
                         </ul>
-                      </div>
-
-                      <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800/80">
-                        <div className="flex items-center gap-2 text-emerald-400 font-bold mb-2">
-                          <i className="fa-solid fa-circle-dot"></i>
-                          <span>{lang === 'vi' ? '3. CHẾ ĐỘ CON LĂN (ROTARY ENCODER / T-EMBED)' : '3. ROTARY ENCODER MODE'}</span>
-                        </div>
-                        <ul className="space-y-1.5 text-zinc-300 text-[11px] list-disc list-inside">
-                          <li><b className="text-zinc-100">{lang === 'vi' ? 'Xoay con lăn:' : 'Rotate Dial:'}</b> {lang === 'vi' ? 'Cuộn mượt mà lên hoặc xuống menu.' : 'Smoothly scroll menu items up or down.'}</li>
-                          <li><b className="text-zinc-100">{lang === 'vi' ? 'Nhấn nút con lăn:' : 'Press Dial (OK):'}</b> {lang === 'vi' ? 'Xác nhận / Chọn mục.' : 'Confirm / Select.'}</li>
-                          <li><b className="text-zinc-100">{lang === 'vi' ? 'Nút ESC phụ / Giữ:' : 'Aux Button / Hold:'}</b> {lang === 'vi' ? 'Thoát / Trở về.' : 'Exit / Back.'}</li>
-                        </ul>
-                      </div>
-
-                      <div className="bg-zinc-950 p-2.5 rounded border border-rose-500/30 text-[11px] text-rose-300 flex items-start gap-2">
-                        <i className="fa-solid fa-power-off mt-0.5 text-rose-400"></i>
-                        <span>
-                          {lang === 'vi' 
-                            ? 'Tắt nguồn: Giữ nút L_BTN (hoặc L + R) trong 3 giây để đưa thiết bị vào chế độ Deep Sleep tiết kiệm pin.' 
-                            : 'Power Off: Hold L_BTN (or L + R) for 3 seconds to enter Deep Sleep power-saving mode.'}
-                        </span>
                       </div>
                     </div>
                   )}
 
-                  {/* TAB 2: HARDWARE & PINOUT */}
                   {guideTab === 'hardware' && (
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
-                        <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800">
-                          <div className="text-amber-400 font-bold mb-1 flex items-center gap-1.5">
-                            <i className="fa-solid fa-microchip"></i>
-                            <span>CHIP & BỘ NHỚ</span>
-                          </div>
-                          <p className="text-zinc-400">ESP32-S3 Dual-Core LX7 @ 240MHz</p>
-                          <p className="text-emerald-400 font-semibold">16MB Flash • 8MB Octal-PSRAM</p>
-                        </div>
-
-                        <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800">
-                          <div className="text-cyan-400 font-bold mb-1 flex items-center gap-1.5">
-                            <i className="fa-solid fa-display"></i>
-                            <span>MÀN HÌNH ST7789 IPS</span>
-                          </div>
-                          <p className="text-zinc-400">240x240 IPS (SPI 40MHz)</p>
-                          <p className="text-zinc-400">MOSI: 10 • SCLK: 9 • CS: 14 • DC: 8</p>
-                          <p className="text-zinc-400">RST: 18 • BL: 13 (PWM)</p>
-                        </div>
-
-                        <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800">
-                          <div className="text-purple-400 font-bold mb-1 flex items-center gap-1.5">
-                            <i className="fa-solid fa-tower-broadcast"></i>
-                            <span>CC1101 SUB-GHZ (SPI)</span>
-                          </div>
-                          <p className="text-zinc-400">Tần số: 300 - 928 MHz</p>
-                          <p className="text-zinc-400">SS: 2 • GDO0: 1</p>
-                          <p className="text-zinc-400">MOSI: 48 • MISO: 41 • SCK: 47</p>
-                        </div>
-
-                        <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800">
-                          <div className="text-green-400 font-bold mb-1 flex items-center gap-1.5">
-                            <i className="fa-solid fa-wifi"></i>
-                            <span>NRF24L01+ 2.4GHZ (SPI)</span>
-                          </div>
-                          <p className="text-zinc-400">MouseJacker / 2.4G Jammer</p>
-                          <p className="text-zinc-400">CE: 4 • SS: 21</p>
-                          <p className="text-zinc-400">MOSI: 48 • MISO: 41 • SCK: 47</p>
-                        </div>
-
-                        <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800">
-                          <div className="text-blue-400 font-bold mb-1 flex items-center gap-1.5">
-                            <i className="fa-solid fa-sd-card"></i>
-                            <span>THẺ NHỚ MICROSD</span>
-                          </div>
-                          <p className="text-zinc-400">CS: 42 (Chung bus SPI)</p>
-                          <p className="text-zinc-400">Hỗ trợ đọc file sub, pcap, badusb</p>
-                        </div>
-
-                        <div className="bg-zinc-950 p-2.5 rounded border border-zinc-800">
-                          <div className="text-rose-400 font-bold mb-1 flex items-center gap-1.5">
-                            <i className="fa-solid fa-network-wired"></i>
-                            <span>GROVE I2C & BADUSB</span>
-                          </div>
-                          <p className="text-zinc-400">I2C Grove: SDA: 5 • SCL: 6</p>
-                          <p className="text-zinc-400">Serial / BadUSB: RX: 44 • TX: 43</p>
-                        </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="liquid-card p-3.5">
+                        <div className="font-bold text-blue-800 mb-1">Vi xử lý & Bộ nhớ</div>
+                        <p>ESP32-S3 Dual-Core LX7 @ 240MHz</p>
+                        <p className="font-semibold text-emerald-800">16MB Flash • 8MB Octal-PSRAM</p>
+                      </div>
+                      <div className="liquid-card p-3.5">
+                        <div className="font-bold text-blue-800 mb-1">Màn hình ST7789 IPS</div>
+                        <p>240x240px SPI (MOSI:10, SCLK:9, CS:14, DC:8, RST:18, BL:13)</p>
+                      </div>
+                      <div className="liquid-card p-3.5">
+                        <div className="font-bold text-blue-800 mb-1">CC1101 Sub-GHz</div>
+                        <p>Dải tần 300-928MHz (SS:2, GDO0:1, MOSI:48, MISO:41, SCK:47)</p>
+                      </div>
+                      <div className="liquid-card p-3.5">
+                        <div className="font-bold text-blue-800 mb-1">NRF24L01+ & MicroSD</div>
+                        <p>NRF24 (CE:4, SS:21) • Thẻ nhớ MicroSD (CS:42)</p>
                       </div>
                     </div>
                   )}
 
-                  {/* TAB 3: MORPH WEB CONFIG */}
                   {guideTab === 'webui' && (
-                    <div className="space-y-3">
-                      <div className="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded text-amber-300 text-[11px]">
-                        <i className="fa-solid fa-circle-check mr-1.5"></i>
-                        {lang === 'vi' 
-                          ? 'Morph S3 tích hợp sẵn Web Config trực quan, cho phép đổi chân phím, xoay màn hình và tùy chỉnh phần cứng trực tiếp qua WiFi mà KHÔNG cần nạp lại code!'
-                          : 'Morph S3 includes an onboard Web Config interface to reassign buttons, rotate display, and configure pins over WiFi without recompiling code!'}
+                    <div className="liquid-card p-4 space-y-2.5">
+                      <div className="font-extrabold text-blue-800 text-sm">
+                        Cấu hình chân & màn hình qua Wi-Fi không cần nạp lại code
                       </div>
-
-                      <ol className="space-y-2 text-[11px] text-zinc-300 list-decimal list-inside bg-zinc-950 p-3 rounded-lg border border-zinc-800">
-                        <li>
-                          <b className="text-emerald-400">{lang === 'vi' ? 'BƯỚC 1 - NẠP CODE:' : 'STEP 1 - FLASH CODE:'}</b><br/>
-                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Nạp firmware "Bruce-Morph-s3.bin" trực tiếp qua Web Flasher này (khuyến nghị chọn Xóa trước khi nạp).' : 'Flash "Bruce-Morph-s3.bin" directly via Web Flasher (Erase before flash recommended).'}</span>
-                        </li>
-                        <li>
-                          <b className="text-cyan-400">{lang === 'vi' ? 'BƯỚC 2 - KẾT NỐI WIFI DO MẠCH PHÁT:' : 'STEP 2 - CONNECT TO MORPH WIFI:'}</b><br/>
-                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Dùng điện thoại hoặc PC kết nối vào mạng Wi-Fi nó phát ra: ' : 'Connect phone or PC to the WiFi AP: '}</span>
-                          <code className="text-amber-400 bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800 ml-1">Morph-Config</code>
-                          <span className="text-emerald-400 font-bold ml-2">({lang === 'vi' ? 'KHÔNG MẬT KHẨU' : 'NO PASSWORD'})</span>
-                        </li>
-                        <li>
-                          <b className="text-amber-400">{lang === 'vi' ? 'BƯỚC 3 - TÙY CHỈNH CẤU HÌNH:' : 'STEP 3 - CONFIGURE HARDWARE:'}</b><br/>
-                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Mở trình duyệt web và truy cập địa chỉ IP: ' : 'Open web browser and go to: '}</span>
-                          <code className="text-cyan-400 font-bold bg-zinc-900 px-1.5 py-0.5 rounded border border-zinc-800 ml-1">http://192.168.4.1</code><br/>
-                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Tùy chỉnh chế độ phím (1 nút Encoder / 2 nút / 3 nút / 5 nút), hướng xoay màn hình (0/90/180/270), chân CC1101, NRF24, thẻ nhớ SD, LED...' : 'Select button mode (Encoder / 2-Btn / 3-Btn / 5-Btn), screen rotation, pinouts for CC1101, NRF24, SD Card...'}</span>
-                        </li>
-                        <li>
-                          <b className="text-purple-400">{lang === 'vi' ? 'BƯỚC 4 - LƯU CẤU HÌNH & REBOOT:' : 'STEP 4 - SAVE & REBOOT:'}</b><br/>
-                          <span className="text-zinc-400 ml-4">{lang === 'vi' ? 'Kiểm tra không bị trùng chân đỏ rồi bấm SAVE & REBOOT. Thiết bị tự lưu vĩnh viễn vào Flash và khởi động lại!' : 'Check for pin conflicts, then click SAVE & REBOOT. Settings are permanently saved!'}</span>
-                        </li>
+                      <ol className="space-y-2 list-decimal list-inside">
+                        <li>Nạp firmware <b>Bruce-Morph-s3.bin</b> từ trình duyệt này.</li>
+                        <li>Kết nối vào Wi-Fi tên <b>Morph-Config</b> (Không mật khẩu).</li>
+                        <li>Mở trình duyệt truy cập <b>http://192.168.4.1</b> để đổi chân phím, xoay màn hình, gán chân module.</li>
+                        <li>Bấm <b>Save &amp; Reboot</b> để lưu cấu hình vĩnh viễn vào bộ nhớ Flash.</li>
                       </ol>
                     </div>
                   )}
 
-                  {/* TAB 4: FLASHING INSTRUCTIONS */}
                   {guideTab === 'flash' && (
-                    <div className="space-y-3">
-                      <div className="bg-zinc-950 p-3 rounded-lg border border-zinc-800 space-y-2.5 text-[11px]">
-                        <div className="flex items-center gap-2 text-emerald-400 font-bold">
-                          <i className="fa-solid fa-bolt"></i>
-                          <span>{lang === 'vi' ? 'CÁC BƯỚC NẠP FIRMWARE NHANH' : 'FAST FLASHING STEPS'}</span>
-                        </div>
-                        <ol className="space-y-1.5 list-decimal list-inside text-zinc-300">
-                          <li>{lang === 'vi' ? 'Cắm cáp USB Type-C nối Morph S3 với máy tính (dùng Google Chrome hoặc MS Edge).' : 'Connect Morph S3 to PC via USB Type-C cable (use Chrome or Edge).'}</li>
-                          <li>{lang === 'vi' ? 'Nếu máy tính chưa nhận: Giữ nút BOOT (GPIO 0) -> cắm cáp hoặc nhấn nút RESET để chip vào Bootloader.' : 'If not detected: Hold BOOT (GPIO 0) and click RESET to enter Bootloader.'}</li>
-                          <li>{lang === 'vi' ? 'Bấm nút "KẾT NỐI THIẾT BỊ" góc trên bên trái, chọn cổng COM của ESP32-S3.' : 'Click "CONNECT DEVICE" and select the ESP32-S3 COM port.'}</li>
-                          <li>{lang === 'vi' ? 'Chọn bo mạch "MORPH S3 FLAGSHIP" (file Bruce-Morph-s3.bin đã được tích hợp sẵn).' : 'Select "MORPH S3 FLAGSHIP" profile (Bruce-Morph-s3.bin is ready).'}</li>
-                          <li>{lang === 'vi' ? 'Nên tích chọn "XÓA TRƯỚC KHI NẠP" (Full Erase) cho lần đầu nạp.' : 'Check "ERASE BEFORE FLASH" for first-time installation.'}</li>
-                          <li>{lang === 'vi' ? 'Bấm nút "NẠP FIRMWARE" và đợi tiến trình đạt 100% là xong!' : 'Click "FLASH FIRMWARE" and wait for 100% completion!'}</li>
-                        </ol>
+                    <div className="liquid-card p-4 space-y-2">
+                      <div className="font-extrabold text-emerald-800 text-sm">
+                        Các bước nạp Firmware nhanh
                       </div>
-
-                      <div className="text-center pt-2">
-                        <button
-                          onClick={() => {
-                            setSelectedBoardId('Morph-s3');
-                            setLocalFile(null);
-                            setShowMorphGuide(false);
-                          }}
-                          className="w-full py-2.5 rounded bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold font-mono tracking-wider transition-colors shadow-lg shadow-amber-500/20 text-xs flex items-center justify-center gap-2">
-                          <i className="fa-solid fa-wand-magic-sparkles"></i>
-                          <span>{t.morphSelectNow}</span>
-                        </button>
-                      </div>
+                      <ol className="space-y-1.5 list-decimal list-inside">
+                        <li>Cắm cáp USB Type-C kết nối mạch với máy tính.</li>
+                        <li>Nếu mạch chưa nhận cổng: Giữ nút <b>BOOT (GPIO 0)</b> rồi cắm cáp.</li>
+                        <li>Bấm nút <b>{t.connectBtn}</b> và chọn cổng COM tương ứng.</li>
+                        <li>Bật chọn <b>{t.eraseBefore}</b> nếu nạp lần đầu, sau đó bấm <b>{t.flashBtn}</b>.</li>
+                      </ol>
                     </div>
                   )}
-
                 </div>
 
                 {/* Modal Footer */}
-                <div className="p-3 border-t border-zinc-800 bg-zinc-950 flex items-center justify-between font-mono text-xs">
-                  <span className="text-[11px] text-zinc-500">Morph S3 Flagship • Bruce-v2</span>
+                <div className="p-4 border-t border-white/60 bg-white/35 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-700">Morph S3 Flagship</span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => {
@@ -2172,12 +2284,12 @@
                         setLocalFile(null);
                         setShowMorphGuide(false);
                       }}
-                      className="px-3 py-1.5 rounded bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-zinc-700 font-bold transition-colors">
+                      className="liquid-btn-primary px-4 py-2 text-xs">
                       {t.morphSelectNow}
                     </button>
                     <button
                       onClick={() => setShowMorphGuide(false)}
-                      className="px-3 py-1.5 rounded bg-zinc-850 hover:bg-zinc-800 text-zinc-300 border border-zinc-700 transition-colors">
+                      className="liquid-btn px-4 py-2 text-xs">
                       {t.morphCloseBtn}
                     </button>
                   </div>
@@ -2196,4 +2308,3 @@
   </script>
 </body>
 </html>
- 
