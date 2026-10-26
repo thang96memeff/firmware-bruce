@@ -1,0 +1,95 @@
+{
+  "board_id": "bw16",
+  "board_name": "Module BW16 (RTL8720DN Dual-Band 2.4/5GHz)",
+  "chip": "RTL8720DN",
+  "notes": "Module phụ trợ phát sóng Wi-Fi 2 băng tần (2.4GHz & 5GHz) kết nối với bo mạch Bruce ESP32 qua giao tiếp UART. Biên dịch từ file bw16 với AmebaD Core 3.1.5 theo đúng quy chuẩn của Chủ tịch Thăng.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT",
+      "subtitle": "TFT Pin ↔ BW16 / ESP32 Chủ",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "Không tích hợp màn hình trên bo BW16"},
+        {"pin": "GND", "esp": "GND chung toàn hệ thống"},
+        {"pin": "SCL (Nếu dùng OLED)", "esp": "Chân PA14 (I2C SCL)"},
+        {"pin": "SDA (Nếu dùng OLED)", "esp": "Chân PA13 (I2C SDA)"},
+        {"pin": "Màn hình chính của Bruce", "esp": "Nằm trên bo ESP32 chủ điều khiển"}
+      ]
+    },
+    {
+      "name": "2. Nút nhấn & Chế độ Nạp",
+      "subtitle": "Button ↔ BW16 Pin",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "Nút BURN (Download Mode)", "esp": "Chân PA8 (Nối GND khi Reset để nạp)"},
+        {"pin": "Nút RESET (RST)", "esp": "Chân RST (Nhấn nhả để khởi động lại)"},
+        {"pin": "Đèn LED Đỏ (Red)", "esp": "GPIO 12 (PA12 - Nhấp nháy khi Deauth)"},
+        {"pin": "Đèn LED Xanh lam (Blue)", "esp": "GPIO 11 (PA13 - Sáng khi chọn Target)"},
+        {"pin": "Đèn LED Xanh lục (Green)", "esp": "GPIO 10 (PA14 - Sáng khi quét Scan)"}
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại",
+      "subtitle": "IR Module ↔ BW16 / ESP32",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "Kết nối qua ESP32 chủ"},
+        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "Kết nối qua ESP32 chủ"}
+      ]
+    },
+    {
+      "name": "4. Module Thẻ nhớ",
+      "subtitle": "SD Pin ↔ BW16 / ESP32",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "VCC", "esp": "Kết nối qua ESP32 chủ"},
+        {"pin": "GND", "esp": "GND chung"},
+        {"pin": "SCK / MOSI / MISO / CS", "esp": "ESP32 chủ quản lý lưu trữ thẻ nhớ"}
+      ]
+    },
+    {
+      "name": "5. Cổng Kết nối ESP32 (Chạy Bruce)",
+      "subtitle": "BW16 Serial1 ↔ ESP32 UART (Cổng chạy chính)",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V hoặc 5V (Khuyên dùng 5V VIN)"},
+        {"pin": "GND", "esp": "GND (Bắt buộc nối chung Mass)"},
+        {"pin": "PB1 (BW16 TX1)", "esp": "ESP32 RX (Chéo chân sang RX ESP32)"},
+        {"pin": "PB2 (BW16 RX1)", "esp": "ESP32 TX (Chéo chân sang TX ESP32)"}
+      ]
+    },
+    {
+      "name": "6. Cổng Nạp Firmware (Log UART)",
+      "subtitle": "Mạch Nạp USB-UART ↔ BW16 (PA7 & PA8)",
+      "icon": "fa-plug",
+      "pins": [
+        {"pin": "VCC Mạch nạp", "esp": "Cấp 5V vào chân VIN (tránh sụt áp)"},
+        {"pin": "GND Mạch nạp", "esp": "Nối chung chân GND"},
+        {"pin": "TX Mạch nạp", "esp": "Chân PA8 (Log RX) - Nối chéo TX -> RX"},
+        {"pin": "RX Mạch nạp", "esp": "Chân PA7 (Log TX) - Nối chéo RX <- TX"},
+        {"pin": "Tốc độ nạp (Baudrate)", "esp": "115200 (Khuyên dùng để không lỗi handshake)"}
+      ]
+    },
+    {
+      "name": "7. Module NRF24",
+      "subtitle": "NRF24 Pin ↔ BW16 / ESP32",
+      "icon": "fa-tower-broadcast",
+      "warning": "⚠️ Chú ý: Chỉ cấp nguồn 3.3V cho NRF24L01+, không cắm 5V gây cháy module!",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (⚠️ Chỉ cấp 3.3V)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "CE / CSN / SCK / MOSI / MISO", "esp": "Kết nối qua cổng SPI của ESP32 chủ"}
+      ]
+    },
+    {
+      "name": "8. Module CC1101",
+      "subtitle": "CC1101 Pin ↔ BW16 / ESP32",
+      "icon": "fa-satellite-dish",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK / MOSI / MISO / CSN / GDO0", "esp": "Kết nối qua cổng Sub-GHz của ESP32 chủ"}
+      ]
+    }
+  ]
+}

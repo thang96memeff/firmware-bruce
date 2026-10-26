@@ -1,0 +1,362 @@
+[
+  {
+    "id": "s3-mini-1_47-inch",
+    "name": "ESP32-S3 Super Mini 1.47",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "ESP32-S3 Super Mini 4MB, ST7789 1.47",
+    "url": "Bruce-s3-mini-1_47-inch.bin",
+    "icon": "fa-microchip",
+    "isHero": true
+  },
+  {
+    "id": "Morph-s3",
+    "name": "Morph S3 Flagship",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Morph S3 N16R8 Octal-PSRAM. Full Sniffer, Sub-GHz CC1101, NRF24, BLE & Web Config.",
+    "url": "Bruce-Morph-s3.bin",
+    "icon": "fa-wand-magic-sparkles",
+    "isHero": true
+  },
+  {
+    "id": "Launcher-xingzhi-cube-s3",
+    "name": "Xingzhi Cube S3 Launcher",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Official Multi-Boot Launcher for Xingzhi Cube S3. 240x240 ST7789 LCD, 3-Key Navigation.",
+    "url": "Launcher-xingzhi-cube-s3.bin",
+    "icon": "fa-cubes-stacked",
+    "isHero": true
+  },
+  {
+    "id": "bruce-c5-1_47",
+    "name": "Bruce C5 1.47",
+    "chip": "ESP32-C5",
+    "category": "c5",
+    "desc": "ST7789 1.47 inch 170x320. RISC-V 240MHz, Dual-Band WiFi 6, 8MB Flash, 3-Key Navigation.",
+    "url": "Bruce-bruce-c5-1_47.bin",
+    "icon": "fa-bolt",
+    "isHero": false
+  },
+  {
+    "id": "lilygo-c5-1_9-inch",
+    "name": "LilyGO T-Display C5 (1.9",
+    "chip": "ESP32-C5",
+    "category": "c5",
+    "desc": "ST7789 1.9 inch 170x320. RISC-V Single-Core 240MHz, 2.4/5GHz Dual-Band WiFi 6.",
+    "url": "Bruce-lilygo-c5-1_9-inch.bin",
+    "icon": "fa-bolt",
+    "isHero": false
+  },
+  {
+    "id": "mywatch-c5",
+    "name": "MyWatch C5 (ESP32-C5 N16R8)",
+    "chip": "ESP32-C5",
+    "category": "c5",
+    "desc": "ST7789 240x296, CST816S Pro Touch UI, RISC-V Dual-Band WiFi 6, 16MB Flash + 8MB PSRAM.",
+    "url": "Bruce-mywatch-c5.bin",
+    "icon": "fa-stopwatch",
+    "isHero": false
+  },
+  {
+    "id": "esp32-c5-tft",
+    "name": "ESP32-C5 Generic / TFT",
+    "chip": "ESP32-C5",
+    "category": "c5",
+    "desc": "Standard ESP32-C5 development board connected via SPI display.",
+    "url": "Bruce-esp32-c5-tft.bin",
+    "icon": "fa-microchip",
+    "isHero": false
+  },
+  {
+    "id": "lilygo-t-display-s3",
+    "name": "LilyGO T-Display S3",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "1.9 inch ST7789 8-bit parallel display, high-speed dual buttons.",
+    "url": "Bruce-lilygo-t-display-s3.bin",
+    "icon": "fa-tv",
+    "isHero": false
+  },
+  {
+    "id": "lilygo-t-display-s3-touch",
+    "name": "LilyGO T-Display S3 Touch",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "1.9 inch ST7789, CST816S Capacitive Touch with ProTouch kinetic engine, dual buttons.",
+    "url": "Bruce-lilygo-t-display-s3-touch.bin",
+    "icon": "fa-mobile-screen",
+    "isHero": false
+  },
+  {
+    "id": "lilygo-t-display-s3-pro",
+    "name": "LilyGO T-Display S3 Pro",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Capacitive touch screen, camera support and LiPo charging circuit.",
+    "url": "Bruce-lilygo-t-display-s3-pro.bin",
+    "icon": "fa-mobile-screen",
+    "isHero": false
+  },
+  {
+    "id": "lilygo-t-embed-cc1101",
+    "name": "LilyGO T-Embed CC1101",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Rotary encoder, built-in CC1101 Sub-GHz transceiver, horizontal 170x320 LCD.",
+    "url": "Bruce-lilygo-t-embed-cc1101.bin",
+    "icon": "fa-tower-broadcast",
+    "isHero": false
+  },
+  {
+    "id": "lilygo-t-embed",
+    "name": "LilyGO T-Embed Standard",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Rotary encoder, 170x320 LCD, microphone and expansion ports.",
+    "url": "Bruce-lilygo-t-embed.bin",
+    "icon": "fa-pager",
+    "isHero": false
+  },
+  {
+    "id": "ES3C28P",
+    "name": "ES3C28P Touch (2.8",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "2.8 inch 240x320 IPS, FT6336G Capacitive Touch, ES8311 Audio, SDIO MicroSD.",
+    "url": "Bruce-ES3C28P.bin",
+    "icon": "fa-hand-pointer",
+    "isHero": false
+  },
+  {
+    "id": "elecrow-advance-35-s3",
+    "name": "Elecrow CrowPanel Advance 3.5",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "3.5 inch 480x320 IPS ILI9488, GT911 Capacitive Touch with ProTouch kinetic engine, I2S Audio, SD Card.",
+    "url": "Bruce-elecrow-advance-35-s3.bin",
+    "icon": "fa-tv",
+    "isHero": false
+  },
+  {
+    "id": "lilygo-t-deck",
+    "name": "LilyGO T-Deck / Plus",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Physical QWERTY keyboard, trackball, SX1262 LoRa & I2S microphone.",
+    "url": "Bruce-lilygo-t-deck.bin",
+    "icon": "fa-keyboard",
+    "isHero": false
+  },
+  {
+    "id": "lilygo-t-watch-s3",
+    "name": "LilyGO T-Watch S3",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Wearable smartwatch platform with capacitive touch & RTC.",
+    "url": "Bruce-lilygo-t-watch-s3.bin",
+    "icon": "fa-stopwatch",
+    "isHero": false
+  },
+  {
+    "id": "m5stack-cardputer",
+    "name": "M5Stack Cardputer",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Credit-card sized terminal with 56-key keyboard, speaker & SD slot.",
+    "url": "Bruce-m5stack-cardputer.bin",
+    "icon": "fa-calculator",
+    "isHero": false
+  },
+  {
+    "id": "m5stack-cores3",
+    "name": "M5Stack CoreS3",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "ILI9342C capacitive touch, camera, dual mics, AXP2101 power manager.",
+    "url": "Bruce-m5stack-cores3.bin",
+    "icon": "fa-cubes",
+    "isHero": false
+  },
+  {
+    "id": "m5stack-sticks3",
+    "name": "M5Stick S3",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Compact ESP32-S3, 135x240 LCD, AXP2101 PMIC, battery & IR transmitter.",
+    "url": "Bruce-m5stack-sticks3.bin",
+    "icon": "fa-pager",
+    "isHero": false
+  },
+  {
+    "id": "xingzhi-cube-s3",
+    "name": "Xingzhi Cube S3 (Bruce FW)",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Bruce Pentest firmware for Xingzhi Cube S3, ST7789 240x240 LCD.",
+    "url": "Bruce-xingzhi-cube-s3.bin",
+    "icon": "fa-cube",
+    "isHero": false
+  },
+  {
+    "id": "esp32-s3-devkitc-1",
+    "name": "ESP32-S3 DevKitC-1",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Standard ESP32-S3 DevKit development board.",
+    "url": "Bruce-esp32-s3-devkitc-1.bin",
+    "icon": "fa-microchip",
+    "isHero": false
+  },
+  {
+    "id": "CYD-2432S028",
+    "name": "CYD (Cheap Yellow Display 2.8",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "2.8 inch ILI9341 resistive touch dev kit.",
+    "url": "Bruce-CYD-2432S028.bin",
+    "icon": "fa-desktop",
+    "isHero": false
+  },
+  {
+    "id": "CYD-2USB",
+    "name": "CYD 2USB Edition",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "Cheap Yellow Display with dual USB ports (MicroUSB + Type-C).",
+    "url": "Bruce-CYD-2USB.bin",
+    "icon": "fa-desktop",
+    "isHero": false
+  },
+  {
+    "id": "CYD-2432W328C",
+    "name": "CYD Capacitive Touch (2.8",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "2.8 inch CST816T Capacitive Touch, ST7789/ILI9341 display, SD slot.",
+    "url": "Bruce-CYD-2432W328C.bin",
+    "icon": "fa-hand-pointer",
+    "isHero": false
+  },
+  {
+    "id": "CYD-2432W328R-or-S024R",
+    "name": "CYD 2432W328R / S024R",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "2.4 / 2.8 inch Resistive touch display.",
+    "url": "Bruce-CYD-2432W328R-or-S024R.bin",
+    "icon": "fa-hand-pointer",
+    "isHero": false
+  },
+  {
+    "id": "CYD-3248S035C",
+    "name": "CYD 3.5",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "3.5 inch 320x480 Capacitive Touch ST7796 display.",
+    "url": "Bruce-CYD-3248S035C.bin",
+    "icon": "fa-mobile-screen",
+    "isHero": false
+  },
+  {
+    "id": "CYD-3248S035R",
+    "name": "CYD 3.5",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "3.5 inch 320x480 Resistive Touch ST7796 display.",
+    "url": "Bruce-CYD-3248S035R.bin",
+    "icon": "fa-hand-pointer",
+    "isHero": false
+  },
+  {
+    "id": "lilygo-t-display-ttgo",
+    "name": "LilyGO T-Display TTGO (16MB)",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "Compact form-factor 1.14 inch IPS ST7789 LCD, 16MB Flash edition.",
+    "url": "Bruce-lilygo-t-display-ttgo.bin",
+    "icon": "fa-tablet-screen-button",
+    "isHero": false
+  },
+  {
+    "id": "m5stack-cplus1_1",
+    "name": "M5StickC Plus 1.1",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "Miniature wrist/pocket tool, 1.14 inch LCD, IMU sensor & battery.",
+    "url": "Bruce-m5stack-cplus1_1.bin",
+    "icon": "fa-pager",
+    "isHero": false
+  },
+  {
+    "id": "m5stack-cplus2",
+    "name": "M5StickC Plus 2",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "Upgraded 200mAh battery, PMIC and improved buzzer output.",
+    "url": "Bruce-m5stack-cplus2.bin",
+    "icon": "fa-pager",
+    "isHero": false
+  },
+  {
+    "id": "m5stack-core2",
+    "name": "M5Stack Core2",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "2.0 inch touch LCD, vibration motor, RTC BM8563 & AXP192.",
+    "url": "Bruce-m5stack-core2.bin",
+    "icon": "fa-cube",
+    "isHero": false
+  },
+  {
+    "id": "smoochiee-board",
+    "name": "Smoochiee Board",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "Dedicated RF pentesting hardware with 5-button D-Pad navigation.",
+    "url": "Bruce-smoochiee-board.bin",
+    "icon": "fa-shield-halved",
+    "isHero": false
+  },
+  {
+    "id": "Marauder-Mini",
+    "name": "Marauder Mini",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "Handheld mini wireless security auditing toolkit.",
+    "url": "Bruce-Marauder-Mini.bin",
+    "icon": "fa-microchip",
+    "isHero": false
+  },
+  {
+    "id": "Phantom_S024R",
+    "name": "Phantom S024R",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "2.4 inch SPI ST7789 display instrument.",
+    "url": "Bruce-Phantom_S024R.bin",
+    "icon": "fa-wave-square",
+    "isHero": false
+  },
+  {
+    "id": "xk404",
+    "name": "XK404 Pentest Device",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "Portable hardware research node.",
+    "url": "Bruce-xk404.bin",
+    "icon": "fa-terminal",
+    "isHero": false
+  },
+  {
+    "id": "bw16",
+    "name": "Module BW16 (RTL8720DN)",
+    "chip": "RTL8720DN",
+    "category": "esp32",
+    "desc": "Module Wi-Fi 2 băng tần (2.4GHz + 5GHz) & BLE 5.0. Hỗ trợ Deauth / Beacon 5GHz kết nối với Bruce qua UART (PB1/PB2). Core 3.1.5.",
+    "url": "Bruce-bw16.bin",
+    "icon": "fa-wifi",
+    "isHero": false
+  }
+]

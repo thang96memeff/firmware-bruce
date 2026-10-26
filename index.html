@@ -487,6 +487,16 @@
         icon: 'fa-wand-magic-sparkles'
       },
       { 
+        id: 'bw16', 
+        name: 'Module BW16 (RTL8720DN)', 
+        chip: 'RTL8720DN', 
+        category: 'esp32', 
+        desc: 'Module Wi-Fi 2 băng tần (2.4GHz + 5GHz) & BLE 5.0. Hỗ trợ Deauth / Beacon 5GHz kết nối với Bruce qua UART (PB1/PB2). Core 3.1.5.',
+        url: 'Bruce-bw16.bin',
+        icon: 'fa-wifi'
+      },
+
+      { 
         id: 'Launcher-xingzhi-cube-s3', 
         name: 'Xingzhi Cube S3 Launcher', 
         chip: 'ESP32-S3', 
@@ -931,6 +941,18 @@
     }
 
     function App() {
+      // Tự động tải danh sách bo mạch: nạp từ cache LocalStorage nếu có, mặc định là MASTER_BOARDS
+      const [boards, setBoards] = useState(() => {
+        try {
+          const cached = localStorage.getItem('cached_bruce_boards');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          }
+        } catch(e) {}
+        return MASTER_BOARDS;
+      });
+
       const [isConnected, setIsConnected] = useState(false);
       const [baudRate, setBaudRate] = useState(921600);
       const [eraseFlash, setEraseFlash] = useState(false);
@@ -1034,7 +1056,7 @@
         setSodoError(null);
         setSodoData(null);
 
-        const boardObj = MASTER_BOARDS.find(b => b.id === boardId);
+        const boardObj = boards.find(b => b.id === boardId);
         const candidates = [
           boardId,
           boardId.toLowerCase(),
@@ -1042,21 +1064,55 @@
         ].filter(Boolean);
         const uniqueCandidates = [...new Set(candidates)];
 
-        let loaded = null;
+        // BƯỚC 1: Hiển thị ngay lập tức từ Cache LocalStorage hoặc Native Assets (0ms chờ)
+        let localData = null;
         for (const cand of uniqueCandidates) {
           try {
-            let res = await fetch(`./sodo/${cand}.json?t=${Date.now()}`);
-            if (res.ok) { loaded = await res.json(); break; }
-            res = await fetch(`${GITHUB_RAW_BASE}sodo/${cand}.json?t=${Date.now()}`);
-            if (res.ok) { loaded = await res.json(); break; }
-            res = await fetch(`https://raw.githubusercontent.com/thang96memeff/firmware-bruce/main/sodo/${cand}.json?t=${Date.now()}`);
-            if (res.ok) { loaded = await res.json(); break; }
+            const cachedStr = localStorage.getItem('sodo_cache_' + cand);
+            if (cachedStr) {
+              localData = JSON.parse(cachedStr);
+              break;
+            }
+            if (window.AndroidUSB && typeof window.AndroidUSB.getSodoJson === 'function') {
+              const nativeJson = window.AndroidUSB.getSodoJson(cand);
+              if (nativeJson && nativeJson.trim().startsWith('{')) {
+                localData = JSON.parse(nativeJson);
+                break;
+              }
+            }
+            let res = await fetch(`./sodo/${cand}.json`);
+            if (res.ok) { localData = await res.json(); break; }
           } catch(e) {}
         }
 
-        if (loaded) {
-          setSodoData(loaded);
-        } else {
+        if (localData) {
+          setSodoData(localData);
+          setIsLoadingSodo(false);
+        }
+
+        // BƯỚC 2: TỰ ĐỘNG KIỂM TRA & CẬP NHẬT TỪ SERVER NẾU SƠ ĐỒ CÓ THAY ĐỔI
+        for (const cand of uniqueCandidates) {
+          try {
+            const serverUrl = `https://raw.githubusercontent.com/thang96memeff/firmware-bruce/main/sodo/${cand}.json?t=${Date.now()}`;
+            const res = await fetch(serverUrl);
+            if (res.ok) {
+              const serverData = await res.json();
+              if (serverData && serverData.board_id) {
+                const serverStr = JSON.stringify(serverData);
+                const currentStr = JSON.stringify(localData);
+                if (serverStr !== currentStr) {
+                  logSys(`[SƠ ĐỒ] Đã tự động cập nhật sơ đồ mới nhất cho ${cand} từ server.`, 'info');
+                  setSodoData(serverData);
+                  try { localStorage.setItem('sodo_cache_' + cand, serverStr); } catch(e) {}
+                }
+                localData = serverData;
+                break;
+              }
+            }
+          } catch(err) {}
+        }
+
+        if (!localData) {
           setSodoError(`sodo/${boardId}.json`);
         }
         setIsLoadingSodo(false);
@@ -1126,8 +1182,38 @@
         });
       };
 
+      // TỰ ĐỘNG CẬP NHẬT BO MẠCH MỚI TỪ SERVER
+      const fetchServerBoards = async () => {
+        try {
+          const res = await fetch(`https://raw.githubusercontent.com/thang96memeff/firmware-bruce/main/boards.json?t=${Date.now()}`);
+          if (res.ok) {
+            const serverBoards = await res.json();
+            if (Array.isArray(serverBoards) && serverBoards.length > 0) {
+              setBoards(prev => {
+                const map = new Map();
+                prev.forEach(b => map.set(b.id, b));
+                let hasNew = false;
+                serverBoards.forEach(sb => {
+                  if (!map.has(sb.id) || JSON.stringify(map.get(sb.id)) !== JSON.stringify(sb)) {
+                    map.set(sb.id, sb);
+                    hasNew = true;
+                  }
+                });
+                const merged = Array.from(map.values());
+                if (hasNew) {
+                  logSys(`[CẬP NHẬT BO MẠCH] Đã tự động cập nhật ${merged.length} bo mạch từ server!`, 'success');
+                  try { localStorage.setItem('cached_bruce_boards', JSON.stringify(merged)); } catch(e) {}
+                }
+                return merged;
+              });
+            }
+          }
+        } catch(e) {}
+      };
+
       const fetchGithubContents = async () => {
         setIsFetchingGithub(true);
+        fetchServerBoards();
         try {
           const res = await fetch(GITHUB_API_URL + '?t=' + Date.now(), {
             headers: { 'Accept': 'application/vnd.github.v3+json' }
@@ -1143,6 +1229,27 @@
                     download_url: item.download_url,
                     html_url: item.html_url
                   };
+                  // Tự động phát hiện nếu server có file binary bo mạch mới
+                  if (item.name.startsWith('Bruce-')) {
+                    const candidateId = item.name.replace(/^Bruce-/, '').replace(/\.bin$/, '');
+                    setBoards(prev => {
+                      if (!prev.some(b => b.id.toLowerCase() === candidateId.toLowerCase())) {
+                        const newBoard = {
+                          id: candidateId,
+                          name: `Board ${candidateId}`,
+                          chip: candidateId.includes('s3') ? 'ESP32-S3' : candidateId.includes('c5') ? 'ESP32-C5' : 'ESP32',
+                          category: candidateId.includes('s3') ? 's3' : candidateId.includes('c5') ? 'c5' : 'esp32',
+                          desc: `Firmware tự động đồng bộ từ server: ${item.name}`,
+                          url: item.name,
+                          icon: 'fa-microchip'
+                        };
+                        const updated = [...prev, newBoard];
+                        try { localStorage.setItem('cached_bruce_boards', JSON.stringify(updated)); } catch(e) {}
+                        return updated;
+                      }
+                      return prev;
+                    });
+                  }
                 }
               });
             }
@@ -1160,6 +1267,7 @@
 
       useEffect(() => {
         logSys(t.logInit, "info");
+        fetchServerBoards();
         fetchGithubContents();
       }, []);
 
@@ -1477,7 +1585,7 @@
       };
 
       const handleFlash = async () => {
-        const board = MASTER_BOARDS.find(b => b.id === selectedBoardId);
+        const board = boards.find(b => b.id === selectedBoardId);
 
         if (!localFile && !board?.url) {
           return logSys(t.logNoTarget, "error");
@@ -1583,9 +1691,9 @@
       };
 
       const filteredBoards = useMemo(() => {
-        if (selectedCategory === 'all') return MASTER_BOARDS.filter(b => !b.isHero);
-        return MASTER_BOARDS.filter(b => b.category === selectedCategory && !b.isHero);
-      }, [selectedCategory]);
+        if (selectedCategory === 'all') return boards.filter(b => !b.isHero);
+        return boards.filter(b => b.category === selectedCategory && !b.isHero);
+      }, [selectedCategory, boards]);
 
       const isMorphSelected = selectedBoardId === 'Morph-s3' && !localFile;
       const isLauncherSelected = selectedBoardId === 'Launcher-xingzhi-cube-s3' && !localFile;
@@ -1730,7 +1838,7 @@
                     {t.hardwareSec}
                   </span>
                   <span className="text-[11px] font-semibold text-slate-700 bg-white/35 px-2.5 py-0.5 rounded-full border border-white/70">
-                    {MASTER_BOARDS.length} {t.profilesCount}
+                    {boards.length} {t.profilesCount}
                   </span>
                 </div>
 
@@ -1841,7 +1949,7 @@
                     disabled={isFlashing || isErasingOnly}
                     className="w-full liquid-input p-2.5 text-xs font-semibold text-slate-900 outline-none cursor-pointer">
                     <optgroup label={t.vipGroup}>
-                      {MASTER_BOARDS.filter(b => b.isHero).map(b => (
+                      {boards.filter(b => b.isHero).map(b => (
                         <option key={b.id} value={b.id}>
                           [{b.chip}] ★ {b.name} {githubFiles[b.url] ? `(${(githubFiles[b.url].size/1048576).toFixed(2)} MB)` : ''}
                         </option>
@@ -1858,7 +1966,7 @@
 
                   {/* THÔNG TIN CHI TIẾT BO MẠCH ĐANG CHỌN */}
                   {(() => {
-                    const b = MASTER_BOARDS.find(item => item.id === selectedBoardId);
+                    const b = boards.find(item => item.id === selectedBoardId);
                     if (!b) return null;
                     const hasCloud = Boolean(githubFiles[b.url]);
                     return (
