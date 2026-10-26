@@ -1,0 +1,106 @@
+{
+  "board_id": "esp32-s3-devkitc-1",
+  "board_name": "ESP32-S3 DevKitC-1 (Headless / WebUI)",
+  "chip": "ESP32-S3",
+  "notes": "Bo mạch phát triển đa năng ESP32-S3 DevKitC-1 chuẩn (8MB/16MB Flash), chạy ở chế độ Headless không màn hình tích hợp (điều khiển qua WebUI Navigator, Serial CLI hoặc đấu nối màn hình SPI ngoài), hỗ trợ đầy đủ các module RF, CC1101, IR và GPS.",
+  "modules": [
+    {
+      "name": "1. Màn hình (Chế độ Headless / SPI ngoài)",
+      "subtitle": "Giao diện qua WebUI Navigator hoặc Header SPI tùy chọn",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "GIAO DIỆN CHÍNH", "esp": "WebUI Navigator qua WiFi (AP: Bruce-AP) & Serial CLI"},
+        {"pin": "SCL (Tùy chọn màn hình ngoài)", "esp": "GPIO 12 (SPI_SCK_PIN)"},
+        {"pin": "SDA / MOSI (Tùy chọn màn hình ngoài)", "esp": "GPIO 11 (SPI_MOSI_PIN)"},
+        {"pin": "MISO (Tùy chọn màn hình ngoài)", "esp": "GPIO 13 (SPI_MISO_PIN)"},
+        {"pin": "CS (Tùy chọn màn hình ngoài)", "esp": "GPIO 10 (SPI_SS_PIN)"}
+      ]
+    },
+    {
+      "name": "2. Nút nhấn & Điều khiển",
+      "subtitle": "Button ↔ ESP32-S3 GPIO & WebUI",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "BOOT Button", "esp": "GPIO 0 (BOOT Button onboard)"},
+        {"pin": "ĐIỀU HƯỚNG CHÍNH", "esp": "Phím bấm ảo trên WebUI Navigator (D-pad & OK)"},
+        {"pin": "SELECT / OK (Nút ngoài tùy chọn)", "esp": "GPIO 1"},
+        {"pin": "UP (Nút ngoài tùy chọn)", "esp": "GPIO 2"},
+        {"pin": "DOWN (Nút ngoài tùy chọn)", "esp": "GPIO 3"}
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại",
+      "subtitle": "IR Module ↔ ESP32-S3",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 8 (GROVE_SDA)"},
+        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 46 (GROVE_SCL)"},
+        {"pin": "LED Chỉ thị", "esp": "GPIO 40"}
+      ]
+    },
+    {
+      "name": "4. Module Thẻ nhớ",
+      "subtitle": "SD Pin ↔ ESP32-S3 (Header SPI)",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 12 (SPI_SCK_PIN)"},
+        {"pin": "MOSI", "esp": "GPIO 11 (SPI_MOSI_PIN)"},
+        {"pin": "MISO", "esp": "GPIO 13 (SPI_MISO_PIN)"},
+        {"pin": "CS", "esp": "GPIO 10 (SPI_SS_PIN)"}
+      ]
+    },
+    {
+      "name": "5. Module BW16",
+      "subtitle": "BW16 Pin ↔ ESP32-S3",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "PB2", "esp": "GPIO 44 (RX)"},
+        {"pin": "PB1", "esp": "GPIO 43 (TX)"}
+      ]
+    },
+    {
+      "name": "6. Module GPS",
+      "subtitle": "GPS Pin ↔ ESP32-S3",
+      "icon": "fa-location-crosshairs",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "TX", "esp": "GPIO 44 (RX)"},
+        {"pin": "RX", "esp": "GPIO 43 (TX)"}
+      ]
+    },
+    {
+      "name": "7. Module NRF24",
+      "subtitle": "NRF24 Pin ↔ ESP32-S3 (Header ngoài)",
+      "icon": "fa-tower-broadcast",
+      "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "CE", "esp": "GPIO 6"},
+        {"pin": "CSN", "esp": "GPIO 7"},
+        {"pin": "SCK", "esp": "GPIO 12"},
+        {"pin": "MOSI", "esp": "GPIO 11"},
+        {"pin": "MISO", "esp": "GPIO 13"}
+      ]
+    },
+    {
+      "name": "8. Module CC1101",
+      "subtitle": "CC1101 Pin ↔ ESP32-S3 (Header ngoài)",
+      "icon": "fa-radio",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 12 (CC1101_SCK_PIN)"},
+        {"pin": "MOSI", "esp": "GPIO 11 (CC1101_MOSI_PIN)"},
+        {"pin": "MISO", "esp": "GPIO 13 (CC1101_MISO_PIN)"},
+        {"pin": "CSN", "esp": "GPIO 10 (CC1101_SS_PIN)"},
+        {"pin": "GDO0", "esp": "GPIO 9 (CC1101_GDO0_PIN)"}
+      ]
+    }
+  ]
+}

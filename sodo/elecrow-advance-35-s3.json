@@ -1,0 +1,108 @@
+{
+  "board_id": "elecrow-advance-35-s3",
+  "board_name": "Elecrow Advance 3.5\" S3 (CrowPanel 480x320)",
+  "chip": "ESP32-S3",
+  "notes": "Bo mạch Elecrow CrowPanel Advance 3.5\" HMI tích hợp ESP32-S3-WROOM-1-N16R8 (16MB Flash, 8MB OPI PSRAM), màn hình ILI9488 480x320 IPS, cảm ứng điện dung GT911 qua I2C và khe thẻ MicroSD.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT",
+      "subtitle": "TFT Pin ↔ ESP32-S3 (Onboard ILI9488 480x320 IPS)",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Onboard)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCL", "esp": "GPIO 42 (TFT_SCLK)"},
+        {"pin": "SDA", "esp": "GPIO 39 (TFT_MOSI)"},
+        {"pin": "CS", "esp": "GPIO 40 (TFT_CS)"},
+        {"pin": "DC", "esp": "GPIO 41 (TFT_DC)"},
+        {"pin": "BLK", "esp": "GPIO 38 (TFT_BL PWM)"}
+      ]
+    },
+    {
+      "name": "2. Nút nhấn & Cảm ứng",
+      "subtitle": "Button ↔ ESP32-S3 GPIO & Cảm ứng GT911",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "SELECT", "esp": "GPIO 0 (BOOT Button) / Cảm ứng chạm (Touch)"},
+        {"pin": "DOWN", "esp": "Cảm ứng vuốt xuống (Touch)"},
+        {"pin": "UP", "esp": "Cảm ứng vuốt lên (Touch)"},
+        {"pin": "TOUCH_SDA", "esp": "GPIO 15 (GT911 SDA)"},
+        {"pin": "TOUCH_SCL", "esp": "GPIO 16 (GT911 SCL)"},
+        {"pin": "TOUCH_INT", "esp": "GPIO 47 (GT911 INT)"}
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại",
+      "subtitle": "IR Module ↔ ESP32-S3",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 17"},
+        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 18"}
+      ]
+    },
+    {
+      "name": "4. Module Thẻ nhớ",
+      "subtitle": "SD Pin ↔ ESP32-S3 (Khe MicroSD SPI Onboard)",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Onboard)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 5 (SDCARD_SCK)"},
+        {"pin": "MOSI", "esp": "GPIO 6 (SDCARD_MOSI)"},
+        {"pin": "MISO", "esp": "GPIO 4 (SDCARD_MISO)"},
+        {"pin": "CS", "esp": "GPIO 7 (SDCARD_CS)"}
+      ]
+    },
+    {
+      "name": "5. Module BW16",
+      "subtitle": "BW16 Pin ↔ ESP32-S3",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "PB2", "esp": "GPIO 44 (RX / SERIAL_RX)"},
+        {"pin": "PB1", "esp": "GPIO 43 (TX / SERIAL_TX)"}
+      ]
+    },
+    {
+      "name": "6. Module GPS",
+      "subtitle": "GPS Pin ↔ ESP32-S3",
+      "icon": "fa-location-crosshairs",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "TX", "esp": "GPIO 44 (RX / SERIAL_RX)"},
+        {"pin": "RX", "esp": "GPIO 43 (TX / SERIAL_TX)"}
+      ]
+    },
+    {
+      "name": "7. Module NRF24",
+      "subtitle": "NRF24 Pin ↔ ESP32-S3 (Header ngoài)",
+      "icon": "fa-tower-broadcast",
+      "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "CE", "esp": "GPIO 18"},
+        {"pin": "CSN", "esp": "GPIO 17"},
+        {"pin": "SCK", "esp": "GPIO 5"},
+        {"pin": "MOSI", "esp": "GPIO 6"},
+        {"pin": "MISO", "esp": "GPIO 4"}
+      ]
+    },
+    {
+      "name": "8. Module CC1101",
+      "subtitle": "CC1101 Pin ↔ ESP32-S3 (Header ngoài)",
+      "icon": "fa-radio",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 5"},
+        {"pin": "MOSI", "esp": "GPIO 6"},
+        {"pin": "MISO", "esp": "GPIO 4"},
+        {"pin": "CSN", "esp": "GPIO 17"},
+        {"pin": "GDO0", "esp": "GPIO 18"}
+      ]
+    }
+  ]
+}
