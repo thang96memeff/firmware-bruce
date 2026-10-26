@@ -1,0 +1,106 @@
+{
+  "board_id": "bruce-c5-1_47",
+  "board_name": "Bruce C5 1.47\" (ESP32-C5 RISC-V)",
+  "chip": "ESP32-C5",
+  "notes": "Bo mạch kiến trúc RISC-V Dual-Band WiFi 6 (2.4/5GHz), màn hình ST7789 1.47 inch 170x320, 3 phím điều hướng vật lý.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT",
+      "subtitle": "TFT Pin ↔ ESP32-C5 (ST7789 SPI)",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCL", "esp": "GPIO 6 (SPI SCK)"},
+        {"pin": "SDA", "esp": "GPIO 7 (SPI MOSI)"},
+        {"pin": "RES", "esp": "CHIP_PU / RST"},
+        {"pin": "DC", "esp": "GPIO 24"},
+        {"pin": "CS", "esp": "GPIO 23"},
+        {"pin": "BLK", "esp": "GPIO 25 (Backlight)"}
+      ]
+    },
+    {
+      "name": "2. Nút nhấn",
+      "subtitle": "Button ↔ ESP32-C5 GPIO",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "SELECT", "esp": "GPIO 28 (SEL_BTN)"},
+        {"pin": "DOWN", "esp": "GPIO 1 (DW_BTN)"},
+        {"pin": "UP", "esp": "GPIO 0 (UP_BTN)"}
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại",
+      "subtitle": "IR Module ↔ ESP32-C5",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 3 (TXLED)"},
+        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 26 (RXLED)"}
+      ]
+    },
+    {
+      "name": "4. Module Thẻ nhớ",
+      "subtitle": "SD Pin ↔ ESP32-C5",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 6"},
+        {"pin": "MOSI", "esp": "GPIO 7"},
+        {"pin": "MISO", "esp": "GPIO 2"},
+        {"pin": "CS", "esp": "N/A (Chung bus GPSPI)"}
+      ]
+    },
+    {
+      "name": "5. Module BW16",
+      "subtitle": "BW16 Pin ↔ ESP32-C5",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "PB2", "esp": "GPIO 12 (RX)"},
+        {"pin": "PB1", "esp": "GPIO 11 (TX)"}
+      ]
+    },
+    {
+      "name": "6. Module GPS",
+      "subtitle": "GPS Pin ↔ ESP32-C5",
+      "icon": "fa-location-crosshairs",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "TX", "esp": "GPIO 4 (RX / GPS_RX)"},
+        {"pin": "RX", "esp": "GPIO 5 (TX / GPS_TX)"}
+      ]
+    },
+    {
+      "name": "7. Module NRF24",
+      "subtitle": "NRF24 Pin ↔ ESP32-C5",
+      "icon": "fa-tower-broadcast",
+      "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "CE", "esp": "GPIO 8"},
+        {"pin": "CSN", "esp": "GPIO 9"},
+        {"pin": "SCK", "esp": "GPIO 6"},
+        {"pin": "MOSI", "esp": "GPIO 7"},
+        {"pin": "MISO", "esp": "GPIO 2"}
+      ]
+    },
+    {
+      "name": "8. Module CC1101",
+      "subtitle": "CC1101 Pin ↔ ESP32-C5",
+      "icon": "fa-radio",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 6"},
+        {"pin": "MOSI", "esp": "GPIO 7"},
+        {"pin": "MISO", "esp": "GPIO 2"},
+        {"pin": "CSN", "esp": "GPIO 9"},
+        {"pin": "GDO0", "esp": "GPIO 8"}
+      ]
+    }
+  ]
+}

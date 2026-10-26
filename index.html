@@ -171,6 +171,14 @@
         eraseConfirm: "XÁC NHẬN: XÓA SẠCH TOÀN BỘ BỘ NHỚ FLASH (Full Chip Erase)?\nToàn bộ NVS, WiFi, cài đặt và phân vùng sẽ bị xóa trắng!",
         flashBtn: "NẠP FIRMWARE",
         flashingBtn: "ĐANG NẠP...",
+        sodoTab: "SƠ ĐỒ CHÂN",
+        sodoSearching: "Đang tìm file sơ đồ đấu nối...",
+        sodoNotFound: "Chưa tìm thấy sơ đồ cho bo mạch này",
+        sodoColPin: "TÊN CHÂN (PIN NAME)",
+        sodoColEsp: "CHÂN KẾT NỐI ĐẾN ESP",
+        sodoNoteTitle: "LƯU Ý KẾT NỐI",
+        sodoModulesTitle: "CHI TIẾT ĐẤU NỐI CÁC MODULE",
+        sodoUnconnectedHint: "Chưa kết nối thiết bị. Đang hiển thị sơ đồ chân phần cứng.",
         sysLogTab: "NHẬT KÝ HỆ THỐNG",
         serialMonTab: "SERIAL MONITOR",
         clearLogTooltip: "Xóa màn hình console",
@@ -250,6 +258,14 @@
         eraseConfirm: "CONFIRM: FULL CHIP ERASE?\nAll NVS data, WiFi credentials, settings and partitions will be permanently erased!",
         flashBtn: "FLASH FIRMWARE",
         flashingBtn: "PROGRAMMING...",
+        sodoTab: "PINOUT DIAGRAM",
+        sodoSearching: "Searching wiring diagram...",
+        sodoNotFound: "No wiring diagram found for this board",
+        sodoColPin: "PIN NAME",
+        sodoColEsp: "CONNECTED TO ESP",
+        sodoNoteTitle: "WIRING NOTES",
+        sodoModulesTitle: "MODULE PINOUT DETAILS",
+        sodoUnconnectedHint: "Device offline. Displaying hardware pinout diagram.",
         sysLogTab: "SYSTEM LOG",
         serialMonTab: "SERIAL MONITOR",
         clearLogTooltip: "Clear console output",
@@ -291,16 +307,26 @@
       }
     };
 
-    // Danh sách toàn bộ các Bo mạch hỗ trợ trong dự án
+    // Danh sách toàn bộ các Bo mạch hỗ trợ trong dự án (34 Bo Mạch Hoàn Thiện)
     const MASTER_BOARDS = [
       // 1. VIP HERO PROFILES (FEATURED HARDWARE)
+      { 
+        id: 's3-mini-1_47-inch', 
+        name: 'ESP32-S3 Super Mini 1.47"', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        isHero: true,
+        desc: 'ESP32-S3 Super Mini 4MB, ST7789 1.47" 170x320, 3-Key Nav, Sub-GHz CC1101, NRF24, IR, SD.',
+        url: 'Bruce-s3-mini-1_47-inch.bin',
+        icon: 'fa-microchip'
+      },
       { 
         id: 'Morph-s3', 
         name: 'Morph S3 Flagship', 
         chip: 'ESP32-S3', 
         category: 's3', 
         isHero: true,
-        desc: 'Morph S3 N16R8 Octal-PSRAM. Full Sniffer, Sub-GHz CC1101, NRF24, BLE & Touch UI.',
+        desc: 'Morph S3 N16R8 Octal-PSRAM. Full Sniffer, Sub-GHz CC1101, NRF24, BLE & Web Config.',
         url: 'Bruce-Morph-s3.bin',
         icon: 'fa-wand-magic-sparkles'
       },
@@ -315,7 +341,16 @@
         icon: 'fa-cubes-stacked'
       },
 
-      // 2. C5 Series (RISC-V Dual-Band WiFi 6)
+      // 2. C5 Series (RISC-V Dual-Band WiFi 6 2.4/5GHz)
+      { 
+        id: 'bruce-c5-1_47', 
+        name: 'Bruce C5 1.47" (N8)', 
+        chip: 'ESP32-C5', 
+        category: 'c5', 
+        desc: 'ST7789 1.47 inch 170x320. RISC-V 240MHz, Dual-Band WiFi 6, 8MB Flash, 3-Key Navigation.',
+        url: 'Bruce-bruce-c5-1_47.bin',
+        icon: 'fa-bolt'
+      },
       { 
         id: 'lilygo-c5-1_9-inch', 
         name: 'LilyGO T-Display C5 (1.9")', 
@@ -335,52 +370,16 @@
         icon: 'fa-stopwatch'
       },
       { 
-        id: 'ESP32-C5-tft', 
+        id: 'esp32-c5-tft', 
         name: 'ESP32-C5 Generic / TFT', 
         chip: 'ESP32-C5', 
         category: 'c5', 
         desc: 'Standard ESP32-C5 development board connected via SPI display.',
-        url: 'Bruce-ESP32-C5-tft.bin',
+        url: 'Bruce-esp32-c5-tft.bin',
         icon: 'fa-microchip'
-      },
-      { 
-        id: 'bruce-c5-1_47', 
-        name: 'Bruce C5 1.47" (N8)', 
-        chip: 'ESP32-C5', 
-        category: 'c5', 
-        desc: 'ST7789 1.47 inch 170x320. RISC-V 240MHz, Dual-Band WiFi 6, 8MB Flash, 3-Key Navigation.',
-        url: 'Bruce-bruce-c5-1_47.bin',
-        icon: 'fa-bolt'
       },
 
       // 3. ESP32-S3 Series
-      { 
-        id: 's3-mini-1_47-inch', 
-        name: 'ESP32-S3 Super Mini 1.47"', 
-        chip: 'ESP32-S3', 
-        category: 's3', 
-        desc: 'ESP32-S3 Super Mini 4MB Flash, ST7789 1.47 inch 170x320, 3-Key Nav + Animation, Sub-GHz CC1101 / NRF24 / SD.',
-        url: 'Bruce-s3-mini-1_47-inch.bin',
-        icon: 'fa-microchip'
-      },
-      { 
-        id: 'xingzhi-cube-s3', 
-        name: 'Xingzhi Cube S3 (Bruce FW)', 
-        chip: 'ESP32-S3', 
-        category: 's3', 
-        desc: 'Bruce Pentest firmware for Xingzhi Cube S3, ST7789 240x240 LCD.',
-        url: 'Bruce-xingzhi-cube-s3.bin',
-        icon: 'fa-cube'
-      },
-      { 
-        id: 'lilygo-t-embed-cc1101', 
-        name: 'LilyGO T-Embed CC1101', 
-        chip: 'ESP32-S3', 
-        category: 's3', 
-        desc: 'Rotary encoder, built-in CC1101 Sub-GHz transceiver, horizontal 170x320 LCD.',
-        url: 'Bruce-lilygo-t-embed-cc1101.bin',
-        icon: 'fa-tower-broadcast'
-      },
       { 
         id: 'lilygo-t-display-s3', 
         name: 'LilyGO T-Display S3', 
@@ -400,11 +399,38 @@
         icon: 'fa-mobile-screen'
       },
       { 
+        id: 'lilygo-t-display-s3-pro', 
+        name: 'LilyGO T-Display S3 Pro', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Capacitive touch screen, camera support and LiPo charging circuit.',
+        url: 'Bruce-lilygo-t-display-s3-pro.bin',
+        icon: 'fa-mobile-screen'
+      },
+      { 
+        id: 'lilygo-t-embed-cc1101', 
+        name: 'LilyGO T-Embed CC1101', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Rotary encoder, built-in CC1101 Sub-GHz transceiver, horizontal 170x320 LCD.',
+        url: 'Bruce-lilygo-t-embed-cc1101.bin',
+        icon: 'fa-tower-broadcast'
+      },
+      { 
+        id: 'lilygo-t-embed', 
+        name: 'LilyGO T-Embed Standard', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Rotary encoder, 170x320 LCD, microphone and expansion ports.',
+        url: 'Bruce-lilygo-t-embed.bin',
+        icon: 'fa-pager'
+      },
+      { 
         id: 'ES3C28P', 
         name: 'ES3C28P Touch (2.8" IPS)', 
         chip: 'ESP32-S3', 
         category: 's3', 
-        desc: '2.8 inch 240x320 IPS, FT6336G Capacitive Touch with ProTouch kinetic engine, ES8311 Audio, SDIO MicroSD.',
+        desc: '2.8 inch 240x320 IPS, FT6336G Capacitive Touch, ES8311 Audio, SDIO MicroSD.',
         url: 'Bruce-ES3C28P.bin',
         icon: 'fa-hand-pointer'
       },
@@ -418,15 +444,6 @@
         icon: 'fa-tv'
       },
       { 
-        id: 'smoochiee-board', 
-        name: 'Smoochiee Board', 
-        chip: 'ESP32-S3', 
-        category: 's3', 
-        desc: 'ESP32-S3 pentest platform, dual Grove, Sub-GHz RF, IR, INMP441 Mic & Buzzer.',
-        url: 'Bruce-smoochiee-board.bin',
-        icon: 'fa-microchip'
-      },
-      { 
         id: 'lilygo-t-deck', 
         name: 'LilyGO T-Deck / Plus', 
         chip: 'ESP32-S3', 
@@ -436,15 +453,6 @@
         icon: 'fa-keyboard'
       },
       { 
-        id: 'lilygo-t-display-s3-pro', 
-        name: 'LilyGO T-Display S3 Pro', 
-        chip: 'ESP32-S3', 
-        category: 's3', 
-        desc: 'Capacitive touch screen, camera support and LiPo charging circuit.',
-        url: 'Bruce-lilygo-t-display-s3-pro.bin',
-        icon: 'fa-mobile-screen'
-      },
-      { 
         id: 'lilygo-t-watch-s3', 
         name: 'LilyGO T-Watch S3', 
         chip: 'ESP32-S3', 
@@ -452,6 +460,15 @@
         desc: 'Wearable smartwatch platform with capacitive touch & RTC.',
         url: 'Bruce-lilygo-t-watch-s3.bin',
         icon: 'fa-stopwatch'
+      },
+      { 
+        id: 'm5stack-cardputer', 
+        name: 'M5Stack Cardputer', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Credit-card sized terminal with 56-key keyboard, speaker & SD slot.',
+        url: 'Bruce-m5stack-cardputer.bin',
+        icon: 'fa-calculator'
       },
       { 
         id: 'm5stack-cores3', 
@@ -471,15 +488,42 @@
         url: 'Bruce-m5stack-sticks3.bin',
         icon: 'fa-pager'
       },
+      { 
+        id: 'xingzhi-cube-s3', 
+        name: 'Xingzhi Cube S3 (Bruce FW)', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Bruce Pentest firmware for Xingzhi Cube S3, ST7789 240x240 LCD.',
+        url: 'Bruce-xingzhi-cube-s3.bin',
+        icon: 'fa-cube'
+      },
+      { 
+        id: 'esp32-s3-devkitc-1', 
+        name: 'ESP32-S3 DevKitC-1', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Standard ESP32-S3 DevKit development board.',
+        url: 'Bruce-esp32-s3-devkitc-1.bin',
+        icon: 'fa-microchip'
+      },
 
       // 4. Classic ESP32 Series
       { 
         id: 'CYD-2432S028', 
-        name: 'CYD (Cheap Yellow Display 2USB)', 
+        name: 'CYD (Cheap Yellow Display 2.8")', 
         chip: 'ESP32', 
         category: 'esp32', 
-        desc: '2.8 inch ILI9341 resistive touch 2USB classic dev kit.',
+        desc: '2.8 inch ILI9341 resistive touch dev kit.',
         url: 'Bruce-CYD-2432S028.bin',
+        icon: 'fa-desktop'
+      },
+      { 
+        id: 'CYD-2USB', 
+        name: 'CYD 2USB Edition', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Cheap Yellow Display with dual USB ports (MicroUSB + Type-C).',
+        url: 'Bruce-CYD-2USB.bin',
         icon: 'fa-desktop'
       },
       { 
@@ -487,8 +531,35 @@
         name: 'CYD Capacitive Touch (2.8" C)', 
         chip: 'ESP32', 
         category: 'esp32', 
-        desc: '2.8 inch CST816T Capacitive Touch with ProTouch kinetic engine, ST7789/ILI9341 display, SD slot.',
+        desc: '2.8 inch CST816T Capacitive Touch, ST7789/ILI9341 display, SD slot.',
         url: 'Bruce-CYD-2432W328C.bin',
+        icon: 'fa-hand-pointer'
+      },
+      { 
+        id: 'CYD-2432W328R-or-S024R', 
+        name: 'CYD 2432W328R / S024R', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.4 / 2.8 inch Resistive touch display.',
+        url: 'Bruce-CYD-2432W328R-or-S024R.bin',
+        icon: 'fa-hand-pointer'
+      },
+      { 
+        id: 'CYD-3248S035C', 
+        name: 'CYD 3.5" Capacitive Touch (3248S035C)', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '3.5 inch 320x480 Capacitive Touch ST7796 display.',
+        url: 'Bruce-CYD-3248S035C.bin',
+        icon: 'fa-mobile-screen'
+      },
+      { 
+        id: 'CYD-3248S035R', 
+        name: 'CYD 3.5" Resistive Touch (3248S035R)', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '3.5 inch 320x480 Resistive Touch ST7796 display.',
+        url: 'Bruce-CYD-3248S035R.bin',
         icon: 'fa-hand-pointer'
       },
       { 
@@ -499,15 +570,6 @@
         desc: 'Compact form-factor 1.14 inch IPS ST7789 LCD, 16MB Flash edition.',
         url: 'Bruce-lilygo-t-display-ttgo.bin',
         icon: 'fa-tablet-screen-button'
-      },
-      { 
-        id: 'm5stack-cardputer', 
-        name: 'M5Stack Cardputer', 
-        chip: 'ESP32-S3', 
-        category: 'esp32', 
-        desc: 'Credit-card sized terminal with 56-key keyboard, speaker & SD slot.',
-        url: 'Bruce-m5stack-cardputer.bin',
-        icon: 'fa-calculator'
       },
       { 
         id: 'm5stack-cplus1_1', 
@@ -546,30 +608,21 @@
         icon: 'fa-shield-halved'
       },
       { 
-        id: 'marauder-mini', 
+        id: 'Marauder-Mini', 
         name: 'Marauder Mini', 
         chip: 'ESP32', 
         category: 'esp32', 
         desc: 'Handheld mini wireless security auditing toolkit.',
-        url: 'Bruce-marauder-mini.bin',
+        url: 'Bruce-Marauder-Mini.bin',
         icon: 'fa-skull'
       },
       { 
-        id: 'marauder-touch', 
-        name: 'Marauder Touch', 
-        chip: 'ESP32', 
-        category: 'esp32', 
-        desc: 'Touchscreen edition Marauder interface.',
-        url: 'Bruce-marauder-touch.bin',
-        icon: 'fa-hand-pointer'
-      },
-      { 
-        id: 'phantom', 
+        id: 'Phantom_S024R', 
         name: 'Phantom S024R', 
         chip: 'ESP32', 
         category: 'esp32', 
         desc: '2.4 inch SPI ST7789 display instrument.',
-        url: 'Bruce-phantom.bin',
+        url: 'Bruce-Phantom_S024R.bin',
         icon: 'fa-ghost'
       },
       { 
@@ -605,11 +658,16 @@
       const [isFlashing, setIsFlashing] = useState(false);
       const [isErasingOnly, setIsErasingOnly] = useState(false);
       const [progress, setProgress] = useState(0);
-      const [logTab, setLogTab] = useState('sys');
+      const [logTab, setLogTab] = useState('sodo');
       const [sysLogs, setSysLogs] = useState([]);
       const [devLogs, setDevLogs] = useState([]);
       const [isMonitor, setIsMonitor] = useState(false);
       const [monitorBaud, setMonitorBaud] = useState(115200);
+
+      // Sơ đồ chân state
+      const [sodoData, setSodoData] = useState(null);
+      const [isLoadingSodo, setIsLoadingSodo] = useState(false);
+      const [sodoError, setSodoError] = useState(null);
 
       // Morph S3 User Manual Modal State
       const [showMorphGuide, setShowMorphGuide] = useState(false);
@@ -636,7 +694,63 @@
       const readerRef = useRef(null);
       const activeTransportRef = useRef(null);
       const isMonitorRef = useRef(false);
-      const autoResumeMonitorRef = useRef(false);
+
+      // Tự động chuyển tab: Chưa kết nối -> Sơ đồ; Đã kết nối -> Nhật ký hệ thống
+      useEffect(() => {
+        if (isConnected) {
+          setLogTab('sys');
+        } else {
+          setLogTab('sodo');
+        }
+      }, [isConnected]);
+
+      // Tải file sơ đồ chân tương ứng khi chọn board
+      const loadSodo = async (boardId) => {
+        if (!boardId) return;
+        setIsLoadingSodo(true);
+        setSodoError(null);
+        setSodoData(null);
+
+        const boardObj = MASTER_BOARDS.find(b => b.id === boardId);
+        const candidates = [
+          boardId,
+          boardId.toLowerCase(),
+          boardObj?.url ? boardObj.url.replace(/^Bruce-/, '').replace(/\.bin$/, '') : null
+        ].filter(Boolean);
+        const uniqueCandidates = [...new Set(candidates)];
+
+        let loaded = null;
+        for (const cand of uniqueCandidates) {
+          try {
+            let res = await fetch(`./sodo/${cand}.json?t=${Date.now()}`);
+            if (res.ok) {
+              loaded = await res.json();
+              break;
+            }
+            res = await fetch(`${GITHUB_RAW_BASE}sodo/${cand}.json?t=${Date.now()}`);
+            if (res.ok) {
+              loaded = await res.json();
+              break;
+            }
+            res = await fetch(`https://raw.githubusercontent.com/thang96memeff/firmware-bruce/main/sodo/${cand}.json?t=${Date.now()}`);
+            if (res.ok) {
+              loaded = await res.json();
+              break;
+            }
+          } catch(e) {}
+        }
+
+        if (loaded) {
+          setSodoData(loaded);
+        } else {
+          setSodoError(`Chưa có file sơ đồ sodo/${boardId}.json (Đang cập nhật bởi cụm máy chủ)`);
+        }
+        setIsLoadingSodo(false);
+      };
+
+      useEffect(() => {
+        loadSodo(selectedBoardId);
+      }, [selectedBoardId]);
       const logTabRef = useRef(logTab);
       useEffect(() => { logTabRef.current = logTab; }, [logTab]);
       const monitorBaudRef = useRef(monitorBaud);
@@ -750,10 +864,7 @@
       useEffect(() => {
         const handleUsbDisconnect = (e) => {
           if (portRef.current && e.target && e.target !== portRef.current) return;
-          logSys("[PORT] Thiết bị tạm ngắt kết nối (USB unplugged). Giữ nguyên log cũ & sẵn sàng tự kết nối lại...", "warning");
-          if (isMonitorRef.current) {
-            autoResumeMonitorRef.current = true;
-          }
+          logSys("[PORT] Thiết bị đã ngắt kết nối.", "warning");
           isMonitorRef.current = false;
           setIsMonitor(false);
           if (readerRef.current) {
@@ -762,24 +873,11 @@
             readerRef.current = null;
           }
           setIsConnected(false);
+          setChipInfo(null);
         };
 
         const handleUsbConnect = (e) => {
-          logSys("[PORT] Phát hiện thiết bị vừa cắm vào cổng USB. Tự động kết nối...", "success");
-          const port = e.target;
-          portRef.current = port;
-          setIsConnected(true);
-
-          if (autoResumeMonitorRef.current || logTabRef.current === 'dev') {
-            setTimeout(async () => {
-              try {
-                await startMonitor(port);
-                logSys("[MONITOR] Tự động kích hoạt lại Serial Monitor thành công!", "success");
-              } catch(err) {
-                logSys(`[MONITOR] Thử kết nối lại tự động: ${err.message}`, "warning");
-              }
-            }, 450);
-          }
+          logSys("[PORT] Phát hiện thiết bị vừa cắm vào cổng USB. Bấm 'KẾT NỐI THIẾT BỊ' để thao tác.", "info");
         };
 
         if ('serial' in navigator) {
@@ -880,8 +978,7 @@
       // Serial Monitor Logic - Tự kết nối COM gần nhất, tự khôi phục khi cắm lại, hỗ trợ DTR kích hoạt ESP32-S3 & loop chống rớt
       const startMonitor = async (targetPort = null) => {
         if (isFlashing || isErasingOnly) return;
-        autoResumeMonitorRef.current = true;
-        try {
+                try {
           let port = targetPort || portRef.current;
           if (!port) {
             port = await ensurePortConnected(false);
@@ -960,8 +1057,7 @@
 
       const stopMonitor = async (resetAutoResume = true) => {
         if (resetAutoResume) {
-          autoResumeMonitorRef.current = false;
-        }
+                  }
         isMonitorRef.current = false;
         setIsMonitor(false);
         if (readerRef.current) {
@@ -1571,29 +1667,50 @@
               </div>
             </div>
 
-            {/* RIGHT CONSOLE & SERIAL MONITOR (PURE INDUSTRIAL BLACK) */}
+            {/* RIGHT CONSOLE & SERIAL MONITOR / SƠ ĐỒ CHÂN (PURE INDUSTRIAL BLACK) */}
             <div className="flex-1 flex flex-col bg-[#0a0a0c]">
               
-              {/* Terminal Tab Bar */}
+              {/* Terminal & Sơ Đồ Tab Bar */}
               <div className="flex items-center justify-between px-3 border-b border-zinc-800 bg-zinc-900/80 shrink-0 font-mono">
                 <div className="flex">
                   <button 
+                    onClick={() => setLogTab('sodo')} 
+                    className={`py-2 px-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
+                      logTab === 'sodo' ? 'text-emerald-400 border-emerald-500 bg-emerald-500/5' : 'text-zinc-500 border-transparent hover:text-zinc-300'
+                    }`}>
+                    <i className="fa-solid fa-diagram-project text-[10px]"></i>
+                    <span>{t.sodoTab}</span>
+                    {!isConnected && (
+                      <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1 py-0.2 rounded font-mono">CHÍNH</span>
+                    )}
+                  </button>
+                  <button 
                     onClick={() => setLogTab('sys')} 
                     className={`py-2 px-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
-                      logTab === 'sys' ? 'text-amber-400 border-amber-500' : 'text-zinc-500 border-transparent hover:text-zinc-300'
+                      logTab === 'sys' ? 'text-amber-400 border-amber-500 bg-amber-500/5' : 'text-zinc-500 border-transparent hover:text-zinc-300'
                     }`}>
                     <i className="fa-solid fa-terminal text-[10px]"></i> {t.sysLogTab}
                   </button>
                   <button 
                     onClick={() => setLogTab('dev')} 
                     className={`py-2 px-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-1.5 ${
-                      logTab === 'dev' ? 'text-cyan-400 border-cyan-500' : 'text-zinc-500 border-transparent hover:text-zinc-300'
+                      logTab === 'dev' ? 'text-cyan-400 border-cyan-500 bg-cyan-500/5' : 'text-zinc-500 border-transparent hover:text-zinc-300'
                     }`}>
                     <i className="fa-solid fa-tv text-[10px]"></i> {t.serialMonTab}
                   </button>
                 </div>
 
                 <div className="flex items-center gap-1.5 py-1.5">
+                  {logTab === 'sodo' && (
+                    <button 
+                      onClick={() => loadSodo(selectedBoardId)} 
+                      className="px-2 py-1 rounded border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-amber-400 transition-colors text-xs flex items-center gap-1 font-mono"
+                      title="Tải lại sơ đồ">
+                      <i className={`fa-solid fa-arrows-rotate text-[10px] ${isLoadingSodo ? 'fa-spin text-amber-400' : ''}`}></i>
+                      <span className="hidden sm:inline">TẢI LẠI</span>
+                    </button>
+                  )}
+
                   {logTab === 'dev' && (
                     <>
                       <select 
@@ -1618,39 +1735,173 @@
                     </>
                   )}
 
-                  <button 
-                    onClick={() => logTab === 'sys' ? setSysLogs([]) : setDevLogs([])} 
-                    className="p-1 px-2 rounded border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200 transition-colors" 
-                    title={t.clearLogTooltip}>
-                    <i className="fa-solid fa-trash-can text-xs"></i>
-                  </button>
+                  {(logTab === 'sys' || logTab === 'dev') && (
+                    <button 
+                      onClick={() => logTab === 'sys' ? setSysLogs([]) : setDevLogs([])} 
+                      className="p-1 px-2 rounded border border-zinc-800 bg-zinc-950 text-zinc-400 hover:text-zinc-200 transition-colors" 
+                      title={t.clearLogTooltip}>
+                      <i className="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                  )}
                 </div>
               </div>
 
-              {/* Console Log Area (0 border radius, 11px font) */}
-              <div 
-                ref={termRef} 
-                className="flex-1 p-3 overflow-y-auto font-mono text-[11px] leading-relaxed custom-scrollbar break-all text-zinc-300 select-text bg-[#0a0a0c]">
-                {(logTab === 'sys' ? sysLogs : devLogs).length === 0 ? (
-                  <div className="text-zinc-700 select-none">
-                    {logTab === 'sys' ? t.sysPlaceholder : t.monPlaceholder}
-                  </div>
-                ) : (
-                  (logTab === 'sys' ? sysLogs : devLogs).map((l, i) => (
-                    <div key={i} className="flex gap-2 mb-0.5">
-                      <span className="text-zinc-600 shrink-0 select-none">[{l.time}]</span>
-                      <span className={`${
-                        l.type === 'error' ? 'text-rose-500 font-semibold' : 
-                        l.type === 'success' ? 'text-emerald-500 font-semibold' : 
-                        l.type === 'warning' ? 'text-amber-500' : 
-                        'text-zinc-300'
-                      }`}>
-                        {l.msg}
-                      </span>
+              {/* MAIN DISPLAY: SƠ ĐỒ CHÂN (KHI LOGTAB === 'SODO') HOẶC CONSOLE LOG */}
+              {logTab === 'sodo' ? (
+                <div className="flex-1 p-3 sm:p-4 overflow-y-auto custom-scrollbar bg-[#0a0a0c] select-text">
+                  {isLoadingSodo ? (
+                    <div className="h-full flex flex-col items-center justify-center text-zinc-500 font-mono space-y-3 py-16">
+                      <i className="fa-solid fa-circle-notch fa-spin text-2xl text-amber-500"></i>
+                      <div className="text-xs">{t.sodoSearching}</div>
+                      <div className="text-[10px] text-zinc-600">sodo/{selectedBoardId}.json</div>
                     </div>
-                  ))
-                )}
-              </div>
+                  ) : sodoData ? (
+                    <div className="space-y-3.5 max-w-5xl mx-auto">
+                      {/* Board Info Header Banner */}
+                      <div className="bg-zinc-900/90 border border-zinc-800 rounded-lg p-3">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-2">
+                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <h2 className="text-sm font-bold font-mono text-zinc-100 uppercase tracking-wider">
+                              {sodoData.board_name || sodoData.board || selectedBoardId}
+                            </h2>
+                            <span className="text-[10px] font-mono bg-zinc-800 text-amber-400 border border-zinc-700 px-2 py-0.5 rounded font-bold">
+                              {sodoData.chip || 'ESP32'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-mono text-zinc-400 bg-zinc-950 px-2 py-0.5 rounded border border-zinc-800">
+                              <i className="fa-solid fa-microchip mr-1 text-emerald-400"></i>
+                              {sodoData.modules ? sodoData.modules.length : 0} MODULES
+                            </span>
+                            {!isConnected && (
+                              <span className="text-[10px] font-mono text-amber-400/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+                                <i className="fa-solid fa-circle-info mr-1"></i>
+                                {t.sodoUnconnectedHint}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {sodoData.notes && (
+                          <p className="mt-2 text-xs font-mono text-zinc-400 leading-relaxed border-t border-zinc-800/80 pt-2">
+                            {sodoData.notes}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Modules Grid with 2-Column Pinout Tables */}
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3">
+                        {sodoData.modules && sodoData.modules.map((mod, modIdx) => (
+                          <div key={modIdx} className="bg-zinc-900/70 border border-zinc-800/90 rounded-lg overflow-hidden flex flex-col shadow-sm">
+                            {/* Module Title Header */}
+                            <div className="p-2.5 px-3 bg-zinc-950/90 border-b border-zinc-800 flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                <div className="w-6 h-6 rounded bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-xs shrink-0">
+                                  <i className={`fa-solid ${mod.icon || 'fa-microchip'}`}></i>
+                                </div>
+                                <div className="min-w-0">
+                                  <span className="text-xs font-bold font-mono text-zinc-100 block truncate">
+                                    {mod.name || mod.title}
+                                  </span>
+                                  {mod.subtitle && (
+                                    <span className="text-[10px] font-mono text-zinc-400 block truncate">
+                                      {mod.subtitle}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <span className="text-[9px] font-mono bg-zinc-900 text-zinc-500 px-1.5 py-0.5 rounded border border-zinc-800 shrink-0">
+                                {mod.pins ? `${mod.pins.length} PINS` : ''}
+                              </span>
+                            </div>
+
+                            {/* Warning Box (e.g., NRF24 3.3V) */}
+                            {mod.warning && (
+                              <div className="m-2.5 mb-0 p-2 rounded bg-amber-500/10 border border-amber-500/40 text-amber-300 font-mono text-[11px] flex items-center gap-2">
+                                <i className="fa-solid fa-triangle-exclamation text-amber-400 text-xs shrink-0 animate-pulse"></i>
+                                <span>{mod.warning}</span>
+                              </div>
+                            )}
+
+                            {/* Two-Column Pinout Table */}
+                            <div className="p-2.5 flex-1">
+                              <table className="w-full text-left font-mono text-xs border border-zinc-800 rounded overflow-hidden">
+                                <thead className="bg-zinc-950 text-zinc-400 uppercase text-[10px] tracking-wider border-b border-zinc-800">
+                                  <tr>
+                                    <th className="py-1.5 px-3 w-1/2 text-zinc-400 bg-zinc-950/80">
+                                      {t.sodoColPin}
+                                    </th>
+                                    <th className="py-1.5 px-3 w-1/2 text-zinc-400 bg-zinc-950/80">
+                                      {t.sodoColEsp}
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-zinc-850">
+                                  {mod.pins && mod.pins.map((p, pIdx) => (
+                                    <tr key={pIdx} className="hover:bg-zinc-800/40 transition-colors">
+                                      <td className="py-1.5 px-3 font-medium text-zinc-300 border-r border-zinc-850/60">
+                                        {p.pin || p.name}
+                                      </td>
+                                      <td className="py-1.5 px-3 text-amber-400 font-bold flex items-center gap-1.5">
+                                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500/70 shrink-0"></span>
+                                        <span className="break-all">{p.esp || p.gpio || p.pin_esp}</span>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    /* Fallback when file not found yet */
+                    <div className="h-full flex flex-col items-center justify-center p-6 text-center font-mono space-y-3 py-16">
+                      <div className="w-12 h-12 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-amber-500 text-xl">
+                        <i className="fa-solid fa-folder-open"></i>
+                      </div>
+                      <div className="text-zinc-200 text-xs font-bold uppercase tracking-wider">
+                        {t.sodoNotFound}
+                      </div>
+                      <p className="text-zinc-500 text-[11px] max-w-md leading-relaxed">
+                        File <code className="text-amber-400 bg-zinc-900 px-1 py-0.5 rounded border border-zinc-800">sodo/{selectedBoardId}.json</code> chưa có sẵn trên kho lưu trữ hoặc đang được cụm máy chủ cập nhật.
+                      </p>
+                      <button 
+                        onClick={() => loadSodo(selectedBoardId)} 
+                        className="px-3 py-1.5 rounded bg-zinc-900 hover:bg-zinc-800 text-amber-400 border border-zinc-700 text-xs flex items-center gap-1.5 transition-colors">
+                        <i className="fa-solid fa-arrows-rotate text-[10px]"></i>
+                        <span>Thử tải lại</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* Console Log Area (0 border radius, 11px font) */
+                <div 
+                  ref={termRef} 
+                  className="flex-1 p-3 overflow-y-auto font-mono text-[11px] leading-relaxed custom-scrollbar break-all text-zinc-300 select-text bg-[#0a0a0c]">
+                  {(logTab === 'sys' ? sysLogs : devLogs).length === 0 ? (
+                    <div className="text-zinc-700 select-none">
+                      {logTab === 'sys' ? t.sysPlaceholder : t.monPlaceholder}
+                    </div>
+                  ) : (
+                    (logTab === 'sys' ? sysLogs : devLogs).map((l, i) => (
+                      <div key={i} className="flex gap-2 mb-0.5">
+                        <span className="text-zinc-600 shrink-0 select-none">[{l.time}]</span>
+                        <span className={`${
+                          l.type === 'error' ? 'text-rose-500 font-semibold' : 
+                          l.type === 'success' ? 'text-emerald-500 font-semibold' : 
+                          l.type === 'warning' ? 'text-amber-500' : 
+                          'text-zinc-300'
+                        }`}>
+                          {l.msg}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
 
               {/* HUD Status Bar */}
               <div className="px-3 py-1.5 border-t border-zinc-800 bg-zinc-900 flex items-center justify-between text-[11px] text-zinc-500 font-mono">
