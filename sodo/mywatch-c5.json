@@ -1,0 +1,104 @@
+{
+  "board_id": "mywatch-c5",
+  "board_name": "MyWatch C5 (ESP32-C5 RISC-V Watch)",
+  "chip": "ESP32-C5",
+  "notes": "Đồng hồ đeo tay thông minh kiến trúc RISC-V Dual-Band WiFi 6 (2.4/5GHz), màn hình ST7789 240x296 cảm ứng điện dung CST816S, đo pin ADC GPIO 4, nút vật lý GPIO 0.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT",
+      "subtitle": "TFT Pin ↔ ESP32-C5 (ST7789 SPI)",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Nguồn bo)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCL (SCK)", "esp": "GPIO 6 (SPI SCK)"},
+        {"pin": "SDA (MOSI)", "esp": "GPIO 7 (SPI MOSI)"},
+        {"pin": "RES (RST)", "esp": "GPIO 10"},
+        {"pin": "DC", "esp": "GPIO 24"},
+        {"pin": "CS", "esp": "GPIO 23"},
+        {"pin": "BLK (Đèn nền)", "esp": "GPIO 25"}
+      ]
+    },
+    {
+      "name": "2. Cảm ứng & Phím",
+      "subtitle": "Touch & Button ↔ ESP32-C5",
+      "icon": "fa-hand-pointer",
+      "pins": [
+        {"pin": "CST816S SDA", "esp": "GPIO 8 (I2C)"},
+        {"pin": "CST816S SCL", "esp": "GPIO 9 (I2C)"},
+        {"pin": "CST816S INT", "esp": "GPIO 2"},
+        {"pin": "CST816S RST", "esp": "GPIO 14"},
+        {"pin": "Nút nhấn vật lý / Wakeup", "esp": "GPIO 0"},
+        {"pin": "Đo điện áp Pin (ADC)", "esp": "GPIO 4 (Chia áp 2.0x)"}
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại",
+      "subtitle": "IR Module ↔ ESP32-C5",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 27 (hoặc 26/28/1/3)"},
+        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 26 (hoặc 27/28/1/3)"}
+      ]
+    },
+    {
+      "name": "4. Module Thẻ nhớ",
+      "subtitle": "SD Pin ↔ ESP32-C5",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "Thẻ nhớ microSD", "esp": "N/A (Đồng hồ không có khe SD, vô hiệu hóa để bảo vệ bus GPSPI)"}
+      ]
+    },
+    {
+      "name": "5. Module BW16",
+      "subtitle": "BW16 Pin ↔ ESP32-C5 (UART)",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "PB2", "esp": "GPIO 11 (TX)"},
+        {"pin": "PB1", "esp": "GPIO 12 (RX)"}
+      ]
+    },
+    {
+      "name": "6. Module GPS",
+      "subtitle": "GPS Pin ↔ ESP32-C5 (UART)",
+      "icon": "fa-location-crosshairs",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "TX", "esp": "GPIO 12 (RX)"},
+        {"pin": "RX", "esp": "GPIO 11 (TX)"}
+      ]
+    },
+    {
+      "name": "7. Module NRF24",
+      "subtitle": "NRF24 Pin ↔ ESP32-C5 (Chân cắm ngoài)",
+      "icon": "fa-tower-broadcast",
+      "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "CE", "esp": "GPIO 28"},
+        {"pin": "CSN", "esp": "GPIO 27"},
+        {"pin": "SCK", "esp": "GPIO 6"},
+        {"pin": "MOSI", "esp": "GPIO 7"},
+        {"pin": "MISO", "esp": "GPIO 2"}
+      ]
+    },
+    {
+      "name": "8. Module CC1101",
+      "subtitle": "CC1101 Pin ↔ ESP32-C5 (Chân cắm ngoài)",
+      "icon": "fa-radio",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 6"},
+        {"pin": "MOSI", "esp": "GPIO 7"},
+        {"pin": "MISO", "esp": "GPIO 2"},
+        {"pin": "CSN", "esp": "GPIO 27"},
+        {"pin": "GDO0", "esp": "GPIO 28"}
+      ]
+    }
+  ]
+}
