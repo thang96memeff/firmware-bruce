@@ -1,0 +1,106 @@
+{
+  "board_id": "m5stack-sticks3",
+  "board_name": "M5Stack M5StickC PLUS2 / StickS3",
+  "chip": "ESP32-S3",
+  "notes": "M5StickS3 tích hợp màn hình ST7789 1.14 inch, nút bấm A/B, micro SPM1423, pin và các cổng mở rộng Grove/Header.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT",
+      "subtitle": "TFT Pin ↔ ESP32-S3",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Onboard)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCL", "esp": "GPIO 40"},
+        {"pin": "SDA", "esp": "GPIO 39"},
+        {"pin": "RES", "esp": "GPIO 21"},
+        {"pin": "DC", "esp": "GPIO 45"},
+        {"pin": "CS", "esp": "GPIO 41"},
+        {"pin": "BLK", "esp": "GPIO 38"}
+      ]
+    },
+    {
+      "name": "2. Nút nhấn",
+      "subtitle": "Button ↔ ESP32-S3 GPIO",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "SELECT (M5 Button)", "esp": "GPIO 11"},
+        {"pin": "DOWN (Side Button B)", "esp": "GPIO 12"},
+        {"pin": "POWER / RESET", "esp": "Quản lý qua PMIC AXP2101"}
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại",
+      "subtitle": "IR Module ↔ ESP32-S3",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 46 (Tích hợp onboard)"},
+        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 42 (Tích hợp onboard)"}
+      ]
+    },
+    {
+      "name": "4. Module Thẻ nhớ",
+      "subtitle": "SD Pin ↔ ESP32-S3",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 5"},
+        {"pin": "MOSI", "esp": "GPIO 6"},
+        {"pin": "MISO", "esp": "GPIO 4"},
+        {"pin": "CS", "esp": "GPIO 7"}
+      ]
+    },
+    {
+      "name": "5. Module BW16",
+      "subtitle": "BW16 Pin ↔ ESP32-S3",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "PB2", "esp": "GPIO 44 (RX)"},
+        {"pin": "PB1", "esp": "GPIO 43 (TX)"}
+      ]
+    },
+    {
+      "name": "6. Module GPS",
+      "subtitle": "GPS Pin ↔ ESP32-S3",
+      "icon": "fa-location-crosshairs",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "TX", "esp": "GPIO 10 (Grove SCL) / GPIO 44 (RX)"},
+        {"pin": "RX", "esp": "GPIO 9 (Grove SDA) / GPIO 43 (TX)"}
+      ]
+    },
+    {
+      "name": "7. Module NRF24",
+      "subtitle": "NRF24 Pin ↔ ESP32-S3",
+      "icon": "fa-tower-broadcast",
+      "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "CE", "esp": "GPIO 1"},
+        {"pin": "CSN", "esp": "GPIO 8"},
+        {"pin": "SCK", "esp": "GPIO 5"},
+        {"pin": "MOSI", "esp": "GPIO 6"},
+        {"pin": "MISO", "esp": "GPIO 4"}
+      ]
+    },
+    {
+      "name": "8. Module CC1101",
+      "subtitle": "CC1101 Pin ↔ ESP32-S3",
+      "icon": "fa-radio",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 5"},
+        {"pin": "MOSI", "esp": "GPIO 6"},
+        {"pin": "MISO", "esp": "GPIO 4"},
+        {"pin": "CSN", "esp": "GPIO 2"},
+        {"pin": "GDO0", "esp": "GPIO 3"}
+      ]
+    }
+  ]
+}

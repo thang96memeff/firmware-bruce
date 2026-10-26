@@ -1,0 +1,106 @@
+{
+  "board_id": "m5stack-cores3",
+  "board_name": "M5Stack CoreS3",
+  "chip": "ESP32-S3",
+  "notes": "M5Stack CoreS3 với màn hình cảm ứng ILI9342C 320x240, camera GC0308, BM8563 RTC, khe cắm TF Card, loa AW88298, cổng mở rộng M-Bus và Grove Port A.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT",
+      "subtitle": "TFT Pin ↔ ESP32-S3",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Onboard AXP2101)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCL", "esp": "GPIO 36"},
+        {"pin": "SDA (MOSI)", "esp": "GPIO 37"},
+        {"pin": "MISO", "esp": "GPIO 35"},
+        {"pin": "RES", "esp": "Quản lý qua PMU AXP2101"},
+        {"pin": "DC", "esp": "GPIO 35"},
+        {"pin": "CS", "esp": "GPIO 3"},
+        {"pin": "BLK", "esp": "Quản lý qua AXP2101 PMIC"}
+      ]
+    },
+    {
+      "name": "2. Nút nhấn & Cảm ứng",
+      "subtitle": "Touch & Power ↔ ESP32-S3",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "MÀN HÌNH CẢM ỨNG (FT6336U)", "esp": "I2C SDA: GPIO 12, SCL: GPIO 11"},
+        {"pin": "POWER / RESET BUTTON", "esp": "Nút cạnh bên, quản lý qua PMU"}
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại",
+      "subtitle": "IR Module ↔ ESP32-S3",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 2 (Port A - Grove SDA)"},
+        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 1 (Port A - Grove SCL)"}
+      ]
+    },
+    {
+      "name": "4. Module Thẻ nhớ",
+      "subtitle": "SD Pin ↔ ESP32-S3",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Khe TF Card onboard)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 36"},
+        {"pin": "MOSI", "esp": "GPIO 37"},
+        {"pin": "MISO", "esp": "GPIO 35"},
+        {"pin": "CS", "esp": "GPIO 4"}
+      ]
+    },
+    {
+      "name": "5. Module BW16",
+      "subtitle": "BW16 Pin ↔ ESP32-S3",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "PB2", "esp": "GPIO 18 (RXD2) / GPIO 1 (Grove SCL)"},
+        {"pin": "PB1", "esp": "GPIO 17 (TXD2) / GPIO 2 (Grove SDA)"}
+      ]
+    },
+    {
+      "name": "6. Module GPS",
+      "subtitle": "GPS Pin ↔ ESP32-S3",
+      "icon": "fa-location-crosshairs",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "TX", "esp": "GPIO 18 (RXD2) / GPIO 1 (Grove SCL)"},
+        {"pin": "RX", "esp": "GPIO 17 (TXD2) / GPIO 2 (Grove SDA)"}
+      ]
+    },
+    {
+      "name": "7. Module NRF24",
+      "subtitle": "NRF24 Pin ↔ ESP32-S3",
+      "icon": "fa-tower-broadcast",
+      "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "CE", "esp": "GPIO 2 (Port A - Grove SDA)"},
+        {"pin": "CSN", "esp": "GPIO 1 (Port A - Grove SCL)"},
+        {"pin": "SCK", "esp": "GPIO 36"},
+        {"pin": "MOSI", "esp": "GPIO 37"},
+        {"pin": "MISO", "esp": "GPIO 35"}
+      ]
+    },
+    {
+      "name": "8. Module CC1101",
+      "subtitle": "CC1101 Pin ↔ ESP32-S3",
+      "icon": "fa-radio",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 36"},
+        {"pin": "MOSI", "esp": "GPIO 37"},
+        {"pin": "MISO", "esp": "GPIO 35"},
+        {"pin": "CSN", "esp": "GPIO 1 (Port A - Grove SCL)"},
+        {"pin": "GDO0", "esp": "GPIO 2 (Port A - Grove SDA)"}
+      ]
+    }
+  ]
+}

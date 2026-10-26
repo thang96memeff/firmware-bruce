@@ -1,0 +1,110 @@
+{
+  "board_id": "lilygo-t-deck",
+  "board_name": "LilyGO T-Deck / T-Deck Plus",
+  "chip": "ESP32-S3",
+  "notes": "LilyGO T-Deck với bàn phím mini, con lăn trackball, màn hình ST7789 2.8 inch 240x320 cảm ứng, khe thẻ nhớ MicroSD, micro I2S và chip LoRa SX1262 tích hợp.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT",
+      "subtitle": "TFT Pin ↔ ESP32-S3",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Onboard)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCL", "esp": "GPIO 40"},
+        {"pin": "SDA (MOSI)", "esp": "GPIO 41"},
+        {"pin": "MISO", "esp": "GPIO 38"},
+        {"pin": "RES", "esp": "Quản lý phần cứng tự động"},
+        {"pin": "DC", "esp": "GPIO 11"},
+        {"pin": "CS", "esp": "GPIO 12"},
+        {"pin": "BLK", "esp": "GPIO 42"}
+      ]
+    },
+    {
+      "name": "2. Nút nhấn & Bàn phím",
+      "subtitle": "Trackball & Keyboard ↔ ESP32-S3",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "TRACKBALL UP", "esp": "GPIO 3"},
+        {"pin": "TRACKBALL DOWN", "esp": "GPIO 15"},
+        {"pin": "TRACKBALL LEFT", "esp": "GPIO 1"},
+        {"pin": "TRACKBALL RIGHT", "esp": "GPIO 2"},
+        {"pin": "TRACKBALL CLICK", "esp": "GPIO 0"},
+        {"pin": "BÀN PHÍM MINI I2C", "esp": "SDA: GPIO 18, SCL: GPIO 8"}
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại",
+      "subtitle": "IR Module ↔ ESP32-S3",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 43 (Header mở rộng)"},
+        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 44 (Header mở rộng)"}
+      ]
+    },
+    {
+      "name": "4. Module Thẻ nhớ",
+      "subtitle": "SD Pin ↔ ESP32-S3",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Khe MicroSD onboard)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 40"},
+        {"pin": "MOSI", "esp": "GPIO 41"},
+        {"pin": "MISO", "esp": "GPIO 38"},
+        {"pin": "CS", "esp": "GPIO 39"}
+      ]
+    },
+    {
+      "name": "5. Module BW16",
+      "subtitle": "BW16 Pin ↔ ESP32-S3",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "PB2", "esp": "GPIO 44 (RX)"},
+        {"pin": "PB1", "esp": "GPIO 43 (TX)"}
+      ]
+    },
+    {
+      "name": "6. Module GPS",
+      "subtitle": "GPS Pin ↔ ESP32-S3",
+      "icon": "fa-location-crosshairs",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "TX", "esp": "GPIO 44 (RX)"},
+        {"pin": "RX", "esp": "GPIO 43 (TX)"}
+      ]
+    },
+    {
+      "name": "7. Module NRF24",
+      "subtitle": "NRF24 Pin ↔ ESP32-S3",
+      "icon": "fa-tower-broadcast",
+      "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "CE", "esp": "GPIO 44"},
+        {"pin": "CSN", "esp": "GPIO 43"},
+        {"pin": "SCK", "esp": "GPIO 40"},
+        {"pin": "MOSI", "esp": "GPIO 41"},
+        {"pin": "MISO", "esp": "GPIO 38"}
+      ]
+    },
+    {
+      "name": "8. Module CC1101",
+      "subtitle": "CC1101 Pin ↔ ESP32-S3",
+      "icon": "fa-radio",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 40"},
+        {"pin": "MOSI", "esp": "GPIO 41"},
+        {"pin": "MISO", "esp": "GPIO 38"},
+        {"pin": "CSN", "esp": "GPIO 43"},
+        {"pin": "GDO0", "esp": "GPIO 44"}
+      ]
+    }
+  ]
+}

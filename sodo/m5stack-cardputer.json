@@ -1,0 +1,107 @@
+{
+  "board_id": "m5stack-cardputer",
+  "board_name": "M5Stack Cardputer",
+  "chip": "ESP32-S3",
+  "notes": "M5Stack Cardputer với bàn phím đầy đủ 56 phím (TCA8418), màn hình ST7789, khe cắm MicroSD, cổng Grove và LED RGB tích hợp.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT",
+      "subtitle": "TFT Pin ↔ ESP32-S3",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Onboard)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCL", "esp": "GPIO 36"},
+        {"pin": "SDA (MOSI)", "esp": "GPIO 35"},
+        {"pin": "RES", "esp": "GPIO 33"},
+        {"pin": "DC", "esp": "GPIO 34"},
+        {"pin": "CS", "esp": "GPIO 37"},
+        {"pin": "BLK", "esp": "GPIO 38"}
+      ]
+    },
+    {
+      "name": "2. Nút nhấn & Bàn phím",
+      "subtitle": "Keyboard ↔ ESP32-S3 (TCA8418 I2C)",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "BÀN PHÍM (56 PHÍM) I2C SDA", "esp": "GPIO 8"},
+        {"pin": "BÀN PHÍM (56 PHÍM) I2C SCL", "esp": "GPIO 9"},
+        {"pin": "BÀN PHÍM NGẮT (INT)", "esp": "GPIO 11"},
+        {"pin": "NÚT OK (G0 Button)", "esp": "GPIO 0"}
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại",
+      "subtitle": "IR Module ↔ ESP32-S3",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 44 (Đèn LED IR tích hợp)"},
+        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 1 (Grove SCL) / GPIO 2 (Grove SDA)"}
+      ]
+    },
+    {
+      "name": "4. Module Thẻ nhớ",
+      "subtitle": "SD Pin ↔ ESP32-S3",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Khe MicroSD onboard)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 40"},
+        {"pin": "MOSI", "esp": "GPIO 14"},
+        {"pin": "MISO", "esp": "GPIO 39"},
+        {"pin": "CS", "esp": "GPIO 12"}
+      ]
+    },
+    {
+      "name": "5. Module BW16",
+      "subtitle": "BW16 Pin ↔ ESP32-S3",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "PB2", "esp": "GPIO 1 (Grove SCL / RX)"},
+        {"pin": "PB1", "esp": "GPIO 2 (Grove SDA / TX)"}
+      ]
+    },
+    {
+      "name": "6. Module GPS",
+      "subtitle": "GPS Pin ↔ ESP32-S3",
+      "icon": "fa-location-crosshairs",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "TX", "esp": "GPIO 1 (Grove SCL / RX)"},
+        {"pin": "RX", "esp": "GPIO 2 (Grove SDA / TX)"}
+      ]
+    },
+    {
+      "name": "7. Module NRF24",
+      "subtitle": "NRF24 Pin ↔ ESP32-S3",
+      "icon": "fa-tower-broadcast",
+      "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "CE", "esp": "GPIO 2 (Grove SDA)"},
+        {"pin": "CSN", "esp": "GPIO 1 (Grove SCL)"},
+        {"pin": "SCK", "esp": "GPIO 40"},
+        {"pin": "MOSI", "esp": "GPIO 14"},
+        {"pin": "MISO", "esp": "GPIO 39"}
+      ]
+    },
+    {
+      "name": "8. Module CC1101",
+      "subtitle": "CC1101 Pin ↔ ESP32-S3",
+      "icon": "fa-radio",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 40"},
+        {"pin": "MOSI", "esp": "GPIO 14"},
+        {"pin": "MISO", "esp": "GPIO 39"},
+        {"pin": "CSN", "esp": "GPIO 1 (Grove SCL)"},
+        {"pin": "GDO0", "esp": "GPIO 2 (Grove SDA)"}
+      ]
+    }
+  ]
+}
