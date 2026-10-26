@@ -95,7 +95,7 @@
         inset 0 -1px 1.5px rgba(255, 255, 255, 0.25);
     }
 
-    /* Các mục Kết nối Thiết bị, Bo mạch Đích: Hiệu ứng kính mờ xuyên thấu như nền cũ */
+    /* Các mục Kết nối Thiết bị, Bo mạch Đích: Hiệu ứng kính mờ xuyên thấu */
     .liquid-card {
       background: linear-gradient(155deg, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0.18) 100%);
       backdrop-filter: blur(28px) saturate(195%);
@@ -110,7 +110,7 @@
       transition: all 0.28s cubic-bezier(0.22, 1, 0.36, 1);
     }
 
-    /* Thẻ con bên trong (Morph S3, Xingzhi, Info box) */
+    /* Thẻ con bên trong */
     .liquid-subcard {
       background: linear-gradient(145deg, rgba(255, 255, 255, 0.32) 0%, rgba(255, 255, 255, 0.14) 100%);
       backdrop-filter: blur(20px);
@@ -125,7 +125,7 @@
       transform: translateY(-1px);
     }
 
-    /* Thẻ khi đang được chọn (Active Specular) */
+    /* Thẻ khi đang được chọn */
     .liquid-card-active {
       background: linear-gradient(145deg, rgba(255, 255, 255, 0.58) 0%, rgba(224, 242, 254, 0.38) 100%);
       backdrop-filter: blur(28px) saturate(200%);
@@ -333,8 +333,11 @@
         clearLogTooltip: "Xóa màn hình nhật ký",
         startMon: "Mở Monitor",
         stopMon: "Dừng",
+        resetBoardBtn: "Reset Mạch",
+        txPlaceholder: "Nhập lệnh Serial gửi tới mạch (Nhấn Enter để gửi)...",
+        sendBtn: "Gửi",
         sysPlaceholder: "// Chờ kết nối thiết bị USB hoặc lệnh nạp firmware...",
-        monPlaceholder: "// Chưa có dữ liệu Serial (Bấm 'Mở Monitor' để theo dõi)...",
+        monPlaceholder: "// Đang lắng nghe dữ liệu từ cổng USB Serial (Nếu mạch đang im lặng, hãy bấm nút 'Reset Mạch' ở góc trên)...",
         portOnline: "Đã kết nối USB",
         portOffline: "Chưa kết nối",
         catAll: "Tất cả",
@@ -343,10 +346,10 @@
         catEsp32: "ESP32",
         vipGroup: "★ Dòng máy Flagship / Nổi bật",
         standardGroup: "Bo mạch Phần cứng Tiêu chuẩn",
-        logInit: "[INIT] DUSCU FLASHER v2.7 đã sẵn sàng.",
+        logInit: "[INIT] DUSCU FLASHER v2.8 đã sẵn sàng.",
         logSyncSuccess: (count) => `[SYNC] Đã đồng bộ ${count} bản dựng firmware từ GitHub.`,
         logSyncWarn: (err) => `[WARN] GitHub API: Sử dụng danh mục mặc định (${err})`,
-        logPortSuccess: "[PORT] Đã kết nối cổng USB Serial thành công.",
+        logPortSuccess: "[PORT] Đã kết nối cổng USB Serial thành công (Giữ nguyên trạng thái chạy của mạch).",
         logPortDisconnect: "[PORT] Đã ngắt kết nối cổng USB Serial.",
         logPortErr: (err) => `[ERR] Lỗi kết nối cổng: ${err}`,
         logNoWebSerial: "Trình duyệt không hỗ trợ Web Serial API. Vui lòng mở bằng Chrome hoặc Edge trên máy tính.",
@@ -362,10 +365,11 @@
         logSyncBootloader: (baud) => `[SYNC] Đồng bộ bootloader @ ${baud} baud...`,
         logWriteFlash: (addr, erase) => `[WRITE] Ghi bộ nhớ tại địa chỉ 0x${addr} ${erase ? '(Kèm xóa toàn bộ Flash)' : ''}...`,
         logFlashSuccess: "[SUCCESS] NẠP FIRMWARE HOÀN TẤT 100%.",
-        logReboot: "[REBOOT] Đang khởi động lại thiết bị...",
+        logReboot: "[REBOOT] Đang khởi động lại thiết bị về chế độ chạy bình thường...",
         logFlashFail: (err) => `[FAIL] Ghi Firmware thất bại: ${err}`,
-        logMonitorStart: (baud) => `[MONITOR] Bắt đầu đọc Serial @ ${baud} baud.`,
-        logMonitorErr: (err) => `[ERR] Serial Monitor: ${err}`
+        logMonitorStart: (baud, mode) => `[MONITOR] Đã mở luồng thu Serial @ ${baud} baud (${mode}).`,
+        logMonitorErr: (err) => `[ERR] Serial Monitor: ${err}`,
+        logResetPulse: "[RESET] Đã phát xung khởi động lại bo mạch (RTS Pulse)."
       },
       en: {
         appSub: "Hardware Firmware Utility • ESP32 • S3 • C5 (WiFi 6)",
@@ -420,8 +424,11 @@
         clearLogTooltip: "Clear console output",
         startMon: "Open Monitor",
         stopMon: "Stop",
+        resetBoardBtn: "Reset Board",
+        txPlaceholder: "Send Serial command to device (Press Enter)...",
+        sendBtn: "Send",
         sysPlaceholder: "// Waiting for USB device connection or flash command...",
-        monPlaceholder: "// No Serial data (Click 'Open Monitor' to start)...",
+        monPlaceholder: "// Listening for Serial data (Click 'Reset Board' if device is silent)...",
         portOnline: "USB Connected",
         portOffline: "Disconnected",
         catAll: "All",
@@ -430,10 +437,10 @@
         catEsp32: "ESP32",
         vipGroup: "★ Flagship / Featured Profiles",
         standardGroup: "Standard Hardware Profiles",
-        logInit: "[INIT] DUSCU FLASHER v2.7 ready.",
+        logInit: "[INIT] DUSCU FLASHER v2.8 ready.",
         logSyncSuccess: (count) => `[SYNC] Synchronized ${count} firmware files from GitHub.`,
         logSyncWarn: (err) => `[WARN] GitHub API: Using default profiles (${err})`,
-        logPortSuccess: "[PORT] Connected to USB Serial port successfully.",
+        logPortSuccess: "[PORT] Connected to USB Serial port (Normal App Mode preserved).",
         logPortDisconnect: "[PORT] Disconnected from USB Serial port.",
         logPortErr: (err) => `[ERR] Port connection failed: ${err}`,
         logNoWebSerial: "Browser does not support Web Serial API. Please open in Chrome or Edge on Desktop.",
@@ -449,10 +456,11 @@
         logSyncBootloader: (baud) => `[SYNC] Syncing bootloader @ ${baud} baud...`,
         logWriteFlash: (addr, erase) => `[WRITE] Writing memory at 0x${addr} ${erase ? '(Full Chip Erase)' : ''}...`,
         logFlashSuccess: "[SUCCESS] FIRMWARE PROGRAMMING COMPLETED 100%.",
-        logReboot: "[REBOOT] Hard resetting target device...",
+        logReboot: "[REBOOT] Hard resetting target device into normal app mode...",
         logFlashFail: (err) => `[FAIL] Flash programming failed: ${err}`,
-        logMonitorStart: (baud) => `[MONITOR] Starting Serial Monitor @ ${baud} baud.`,
-        logMonitorErr: (err) => `[ERR] Serial Monitor: ${err}`
+        logMonitorStart: (baud, mode) => `[MONITOR] Serial Monitor active @ ${baud} baud (${mode}).`,
+        logMonitorErr: (err) => `[ERR] Serial Monitor: ${err}`,
+        logResetPulse: "[RESET] Sent hardware reset pulse to board."
       }
     };
 
@@ -932,7 +940,7 @@
       const [localFile, setLocalFile] = useState(null);
       const [flashOffset, setFlashOffset] = useState('0x0000');
       
-      // Mặc định là 'aqua' (Sóng Đại Dương) theo đúng hình ảnh yêu cầu
+      // Mặc định là 'aqua' (Sóng Đại Dương)
       const [waterTheme, setWaterTheme] = useState('aqua');
 
       // GitHub live detection
@@ -952,6 +960,7 @@
       const [devLogs, setDevLogs] = useState([]);
       const [isMonitor, setIsMonitor] = useState(false);
       const [monitorBaud, setMonitorBaud] = useState(115200);
+      const [serialInput, setSerialInput] = useState('');
 
       // Sơ đồ chân state
       const [sodoData, setSodoData] = useState(null);
@@ -1089,8 +1098,41 @@
       const logSys = (msg, type = 'info') => {
         setSysLogs(prev => [...prev, { time: new Date().toLocaleTimeString('en-GB'), msg, type }]);
       };
-      const logDev = (msg) => {
-        setDevLogs(prev => [...prev, { time: new Date().toLocaleTimeString('en-GB'), msg }]);
+
+      // Ghi log Serial theo thời gian thực (Xử lý cả dòng hoàn chỉnh lẫn chuỗi chưa có \n)
+      const appendSerialChunk = (chunkText) => {
+        if (!chunkText) return;
+        const cleanText = chunkText.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, ''); // Lọc mã màu ANSI nếu có
+        const nowStr = new Date().toLocaleTimeString('en-GB');
+
+        setDevLogs(prev => {
+          const next = [...prev];
+          const parts = cleanText.split(/\r?\n/);
+
+          for (let i = 0; i < parts.length; i++) {
+            const segment = parts[i];
+            if (i === 0 && next.length > 0 && next[next.length - 1].partial) {
+              // Nối tiếp vào dòng đang mở trước đó
+              next[next.length - 1] = {
+                ...next[next.length - 1],
+                msg: next[next.length - 1].msg + segment,
+                partial: (parts.length === 1)
+              };
+            } else {
+              if (segment.length > 0 || i < parts.length - 1) {
+                if (segment.length > 0) {
+                  next.push({
+                    time: nowStr,
+                    msg: segment,
+                    partial: (i === parts.length - 1)
+                  });
+                }
+              }
+            }
+          }
+          // Giới hạn tối đa 1000 dòng để tránh lag trình duyệt
+          return next.slice(-1000);
+        });
       };
 
       const fetchGithubContents = async () => {
@@ -1186,39 +1228,31 @@
         return port;
       };
 
+      // =========================================================================
+      // FIX QUAN TRỌNG 1: KẾT NỐI CỔNG USB KHÔNG KÍCH HOẠT BOOTLOADER
+      // Giữ nguyên mạch ở chế độ chạy Firmware bình thường để Serial hoạt động ngay!
+      // =========================================================================
       const connectPort = async () => {
         try {
           if (!('serial' in navigator)) throw new Error(t.logNoWebSerial);
-          if (!window.ESP_TOOLS) throw new Error(t.logNoEsptool);
           const port = await ensurePortConnected(true);
           await releaseAndClosePort(port);
           portRef.current = port;
           setIsConnected(true);
-          logSys(t.logPortSuccess, "success");
 
-          let probeTransport = null;
-          try {
-            probeTransport = new window.ESP_TOOLS.Transport(port);
-            activeTransportRef.current = probeTransport;
-            const esploader = new window.ESP_TOOLS.ESPLoader({
-              transport: probeTransport,
-              baudrate: 115200,
-              terminal: { clean: ()=>{}, writeLine: ()=>{}, write: ()=>{} }
+          const info = port.getInfo ? port.getInfo() : {};
+          const vid = info.usbVendorId ? `0x${info.usbVendorId.toString(16).toUpperCase().padStart(4, '0')}` : null;
+          const pid = info.usbProductId ? `0x${info.usbProductId.toString(16).toUpperCase().padStart(4, '0')}` : null;
+          const isEspNative = info.usbVendorId === 0x303A;
+
+          if (vid && pid) {
+            setChipInfo({
+              chip: isEspNative ? 'ESP32 Native USB' : 'USB-UART Bridge',
+              mac: `${vid}:${pid}`
             });
-            await esploader.main();
-            const chipDesc = `${esploader.chip.CHIP_NAME || 'ESP-Device'}`;
-            const macStr = esploader.macAddr ? esploader.macAddr().map(b => b.toString(16).padStart(2,'0')).join(':').toUpperCase() : 'N/A';
-            setChipInfo({ chip: chipDesc, mac: macStr });
-            logSys(`[CHIP] Model: ${chipDesc} | MAC: ${macStr}`, "success");
-          } catch(e) {
-            console.warn("Probe warning:", e);
-          } finally {
-            if (probeTransport) {
-              await probeTransport.disconnect().catch(()=>{});
-              probeTransport = null;
-              activeTransportRef.current = null;
-            }
-            await releaseAndClosePort(port);
+            logSys(`${t.logPortSuccess} [${isEspNative ? 'Espressif USB CDC/JTAG' : 'UART Bridge'} ${vid}:${pid}]`, "success");
+          } else {
+            logSys(t.logPortSuccess, "success");
           }
         } catch (err) {
           logSys(t.logPortErr(err.message), "error");
@@ -1226,7 +1260,7 @@
       };
 
       const disconnectPort = async () => {
-        await stopMonitor(true);
+        await stopMonitor();
         if (portRef.current) {
           await releaseAndClosePort(portRef.current);
           portRef.current = null;
@@ -1236,54 +1270,57 @@
         logSys(t.logPortDisconnect, "warning");
       };
 
+      // =========================================================================
+      // FIX QUAN TRỌNG 2: SERIAL MONITOR TỰ ĐỘNG PHÂN BIỆT USB NATIVE & UART BRIDGE
+      // =========================================================================
       const startMonitor = async (targetPort = null) => {
         if (isFlashing || isErasingOnly) return;
         try {
           let port = targetPort || portRef.current;
-          if (!port) port = await ensurePortConnected(false);
+          if (!port) port = await ensurePortConnected(true);
           if (!port) return;
 
+          // Đóng sạch các phiên trước đó để mở đúng Baudrate của Monitor
+          await stopMonitor();
+          await new Promise(r => setTimeout(r, 80));
+
           const baud = parseInt(monitorBaudRef.current) || 115200;
-          try {
-            if (!port.readable && !port.writable) {
-              await port.open({ baudRate: baud });
-            }
-          } catch(openErr) {
-            await releaseAndClosePort(port);
-            await new Promise(r => setTimeout(r, 120));
-            await port.open({ baudRate: baud });
-          }
+          await port.open({ baudRate: baud, bufferSize: 16384 });
+
+          // Kiểm tra cổng USB là Native Espressif (0x303A) hay Chip UART rời (CH340/CP2102)
+          const info = port.getInfo ? port.getInfo() : {};
+          const isEspNativeUsb = info.usbVendorId === 0x303A;
 
           try {
-            await port.setSignals({ dataTerminalReady: true, requestToSend: false });
-          } catch(sigErr) {}
+            if (isEspNativeUsb) {
+              // Trên ESP32-S3/C3/C5 Native USB CDC: Bắt buộc DTR = true để USB-CDC xuất dữ liệu TX
+              await port.setSignals({ dataTerminalReady: true, requestToSend: false });
+            } else {
+              // Trên CH340 / CP2102 / CH9102: Giữ cả DTR = false và RTS = false để EN=1, IO0=1 (Mạch chạy bình thường)
+              await port.setSignals({ dataTerminalReady: false, requestToSend: false });
+            }
+          } catch(sigErr) {
+            console.warn("setSignals notice:", sigErr);
+          }
 
           isMonitorRef.current = true;
           setIsMonitor(true);
           setLogTab('dev');
-          logSys(t.logMonitorStart(baud), 'success');
+          logSys(t.logMonitorStart(baud, isEspNativeUsb ? 'Native USB CDC' : 'UART Normal Mode'), 'success');
 
-          const decoder = new TextDecoder();
-          let partialLine = "";
+          const decoder = new TextDecoder('utf-8', { fatal: false });
 
-          while (isMonitorRef.current && (port.readable || portRef.current?.readable)) {
-            const activePort = portRef.current || port;
-            if (!activePort || !activePort.readable) break;
-
+          while (isMonitorRef.current && port.readable) {
             try {
-              const reader = activePort.readable.getReader();
+              const reader = port.readable.getReader();
               readerRef.current = reader;
 
               while (isMonitorRef.current) {
                 const { value, done } = await reader.read();
                 if (done) break;
-                if (value) {
-                  partialLine += decoder.decode(value, { stream: true });
-                  const lines = partialLine.split(/\r?\n/);
-                  partialLine = lines.pop();
-                  for (const line of lines) {
-                    if (line.length > 0) logDev(line);
-                  }
+                if (value && value.length > 0) {
+                  const textChunk = decoder.decode(value, { stream: true });
+                  appendSerialChunk(textChunk);
                 }
               }
             } catch (readErr) {
@@ -1322,6 +1359,55 @@
         }
       };
 
+      // =========================================================================
+      // FIX QUAN TRỌNG 3: NÚT RESET MẠCH TRỰC TIẾP TRONG SERIAL MONITOR
+      // Kích xung RTS đưa mạch thoát khỏi Bootloader và in ngay log khởi động
+      // =========================================================================
+      const resetBoardFromMonitor = async () => {
+        try {
+          let port = portRef.current;
+          if (!port) return;
+          if (!isMonitorRef.current) {
+            await startMonitor(port);
+          }
+          const info = port.getInfo ? port.getInfo() : {};
+          const isEspNativeUsb = info.usbVendorId === 0x303A;
+
+          // Phát xung kéo chân EN xuống GND (DTR=false, RTS=true) trong 100ms rồi nhả ra
+          await port.setSignals({ dataTerminalReady: false, requestToSend: true });
+          await new Promise(r => setTimeout(r, 100));
+          if (isEspNativeUsb) {
+            await port.setSignals({ dataTerminalReady: true, requestToSend: false });
+          } else {
+            await port.setSignals({ dataTerminalReady: false, requestToSend: false });
+          }
+          logSys(t.logResetPulse, 'info');
+        } catch (e) {
+          logSys(`[WARN] Reset: ${e.message}`, 'warning');
+        }
+      };
+
+      // Gửi lệnh từ ô Input xuống thiết bị qua Serial TX
+      const sendSerialCommand = async (e) => {
+        e.preventDefault();
+        if (!serialInput.trim() || !portRef.current) return;
+        try {
+          if (!isMonitorRef.current || !portRef.current.writable) {
+            await startMonitor(portRef.current);
+          }
+          if (portRef.current.writable) {
+            const writer = portRef.current.writable.getWriter();
+            const payload = new TextEncoder().encode(serialInput + '\r\n');
+            await writer.write(payload);
+            writer.releaseLock();
+            appendSerialChunk(`\n> ${serialInput}\n`);
+            setSerialInput('');
+          }
+        } catch (err) {
+          logSys(`[ERR] TX: ${err.message}`, 'error');
+        }
+      };
+
       const handleEraseOnly = async () => {
         if (!isConnected || !portRef.current) return;
         if (!confirm(t.eraseConfirm)) return;
@@ -1344,6 +1430,10 @@
             terminal: { clean: ()=>{}, writeLine: (msg)=>logSys(msg, 'info'), write: (msg)=>logSys(msg, 'info') }
           });
           await esploader.main();
+          const chipDesc = `${esploader.chip.CHIP_NAME || 'ESP-Device'}`;
+          const macStr = esploader.macAddr ? esploader.macAddr().map(b => b.toString(16).padStart(2,'0')).join(':').toUpperCase() : 'N/A';
+          setChipInfo({ chip: chipDesc, mac: macStr });
+
           logSys(t.logEraseExec, "info");
           await esploader.eraseFlash();
           logSys(t.logEraseSuccess, "success");
@@ -1421,7 +1511,10 @@
           });
 
           await esploader.main();
-          logSys(`[READY] Bootloader connected. Chip: ${esploader.chip.CHIP_NAME || 'ESP-Device'}`, "success");
+          const chipDesc = `${esploader.chip.CHIP_NAME || 'ESP-Device'}`;
+          const macStr = esploader.macAddr ? esploader.macAddr().map(b => b.toString(16).padStart(2,'0')).join(':').toUpperCase() : 'N/A';
+          setChipInfo({ chip: chipDesc, mac: macStr });
+          logSys(`[READY] Bootloader connected. Chip: ${chipDesc} | MAC: ${macStr}`, "success");
 
           const writeOffset = parseInt(flashOffset, 16) || 0x0;
           logSys(t.logWriteFlash(writeOffset.toString(16).toUpperCase(), eraseFlash), "info");
@@ -1446,6 +1539,14 @@
             if (typeof esploader.after === 'function') await esploader.after("hard_reset");
             else if (typeof esploader.hardReset === 'function') await esploader.hardReset();
           } catch(e) {}
+
+          // Đưa chân RTS/DTR về trạng thái chạy ứng dụng bình thường trước khi ngắt Transport
+          try {
+            await portRef.current.setSignals({ dataTerminalReady: false, requestToSend: true });
+            await new Promise(r => setTimeout(r, 100));
+            await portRef.current.setSignals({ dataTerminalReady: false, requestToSend: false });
+          } catch(e) {}
+
         } catch (err) {
           logSys(t.logFlashFail(err.message), "error");
         } finally {
@@ -1933,6 +2034,7 @@
                     }`}>
                     <i className="fa-solid fa-wave-square text-[11px]"></i>
                     <span>{t.serialMonTab}</span>
+                    {isMonitor && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>}
                   </button>
                 </div>
 
@@ -1956,11 +2058,22 @@
                         className="liquid-input px-3 py-1.5 text-xs font-mono font-semibold text-slate-800 outline-none">
                         <option value="115200">115200</option>
                         <option value="9600">9600</option>
+                        <option value="74880">74880</option>
                         <option value="921600">921600</option>
                       </select>
 
+                      {/* Nút Reset Mạch trực tiếp */}
+                      <button
+                        onClick={resetBoardFromMonitor}
+                        disabled={!isConnected || isFlashing || isErasingOnly}
+                        title="Khởi động lại mạch để xem log boot từ đầu"
+                        className="liquid-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5 text-indigo-800 disabled:opacity-40">
+                        <i className="fa-solid fa-rotate-right text-[11px] text-indigo-600"></i>
+                        <span className="hidden sm:inline">{t.resetBoardBtn}</span>
+                      </button>
+
                       <button 
-                        onClick={isMonitor ? () => stopMonitor(true) : () => startMonitor()} 
+                        onClick={isMonitor ? () => stopMonitor() : () => startMonitor()} 
                         disabled={isFlashing || isErasingOnly} 
                         className={`px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${
                           isMonitor 
@@ -2102,29 +2215,50 @@
                   )}
                 </div>
               ) : (
-                /* MÀN HÌNH CONSOLE TRONG SUỐT CÓ ANIMATION KHI CHUYỂN TAB */
-                <div 
-                  key={`tab-${logTab}`}
-                  ref={termRef} 
-                  className="tab-pane-animate flex-1 p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar break-all select-text bg-white/10">
-                  {(logTab === 'sys' ? sysLogs : devLogs).length === 0 ? (
-                    <div className="text-slate-600 select-none italic">
-                      {logTab === 'sys' ? t.sysPlaceholder : t.monPlaceholder}
-                    </div>
-                  ) : (
-                    (logTab === 'sys' ? sysLogs : devLogs).map((l, i) => (
-                      <div key={i} className="flex gap-2.5 mb-1 py-1 px-2.5 rounded-xl hover:bg-white/25 transition-colors">
-                        <span className="text-slate-500 shrink-0 select-none">[{l.time}]</span>
-                        <span className={`${
-                          l.type === 'error' ? 'text-rose-700 font-bold' : 
-                          l.type === 'success' ? 'text-emerald-800 font-bold' : 
-                          l.type === 'warning' ? 'text-amber-800 font-semibold' : 
-                          'text-slate-900'
-                        }`}>
-                          {l.msg}
-                        </span>
+                /* MÀN HÌNH CONSOLE TRONG SUỐT CÓ ANIMATION KHI CHUYỂN TAB + Ô GỬI LỆNH SERIAL */
+                <div key={`tab-${logTab}`} className="tab-pane-animate flex-1 flex flex-col min-h-0 bg-white/10">
+                  <div 
+                    ref={termRef} 
+                    className="flex-1 p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar break-all select-text">
+                    {(logTab === 'sys' ? sysLogs : devLogs).length === 0 ? (
+                      <div className="text-slate-600 select-none italic">
+                        {logTab === 'sys' ? t.sysPlaceholder : t.monPlaceholder}
                       </div>
-                    ))
+                    ) : (
+                      (logTab === 'sys' ? sysLogs : devLogs).map((l, i) => (
+                        <div key={i} className="flex gap-2.5 mb-1 py-1 px-2.5 rounded-xl hover:bg-white/25 transition-colors">
+                          <span className="text-slate-500 shrink-0 select-none">[{l.time}]</span>
+                          <span className={`whitespace-pre-wrap ${
+                            l.type === 'error' ? 'text-rose-700 font-bold' : 
+                            l.type === 'success' ? 'text-emerald-800 font-bold' : 
+                            l.type === 'warning' ? 'text-amber-800 font-semibold' : 
+                            'text-slate-900 font-medium'
+                          }`}>
+                            {l.msg}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Thanh nhập lệnh Serial TX (chỉ hiện trong tab Serial Monitor) */}
+                  {logTab === 'dev' && (
+                    <form onSubmit={sendSerialCommand} className="p-3 border-t border-white/45 bg-white/20 flex gap-2">
+                      <input
+                        type="text"
+                        value={serialInput}
+                        onChange={e => setSerialInput(e.target.value)}
+                        placeholder={t.txPlaceholder}
+                        className="flex-1 liquid-input px-4 py-2 text-xs font-mono text-slate-900 placeholder-slate-500 outline-none rounded-full"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!isConnected}
+                        className="liquid-btn-primary px-5 py-2 text-xs flex items-center gap-1.5 disabled:opacity-40">
+                        <i className="fa-solid fa-paper-plane text-[10px]"></i>
+                        <span>{t.sendBtn}</span>
+                      </button>
+                    </form>
                   )}
                 </div>
               )}
