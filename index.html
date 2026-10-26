@@ -337,7 +337,7 @@
         txPlaceholder: "Nhập lệnh Serial gửi tới mạch (Nhấn Enter để gửi)...",
         sendBtn: "Gửi",
         sysPlaceholder: "// Chờ kết nối thiết bị USB hoặc lệnh nạp firmware...",
-        monPlaceholder: "// Đang lắng nghe dữ liệu từ cổng USB Serial (Nếu mạch đang im lặng, hãy bấm nút 'Reset Mạch' ở góc trên)...",
+        monPlaceholder: "// Bấm nút 'Mở Monitor' ở góc trên để chọn cổng COM và xem log (Hoặc bấm 'Reset Mạch' nếu mạch đang im lặng)...",
         portOnline: "Đã kết nối USB",
         portOffline: "Chưa kết nối",
         catAll: "Tất cả",
@@ -346,10 +346,10 @@
         catEsp32: "ESP32",
         vipGroup: "★ Dòng máy Flagship / Nổi bật",
         standardGroup: "Bo mạch Phần cứng Tiêu chuẩn",
-        logInit: "[INIT] DUSCU FLASHER v2.8 đã sẵn sàng.",
+        logInit: "[INIT] DUSCU FLASHER v2.9 sẵn sàng (Chế độ bảo toàn Serial Monitor).",
         logSyncSuccess: (count) => `[SYNC] Đã đồng bộ ${count} bản dựng firmware từ GitHub.`,
         logSyncWarn: (err) => `[WARN] GitHub API: Sử dụng danh mục mặc định (${err})`,
-        logPortSuccess: "[PORT] Đã kết nối cổng USB Serial thành công (Giữ nguyên trạng thái chạy của mạch).",
+        logPortSuccess: "[PORT] Đã chọn cổng USB thành công (Không kích hoạt Bootloader).",
         logPortDisconnect: "[PORT] Đã ngắt kết nối cổng USB Serial.",
         logPortErr: (err) => `[ERR] Lỗi kết nối cổng: ${err}`,
         logNoWebSerial: "Trình duyệt không hỗ trợ Web Serial API. Vui lòng mở bằng Chrome hoặc Edge trên máy tính.",
@@ -367,9 +367,9 @@
         logFlashSuccess: "[SUCCESS] NẠP FIRMWARE HOÀN TẤT 100%.",
         logReboot: "[REBOOT] Đang khởi động lại thiết bị về chế độ chạy bình thường...",
         logFlashFail: (err) => `[FAIL] Ghi Firmware thất bại: ${err}`,
-        logMonitorStart: (baud, mode) => `[MONITOR] Đã mở luồng thu Serial @ ${baud} baud (${mode}).`,
+        logMonitorStart: (baud, mode) => `[MONITOR] Đang đọc dữ liệu Serial @ ${baud} baud (${mode}).`,
         logMonitorErr: (err) => `[ERR] Serial Monitor: ${err}`,
-        logResetPulse: "[RESET] Đã phát xung khởi động lại bo mạch (RTS Pulse)."
+        logResetPulse: "[RESET] Đã phát xung khởi động lại bo mạch (Normal Run Mode)."
       },
       en: {
         appSub: "Hardware Firmware Utility • ESP32 • S3 • C5 (WiFi 6)",
@@ -428,7 +428,7 @@
         txPlaceholder: "Send Serial command to device (Press Enter)...",
         sendBtn: "Send",
         sysPlaceholder: "// Waiting for USB device connection or flash command...",
-        monPlaceholder: "// Listening for Serial data (Click 'Reset Board' if device is silent)...",
+        monPlaceholder: "// Click 'Open Monitor' to select COM port and view logs (Click 'Reset Board' if device is silent)...",
         portOnline: "USB Connected",
         portOffline: "Disconnected",
         catAll: "All",
@@ -437,10 +437,10 @@
         catEsp32: "ESP32",
         vipGroup: "★ Flagship / Featured Profiles",
         standardGroup: "Standard Hardware Profiles",
-        logInit: "[INIT] DUSCU FLASHER v2.8 ready.",
+        logInit: "[INIT] DUSCU FLASHER v2.9 ready (Serial Monitor safe mode).",
         logSyncSuccess: (count) => `[SYNC] Synchronized ${count} firmware files from GitHub.`,
         logSyncWarn: (err) => `[WARN] GitHub API: Using default profiles (${err})`,
-        logPortSuccess: "[PORT] Connected to USB Serial port (Normal App Mode preserved).",
+        logPortSuccess: "[PORT] USB Serial port selected (Normal App Mode preserved).",
         logPortDisconnect: "[PORT] Disconnected from USB Serial port.",
         logPortErr: (err) => `[ERR] Port connection failed: ${err}`,
         logNoWebSerial: "Browser does not support Web Serial API. Please open in Chrome or Edge on Desktop.",
@@ -1023,14 +1023,10 @@
       const readerRef = useRef(null);
       const activeTransportRef = useRef(null);
       const isMonitorRef = useRef(false);
-
-      useEffect(() => {
-        if (isConnected) {
-          setLogTab('sys');
-        } else {
-          setLogTab('sodo');
-        }
-      }, [isConnected]);
+      const logTabRef = useRef(logTab);
+      useEffect(() => { logTabRef.current = logTab; }, [logTab]);
+      const monitorBaudRef = useRef(monitorBaud);
+      useEffect(() => { monitorBaudRef.current = monitorBaud; }, [monitorBaud]);
 
       const loadSodo = async (boardId) => {
         if (!boardId) return;
@@ -1070,9 +1066,6 @@
         loadSodo(selectedBoardId);
       }, [selectedBoardId]);
 
-      const monitorBaudRef = useRef(monitorBaud);
-      useEffect(() => { monitorBaudRef.current = monitorBaud; }, [monitorBaud]);
-
       const releaseAndClosePort = async (port) => {
         if (!port) return;
         if (activeTransportRef.current) {
@@ -1099,10 +1092,10 @@
         setSysLogs(prev => [...prev, { time: new Date().toLocaleTimeString('en-GB'), msg, type }]);
       };
 
-      // Ghi log Serial theo thời gian thực (Xử lý cả dòng hoàn chỉnh lẫn chuỗi chưa có \n)
+      // Ghi log Serial theo thời gian thực (hỗ trợ cả chuỗi chưa có \n)
       const appendSerialChunk = (chunkText) => {
         if (!chunkText) return;
-        const cleanText = chunkText.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, ''); // Lọc mã màu ANSI nếu có
+        const cleanText = chunkText.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
         const nowStr = new Date().toLocaleTimeString('en-GB');
 
         setDevLogs(prev => {
@@ -1112,7 +1105,6 @@
           for (let i = 0; i < parts.length; i++) {
             const segment = parts[i];
             if (i === 0 && next.length > 0 && next[next.length - 1].partial) {
-              // Nối tiếp vào dòng đang mở trước đó
               next[next.length - 1] = {
                 ...next[next.length - 1],
                 msg: next[next.length - 1].msg + segment,
@@ -1130,7 +1122,6 @@
               }
             }
           }
-          // Giới hạn tối đa 1000 dòng để tránh lag trình duyệt
           return next.slice(-1000);
         });
       };
@@ -1183,12 +1174,13 @@
             try { readerRef.current.releaseLock(); } catch(err) {}
             readerRef.current = null;
           }
+          portRef.current = null;
           setIsConnected(false);
           setChipInfo(null);
         };
 
         const handleUsbConnect = () => {
-          logSys("[USB] Phát hiện thiết bị USB mới. Bấm 'Kết nối Cổng USB' để bắt đầu.", "info");
+          logSys("[USB] Phát hiện thiết bị USB mới. Bấm 'Kết nối Cổng USB' hoặc 'Mở Monitor' để chọn cổng.", "info");
         };
 
         if ('serial' in navigator) {
@@ -1205,54 +1197,51 @@
         if (termRef.current) termRef.current.scrollTop = termRef.current.scrollHeight;
       }, [sysLogs, devLogs, logTab]);
 
-      const ensurePortConnected = async (promptUser = false) => {
+      // =========================================================================
+      // FIX 1: LUÔN HIỆN BẢNG CHỌN CỔNG COM (requestPort) KHI CHƯA KẾT NỐI
+      // Tuyệt đối không dùng getPorts() tự đoán cổng cũ gây lỗi Failed to open serial port
+      // =========================================================================
+      const requestUserSerialPort = async (forcePopup = false) => {
         if (!('serial' in navigator)) {
           throw new Error(t.logNoWebSerial);
         }
         let port = portRef.current;
-        if (!port && !promptUser) {
-          try {
-            const ports = await navigator.serial.getPorts();
-            if (ports && ports.length > 0) {
-              port = ports[ports.length - 1];
-            }
-          } catch(e) {}
-        }
-        if (!port) {
+        if (!port || forcePopup) {
           port = await navigator.serial.requestPort();
         }
         if (port) {
           portRef.current = port;
           setIsConnected(true);
-        }
-        return port;
-      };
-
-      // =========================================================================
-      // FIX QUAN TRỌNG 1: KẾT NỐI CỔNG USB KHÔNG KÍCH HOẠT BOOTLOADER
-      // Giữ nguyên mạch ở chế độ chạy Firmware bình thường để Serial hoạt động ngay!
-      // =========================================================================
-      const connectPort = async () => {
-        try {
-          if (!('serial' in navigator)) throw new Error(t.logNoWebSerial);
-          const port = await ensurePortConnected(true);
-          await releaseAndClosePort(port);
-          portRef.current = port;
-          setIsConnected(true);
-
           const info = port.getInfo ? port.getInfo() : {};
           const vid = info.usbVendorId ? `0x${info.usbVendorId.toString(16).toUpperCase().padStart(4, '0')}` : null;
           const pid = info.usbProductId ? `0x${info.usbProductId.toString(16).toUpperCase().padStart(4, '0')}` : null;
           const isEspNative = info.usbVendorId === 0x303A;
-
           if (vid && pid) {
             setChipInfo({
               chip: isEspNative ? 'ESP32 Native USB' : 'USB-UART Bridge',
               mac: `${vid}:${pid}`
             });
-            logSys(`${t.logPortSuccess} [${isEspNative ? 'Espressif USB CDC/JTAG' : 'UART Bridge'} ${vid}:${pid}]`, "success");
-          } else {
-            logSys(t.logPortSuccess, "success");
+          }
+        }
+        return port;
+      };
+
+      // =========================================================================
+      // FIX 2: NÚT TO "KẾT NỐI CỔNG USB" KHÔNG BAO GIỜ ĐẨY MẠCH VÀO BOOTLOADER
+      // Nếu đang ở tab Serial Monitor, tự động mở luôn luồng đọc Serial!
+      // =========================================================================
+      const connectPort = async () => {
+        try {
+          const port = await requestUserSerialPort(true);
+          if (!port) return;
+
+          logSys(t.logPortSuccess, "success");
+
+          // Nếu người dùng đang đứng ở tab Serial Monitor -> Mở luôn Serial Monitor, không chuyển tab!
+          if (logTabRef.current === 'dev') {
+            await startMonitor(port);
+          } else if (logTabRef.current === 'sodo') {
+            setLogTab('sys');
           }
         } catch (err) {
           logSys(t.logPortErr(err.message), "error");
@@ -1271,37 +1260,62 @@
       };
 
       // =========================================================================
-      // FIX QUAN TRỌNG 2: SERIAL MONITOR TỰ ĐỘNG PHÂN BIỆT USB NATIVE & UART BRIDGE
+      // FIX 3: SERIAL MONITOR MỞ CỔNG AN TOÀN, CHỐNG LỖI FAILED TO OPEN SERIAL PORT
       // =========================================================================
-      const startMonitor = async (targetPort = null) => {
+      const startMonitor = async (customPort = null) => {
         if (isFlashing || isErasingOnly) return;
         try {
-          let port = targetPort || portRef.current;
-          if (!port) port = await ensurePortConnected(true);
+          // Nếu chưa chọn cổng COM nào, lập tức hiện bảng chọn cổng COM của trình duyệt
+          let port = customPort || portRef.current;
+          if (!port) {
+            port = await requestUserSerialPort(true);
+          }
           if (!port) return;
 
-          // Đóng sạch các phiên trước đó để mở đúng Baudrate của Monitor
-          await stopMonitor();
-          await new Promise(r => setTimeout(r, 80));
+          // Giải phóng reader cũ nếu đang chạy
+          if (isMonitorRef.current || readerRef.current) {
+            isMonitorRef.current = false;
+            if (readerRef.current) {
+              try { await readerRef.current.cancel(); } catch(e) {}
+              try { readerRef.current.releaseLock(); } catch(e) {}
+              readerRef.current = null;
+            }
+          }
 
           const baud = parseInt(monitorBaudRef.current) || 115200;
-          await port.open({ baudRate: baud, bufferSize: 16384 });
 
-          // Kiểm tra cổng USB là Native Espressif (0x303A) hay Chip UART rời (CH340/CP2102)
+          // Kiểm tra nếu cổng chưa mở thì mở, nếu đã mở ở phiên trước thì đóng sạch rồi mở lại
+          if (port.readable || port.writable) {
+            await releaseAndClosePort(port);
+            await new Promise(r => setTimeout(r, 150));
+          }
+
+          try {
+            await port.open({ baudRate: baud, bufferSize: 16384 });
+          } catch (openErr) {
+            // Nếu hệ điều hành vẫn báo cổng đang bận hoặc không mở được, cho phép chọn lại cổng ngay
+            logSys(`[WARN] Cổng đang bận hoặc đã đổi số COM (${openErr.message}). Vui lòng chọn lại cổng COM...`, 'warning');
+            portRef.current = null;
+            port = await requestUserSerialPort(true);
+            if (!port) return;
+            await releaseAndClosePort(port);
+            await new Promise(r => setTimeout(r, 150));
+            await port.open({ baudRate: baud, bufferSize: 16384 });
+          }
+
+          // Thiết lập tín hiệu DTR/RTS chuẩn để KHÔNG vào Bootloader
           const info = port.getInfo ? port.getInfo() : {};
           const isEspNativeUsb = info.usbVendorId === 0x303A;
 
           try {
             if (isEspNativeUsb) {
-              // Trên ESP32-S3/C3/C5 Native USB CDC: Bắt buộc DTR = true để USB-CDC xuất dữ liệu TX
+              // ESP32-S3 / C3 / C5 USB gốc: DTR = true, RTS = false để nhận dữ liệu USB CDC mà không reset vào Bootloader
               await port.setSignals({ dataTerminalReady: true, requestToSend: false });
             } else {
-              // Trên CH340 / CP2102 / CH9102: Giữ cả DTR = false và RTS = false để EN=1, IO0=1 (Mạch chạy bình thường)
+              // Chip UART CH340 / CP2102: DTR = false, RTS = false để chân EN=HIGH, IO0=HIGH
               await port.setSignals({ dataTerminalReady: false, requestToSend: false });
             }
-          } catch(sigErr) {
-            console.warn("setSignals notice:", sigErr);
-          }
+          } catch(sigErr) {}
 
           isMonitorRef.current = true;
           setIsMonitor(true);
@@ -1359,21 +1373,23 @@
         }
       };
 
-      // =========================================================================
-      // FIX QUAN TRỌNG 3: NÚT RESET MẠCH TRỰC TIẾP TRONG SERIAL MONITOR
-      // Kích xung RTS đưa mạch thoát khỏi Bootloader và in ngay log khởi động
-      // =========================================================================
+      // Nút Reset Mạch về chế độ chạy Firmware bình thường (Normal Run Mode)
       const resetBoardFromMonitor = async () => {
         try {
           let port = portRef.current;
+          if (!port) {
+            port = await requestUserSerialPort(true);
+          }
           if (!port) return;
-          if (!isMonitorRef.current) {
+
+          if (!isMonitorRef.current || !port.readable) {
             await startMonitor(port);
           }
+
           const info = port.getInfo ? port.getInfo() : {};
           const isEspNativeUsb = info.usbVendorId === 0x303A;
 
-          // Phát xung kéo chân EN xuống GND (DTR=false, RTS=true) trong 100ms rồi nhả ra
+          // Kéo chân EN xuống thấp (DTR=false, RTS=true) trong 100ms để khởi động lại vào Firmware chính
           await port.setSignals({ dataTerminalReady: false, requestToSend: true });
           await new Promise(r => setTimeout(r, 100));
           if (isEspNativeUsb) {
@@ -1390,13 +1406,19 @@
       // Gửi lệnh từ ô Input xuống thiết bị qua Serial TX
       const sendSerialCommand = async (e) => {
         e.preventDefault();
-        if (!serialInput.trim() || !portRef.current) return;
+        if (!serialInput.trim()) return;
         try {
-          if (!isMonitorRef.current || !portRef.current.writable) {
-            await startMonitor(portRef.current);
+          let port = portRef.current;
+          if (!port) {
+            port = await requestUserSerialPort(true);
           }
-          if (portRef.current.writable) {
-            const writer = portRef.current.writable.getWriter();
+          if (!port) return;
+
+          if (!isMonitorRef.current || !port.writable) {
+            await startMonitor(port);
+          }
+          if (port.writable) {
+            const writer = port.writable.getWriter();
             const payload = new TextEncoder().encode(serialInput + '\r\n');
             await writer.write(payload);
             writer.releaseLock();
@@ -1540,7 +1562,6 @@
             else if (typeof esploader.hardReset === 'function') await esploader.hardReset();
           } catch(e) {}
 
-          // Đưa chân RTS/DTR về trạng thái chạy ứng dụng bình thường trước khi ngắt Transport
           try {
             await portRef.current.setSignals({ dataTerminalReady: false, requestToSend: true });
             await new Promise(r => setTimeout(r, 100));
@@ -2065,8 +2086,8 @@
                       {/* Nút Reset Mạch trực tiếp */}
                       <button
                         onClick={resetBoardFromMonitor}
-                        disabled={!isConnected || isFlashing || isErasingOnly}
-                        title="Khởi động lại mạch để xem log boot từ đầu"
+                        disabled={isFlashing || isErasingOnly}
+                        title="Khởi động lại mạch về chế độ chạy bình thường để xem log từ đầu"
                         className="liquid-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5 text-indigo-800 disabled:opacity-40">
                         <i className="fa-solid fa-rotate-right text-[11px] text-indigo-600"></i>
                         <span className="hidden sm:inline">{t.resetBoardBtn}</span>
@@ -2253,8 +2274,7 @@
                       />
                       <button
                         type="submit"
-                        disabled={!isConnected}
-                        className="liquid-btn-primary px-5 py-2 text-xs flex items-center gap-1.5 disabled:opacity-40">
+                        className="liquid-btn-primary px-5 py-2 text-xs flex items-center gap-1.5">
                         <i className="fa-solid fa-paper-plane text-[10px]"></i>
                         <span>{t.sendBtn}</span>
                       </button>
