@@ -1,0 +1,109 @@
+{
+  "board_id": "xk404",
+  "board_name": "XK404 ESP32-S3 Handheld",
+  "chip": "ESP32-S3",
+  "notes": "Sơ đồ chân đấu nối chuẩn cho thiết bị cầm tay XK404 ESP32-S3 với màn hình ST7789 240x280 và cụm phím 5 chiều theo quy chuẩn của Chủ tịch Thăng.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT",
+      "subtitle": "TFT Pin ↔ ESP32-S3 (Tích hợp sẵn)",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Nguồn bo)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCL (SCLK)", "esp": "GPIO 17"},
+        {"pin": "SDA (MOSI)", "esp": "GPIO 18"},
+        {"pin": "MISO", "esp": "GPIO 8"},
+        {"pin": "CS", "esp": "GPIO 7"},
+        {"pin": "DC", "esp": "GPIO 15"},
+        {"pin": "RES (RST)", "esp": "GPIO 16"},
+        {"pin": "BLK (Đèn nền)", "esp": "GPIO 6"}
+      ]
+    },
+    {
+      "name": "2. Nút nhấn",
+      "subtitle": "Button ↔ ESP32-S3 GPIO",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "BUTTON OK / SELECT", "esp": "GPIO 0"},
+        {"pin": "BUTTON UP", "esp": "GPIO 39"},
+        {"pin": "BUTTON DOWN", "esp": "GPIO 38"},
+        {"pin": "BUTTON RIGHT", "esp": "GPIO 11"},
+        {"pin": "BUTTON LEFT", "esp": "GPIO 10"}
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại",
+      "subtitle": "IR Module ↔ ESP32-S3",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 2"},
+        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 1"}
+      ]
+    },
+    {
+      "name": "4. Module Thẻ nhớ",
+      "subtitle": "SD Pin ↔ ESP32-S3 (Khe cắm MicroSD trên bo)",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Nguồn bo)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 17"},
+        {"pin": "MOSI", "esp": "GPIO 18"},
+        {"pin": "MISO", "esp": "GPIO 8"},
+        {"pin": "CS", "esp": "GPIO 3"}
+      ]
+    },
+    {
+      "name": "5. Module BW16",
+      "subtitle": "BW16 Pin ↔ ESP32-S3 (Cổng Serial)",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "PB2", "esp": "GPIO 43 (TX)"},
+        {"pin": "PB1", "esp": "GPIO 44 (RX)"}
+      ]
+    },
+    {
+      "name": "6. Module GPS",
+      "subtitle": "GPS Pin ↔ ESP32-S3 (Cổng Serial)",
+      "icon": "fa-location-crosshairs",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "TX", "esp": "GPIO 44 (RX)"},
+        {"pin": "RX", "esp": "GPIO 43 (TX)"}
+      ]
+    },
+    {
+      "name": "7. Module NRF24",
+      "subtitle": "NRF24 Pin ↔ ESP32-S3",
+      "icon": "fa-tower-broadcast",
+      "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "CE", "esp": "GPIO 13"},
+        {"pin": "CSN", "esp": "GPIO 12"},
+        {"pin": "SCK", "esp": "GPIO 17"},
+        {"pin": "MOSI", "esp": "GPIO 18"},
+        {"pin": "MISO", "esp": "GPIO 8"}
+      ]
+    },
+    {
+      "name": "8. Module CC1101",
+      "subtitle": "CC1101 Pin ↔ ESP32-S3",
+      "icon": "fa-radio",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 17"},
+        {"pin": "MOSI", "esp": "GPIO 18"},
+        {"pin": "MISO", "esp": "GPIO 8"},
+        {"pin": "CSN", "esp": "GPIO 46"},
+        {"pin": "GDO0", "esp": "GPIO 9"}
+      ]
+    }
+  ]
+}

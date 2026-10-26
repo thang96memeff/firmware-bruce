@@ -1,0 +1,106 @@
+{
+  "board_id": "lilygo-t-display-ttgo",
+  "board_name": "LilyGO TTGO T-Display ESP32 1.14\"",
+  "chip": "ESP32",
+  "notes": "Sơ đồ chân đấu nối chuẩn cho bo mạch LilyGO TTGO T-Display ESP32 với màn hình IPS ST7789 1.14 inch theo quy chuẩn của Chủ tịch Thăng.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT",
+      "subtitle": "TFT Pin ↔ ESP32 (Tích hợp sẵn)",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Nguồn bo)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCL (SCLK)", "esp": "GPIO 18"},
+        {"pin": "SDA (MOSI)", "esp": "GPIO 19"},
+        {"pin": "CS", "esp": "GPIO 5"},
+        {"pin": "DC", "esp": "GPIO 16"},
+        {"pin": "RES (RST)", "esp": "GPIO 23"},
+        {"pin": "BLK (Đèn nền)", "esp": "GPIO 4"}
+      ]
+    },
+    {
+      "name": "2. Nút nhấn",
+      "subtitle": "Button ↔ ESP32 GPIO",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "BUTTON UP", "esp": "GPIO 35"},
+        {"pin": "BUTTON DOWN", "esp": "GPIO 0"},
+        {"pin": "BUTTON OK", "esp": "GPIO 17"}
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại",
+      "subtitle": "IR Module ↔ ESP32",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 2"},
+        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 15"}
+      ]
+    },
+    {
+      "name": "4. Module Thẻ nhớ",
+      "subtitle": "SD Pin ↔ ESP32",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 25"},
+        {"pin": "MOSI", "esp": "GPIO 26"},
+        {"pin": "MISO", "esp": "GPIO 27"},
+        {"pin": "CS", "esp": "GPIO 33"}
+      ]
+    },
+    {
+      "name": "5. Module BW16",
+      "subtitle": "BW16 Pin ↔ ESP32",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "PB2", "esp": "GPIO 12 (TX)"},
+        {"pin": "PB1", "esp": "GPIO 13 (RX)"}
+      ]
+    },
+    {
+      "name": "6. Module GPS",
+      "subtitle": "GPS Pin ↔ ESP32",
+      "icon": "fa-location-crosshairs",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V / 5V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "TX", "esp": "GPIO 13 (RX)"},
+        {"pin": "RX", "esp": "GPIO 12 (TX)"}
+      ]
+    },
+    {
+      "name": "7. Module NRF24",
+      "subtitle": "NRF24 Pin ↔ ESP32",
+      "icon": "fa-tower-broadcast",
+      "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "CE", "esp": "GPIO 37"},
+        {"pin": "CSN", "esp": "GPIO 38"},
+        {"pin": "SCK", "esp": "GPIO 25"},
+        {"pin": "MOSI", "esp": "GPIO 26"},
+        {"pin": "MISO", "esp": "GPIO 27"}
+      ]
+    },
+    {
+      "name": "8. Module CC1101",
+      "subtitle": "CC1101 Pin ↔ ESP32",
+      "icon": "fa-radio",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 25"},
+        {"pin": "MOSI", "esp": "GPIO 26"},
+        {"pin": "MISO", "esp": "GPIO 27"},
+        {"pin": "CSN", "esp": "GPIO 32"},
+        {"pin": "GDO0", "esp": "GPIO 39"}
+      ]
+    }
+  ]
+}

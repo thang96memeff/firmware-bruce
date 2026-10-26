@@ -1,0 +1,108 @@
+{
+  "board_id": "m5stack-core2",
+  "board_name": "M5Stack Core2 (Touch 2.0\")",
+  "chip": "ESP32",
+  "notes": "Sơ đồ chân đấu nối chuẩn cho thiết bị M5Stack Core2 tích hợp màn hình màu 2.0 inch cảm ứng điện dung FT6336U, khay thẻ nhớ TF và cổng mở rộng Grove I2C/UART theo quy chuẩn của Chủ tịch Thăng.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT",
+      "subtitle": "TFT Pin ↔ ESP32 (Tích hợp sẵn)",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Nguồn bo)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCL (SCLK)", "esp": "GPIO 18"},
+        {"pin": "SDA (MOSI)", "esp": "GPIO 23"},
+        {"pin": "MISO", "esp": "GPIO 38"},
+        {"pin": "CS", "esp": "GPIO 5"},
+        {"pin": "DC", "esp": "GPIO 15"},
+        {"pin": "BLK (Đèn nền)", "esp": "Quản lý qua nguồn AXP192 (DCDC3/LDO2)"}
+      ]
+    },
+    {
+      "name": "2. Nút nhấn & Cảm ứng",
+      "subtitle": "Touch & Button ↔ ESP32",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "3 Phím cảm ứng viền dưới (A / B / C)", "esp": "Tích hợp trên vùng cảm ứng FT6336U"},
+        {"pin": "Cảm ứng điện dung FT6336U - SDA", "esp": "GPIO 21 (Nội bộ)"},
+        {"pin": "Cảm ứng điện dung FT6336U - SCL", "esp": "GPIO 22 (Nội bộ)"},
+        {"pin": "Cảm ứng điện dung FT6336U - INT", "esp": "GPIO 39"},
+        {"pin": "Nút nguồn", "esp": "Nút cứng kết nối PMIC AXP192"}
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại",
+      "subtitle": "IR Module ↔ ESP32 (Cổng Grove / Đáy M-Bus)",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 32 (Grove SDA)"},
+        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 33 (Grove SCL)"}
+      ]
+    },
+    {
+      "name": "4. Module Thẻ nhớ",
+      "subtitle": "SD Pin ↔ ESP32 (Khay thẻ nhớ MicroSD tích hợp)",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Nguồn bo)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 18"},
+        {"pin": "MOSI", "esp": "GPIO 23"},
+        {"pin": "MISO", "esp": "GPIO 38"},
+        {"pin": "CS", "esp": "GPIO 4"}
+      ]
+    },
+    {
+      "name": "5. Module BW16",
+      "subtitle": "BW16 Pin ↔ ESP32 (Cổng Grove Port A)",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "VCC", "esp": "5V (Grove VCC)"},
+        {"pin": "GND", "esp": "GND (Grove GND)"},
+        {"pin": "PB2", "esp": "GPIO 32 (Grove SDA / TX)"},
+        {"pin": "PB1", "esp": "GPIO 33 (Grove SCL / RX)"}
+      ]
+    },
+    {
+      "name": "6. Module GPS",
+      "subtitle": "GPS Pin ↔ ESP32 (Cổng Grove Port A)",
+      "icon": "fa-location-crosshairs",
+      "pins": [
+        {"pin": "VCC", "esp": "5V (Grove VCC)"},
+        {"pin": "GND", "esp": "GND (Grove GND)"},
+        {"pin": "TX", "esp": "GPIO 33 (Grove SCL / RX)"},
+        {"pin": "RX", "esp": "GPIO 32 (Grove SDA / TX)"}
+      ]
+    },
+    {
+      "name": "7. Module NRF24",
+      "subtitle": "NRF24 Pin ↔ ESP32",
+      "icon": "fa-tower-broadcast",
+      "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "CE", "esp": "GPIO 32 (Grove SDA)"},
+        {"pin": "CSN", "esp": "GPIO 33 (Grove SCL)"},
+        {"pin": "SCK", "esp": "GPIO 18"},
+        {"pin": "MOSI", "esp": "GPIO 23"},
+        {"pin": "MISO", "esp": "GPIO 38"}
+      ]
+    },
+    {
+      "name": "8. Module CC1101",
+      "subtitle": "CC1101 Pin ↔ ESP32",
+      "icon": "fa-radio",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCK", "esp": "GPIO 18"},
+        {"pin": "MOSI", "esp": "GPIO 23"},
+        {"pin": "MISO", "esp": "GPIO 38"},
+        {"pin": "CSN", "esp": "GPIO 33 (Grove SCL)"},
+        {"pin": "GDO0", "esp": "GPIO 32 (Grove SDA)"}
+      ]
+    }
+  ]
+}
