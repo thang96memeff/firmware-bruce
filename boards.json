@@ -351,9 +351,9 @@
   },
   {
     "id": "bw16",
-    "name": "Module BW16 (RTL8720DN)",
+    "name": "Module BW16 (RTL8720DN Dual-Band 2.4/5GHz)",
     "chip": "RTL8720DN",
-    "category": "esp32",
+    "category": "bw16",
     "desc": "Module Wi-Fi 2 băng tần (2.4GHz + 5GHz) & BLE 5.0. Hỗ trợ Deauth / Beacon 5GHz kết nối với Bruce qua UART (PB1/PB2). Core 3.1.5.",
     "url": "Bruce-bw16.bin",
     "icon": "fa-wifi",
