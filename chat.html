@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>DUSCU AI CLUSTER CHAT - Trò Chuyện Trực Tiếp Cụm AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #BCE3F5 0%, #D8EEF9 50%, #BCE3F5 100%);
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .liquid-glass {
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.08);
+    }
+    .liquid-btn {
+      background: rgba(255, 255, 255, 0.65);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      transition: all 0.2s ease;
+    }
+    .liquid-btn:active {
+      transform: scale(0.96);
+      background: rgba(255, 255, 255, 0.85);
+    }
+    .chat-bubble-user {
+      background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25);
+    }
+    .chat-bubble-ai {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      color: #0F172A;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(100, 116, 139, 0.3);
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden text-slate-800">
+
+  <!-- HEADER TRÊN CÙNG -->
+  <header class="liquid-glass mx-3 my-2.5 px-4 py-2.5 rounded-3xl flex items-center justify-between shrink-0 z-10">
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-md">
+        <i class="fa-solid fa-satellite-dish animate-pulse"></i>
+      </div>
+      <div>
+        <div class="font-extrabold text-sm sm:text-base text-slate-900 tracking-tight flex items-center gap-2">
+          <span>DUSCU AI CLUSTER CHAT</span>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-800 border border-emerald-400/40">
+            5/5 Online
+          </span>
+        </div>
+        <div class="text-[11px] text-slate-600 font-medium flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+          <span>Kênh điều hành trực tiếp của Chủ tịch Thăng</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button id="btnSettings" class="liquid-btn w-9 h-9 rounded-2xl flex items-center justify-center text-slate-700 hover:text-blue-600 shadow-sm" title="Cài đặt Token">
+        <i class="fa-solid fa-key text-xs"></i>
+      </button>
+      <button id="btnRefresh" class="liquid-btn w-9 h-9 rounded-2xl flex items-center justify-center text-slate-700 hover:text-blue-600 shadow-sm" title="Làm mới">
+        <i class="fa-solid fa-arrows-rotate text-xs"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- KHUNG HIỂN THỊ TIN NHẮN (CHAT STREAM) -->
+  <main id="chatStream" class="flex-1 overflow-y-auto px-3 sm:px-4 py-2 space-y-3 custom-scrollbar">
+    <div id="loadingIndicator" class="text-center py-8 text-slate-600 text-xs font-semibold flex flex-col items-center gap-2">
+      <i class="fa-solid fa-circle-notch fa-spin text-blue-600 text-xl"></i>
+      <span>Đang kết nối vào cụm 5 máy chủ và nạp lịch sử tin nhắn...</span>
+    </div>
+  </main>
+
+  <!-- THANH LỆNH NHANH (QUICK COMMANDS) -->
+  <div class="px-3 pb-1 pt-0.5 shrink-0 overflow-x-auto flex gap-1.5 no-scrollbar">
+    <button class="quick-btn text-[11px] font-bold px-3 py-1 rounded-full bg-white/50 text-slate-800 border border-white/80 shrink-0 hover:bg-white" data-cmd="Kiểm tra tiến trình và báo cáo tình trạng toàn cụm!">
+      📊 Báo cáo toàn cụm
+    </button>
+    <button class="quick-btn text-[11px] font-bold px-3 py-1 rounded-full bg-white/50 text-slate-800 border border-white/80 shrink-0 hover:bg-white" data-cmd="Kiểm tra ANNOUNCEMENTS.md, AI_CHAT.md và tiến trình build hiện tại để tiếp tục công việc đang dở.">
+      🔍 Rà soát công việc
+    </button>
+    <button class="quick-btn text-[11px] font-bold px-3 py-1 rounded-full bg-white/50 text-slate-800 border border-white/80 shrink-0 hover:bg-white" data-cmd="Cập nhật bản build APK mới nhất cho Bruce Flasher Mobile!">
+      📱 Cập nhật APK mới
+    </button>
+    <button class="quick-btn text-[11px] font-bold px-3 py-1 rounded-full bg-white/50 text-slate-800 border border-white/80 shrink-0 hover:bg-white" data-cmd=".">
+      💤 Túc trực 0-token
+    </button>
+  </div>
+
+  <!-- THANH SOẠN THẢO VÀ GỬI TIN NHẮN -->
+  <footer class="p-3 shrink-0">
+    <form id="chatForm" class="liquid-glass p-1.5 rounded-3xl flex items-center gap-2 shadow-lg">
+      <textarea 
+        id="inputMessage" 
+        rows="1" 
+        placeholder="Gõ lệnh hoặc tin nhắn gửi Chủ tịch Thăng..." 
+        class="flex-1 bg-transparent px-3 py-2 text-xs sm:text-sm font-semibold text-slate-900 outline-none resize-none max-h-24 leading-relaxed"
+        required></textarea>
+      
+      <button 
+        type="submit" 
+        id="btnSend"
+        class="w-10 h-10 rounded-2xl bg-blue-600 hover:bg-blue-700 active:scale-95 text-white flex items-center justify-center shadow-md transition-all shrink-0">
+        <i class="fa-solid fa-paper-plane text-xs"></i>
+      </button>
+    </form>
+  </footer>
+
+  <!-- MODAL CÀI ĐẶT GITHUB TOKEN -->
+  <div id="tokenModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="liquid-glass max-w-md w-full p-5 rounded-3xl space-y-4 bg-white/85">
+      <div class="flex items-center justify-between">
+        <div class="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+          <i class="fa-solid fa-key text-blue-600"></i>
+          <span>Cấu Hình GitHub Token</span>
+        </div>
+        <button id="btnCloseModal" class="text-slate-500 hover:text-slate-800">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-600 leading-relaxed">
+        Để gửi tin nhắn trực tiếp lên kênh điều hành cụm 5 máy chủ, vui lòng dán <strong>GitHub Token (PAT)</strong> của Chủ tịch vào đây. Token được lưu an toàn 100% trong bộ nhớ trình duyệt điện thoại (LocalStorage) của Chủ tịch:
+      </p>
+
+      <input 
+        type="password" 
+        id="inputToken" 
+        placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" 
+        class="w-full bg-white/70 border border-slate-300 rounded-2xl px-3 py-2.5 text-xs font-mono text-slate-800 outline-none focus:border-blue-500" 
+      />
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button id="btnSaveToken" class="px-4 py-2 rounded-2xl bg-blue-600 text-white font-bold text-xs shadow-md hover:bg-blue-700">
+          Lưu Token & Kết Nối
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const REPO_OWNER = 'thang96memeff';
+    const REPO_NAME = 'bruce-duscu';
+    const CHAT_FILE = 'AI_CHAT.md';
+    const RAW_URL = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/${CHAT_FILE}`;
+    const API_URL = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${CHAT_FILE}`;
+
+    let lastContent = '';
+    let autoRefreshTimer = null;
+    let isSending = false;
+
+    // Lấy Token từ LocalStorage
+    function getToken() {
+      return localStorage.getItem('duscu_cluster_token') || '';
+    }
+
+    // Modal điều khiển
+    const tokenModal = document.getElementById('tokenModal');
+    const inputToken = document.getElementById('inputToken');
+    document.getElementById('btnSettings').addEventListener('click', () => {
+      inputToken.value = getToken();
+      tokenModal.classList.remove('hidden');
+    });
+    document.getElementById('btnCloseModal').addEventListener('click', () => {
+      tokenModal.classList.add('hidden');
+    });
+    document.getElementById('btnSaveToken').addEventListener('click', () => {
+      const val = inputToken.value.trim();
+      if (val) {
+        localStorage.setItem('duscu_cluster_token', val);
+      } else {
+        localStorage.removeItem('duscu_cluster_token');
+      }
+      tokenModal.classList.add('hidden');
+      fetchChatLogs(true);
+    });
+
+    // Xử lý nút lệnh nhanh
+    document.querySelectorAll('.quick-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const cmd = btn.getAttribute('data-cmd');
+        const input = document.getElementById('inputMessage');
+        input.value = cmd;
+        input.focus();
+      });
+    });
+
+    // Tự co giãn ô nhập tin nhắn
+    const inputMessage = document.getElementById('inputMessage');
+    inputMessage.addEventListener('input', () => {
+      inputMessage.style.height = 'auto';
+      inputMessage.style.height = Math.min(inputMessage.scrollHeight, 96) + 'px';
+    });
+
+    // Enter để gửi (Shift+Enter để xuống dòng)
+    inputMessage.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('chatForm').dispatchEvent(new Event('submit'));
+      }
+    });
+
+    // Nạp tin nhắn từ AI_CHAT.md
+    async function fetchChatLogs(forceScroll = false) {
+      try {
+        const token = getToken();
+        let headers = {};
+        if (token) {
+          headers['Authorization'] = `token ${token}`;
+        }
+        // Thêm timestamp để tránh cache
+        const res = await fetch(`${RAW_URL}?t=${Date.now()}`, { headers });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+
+        if (text === lastContent) return; // Không có gì thay đổi
+        lastContent = text;
+        renderChatStream(text, forceScroll);
+      } catch (err) {
+        console.error("Lỗi nạp tin nhắn:", err);
+      }
+    }
+
+    // Hiển thị tin nhắn
+    function renderChatStream(content, forceScroll = false) {
+      const stream = document.getElementById('chatStream');
+      const lines = content.split('\n').filter(l => l.trim().length > 0);
+      
+      const isAtBottom = stream.scrollHeight - stream.scrollTop <= stream.clientHeight + 100;
+
+      stream.innerHTML = '';
+
+      lines.forEach((line) => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('#')) return; // Bỏ qua tiêu đề Markdown
+
+        // Nhận diện người gửi
+        const isUser = trimmed.includes('[Chủ tịch Thăng]') || trimmed.startsWith('Thăng:') || trimmed.includes('[Thăng]');
+        const isLeader = trimmed.includes('[Máy chủ 1]') || trimmed.includes('[Leader]');
+        const isServer2 = trimmed.includes('[Máy chủ 2]');
+        const isServer3 = trimmed.includes('[Máy chủ 3]');
+        const isServer4 = trimmed.includes('[Máy chủ 4]');
+        const isServer5 = trimmed.includes('[Máy chủ 5]');
+
+        let senderName = 'Cụm Máy Chủ';
+        let badgeColor = 'bg-slate-500';
+        let avatarIcon = 'fa-robot';
+
+        if (isUser) {
+          senderName = 'Chủ tịch Thăng';
+          badgeColor = 'bg-amber-500 text-amber-950 font-extrabold';
+          avatarIcon = 'fa-crown';
+        } else if (isLeader) {
+          senderName = 'Máy chủ 1 (Leader)';
+          badgeColor = 'bg-blue-600 text-white';
+          avatarIcon = 'fa-wand-magic-sparkles';
+        } else if (isServer2) {
+          senderName = 'Máy chủ 2';
+          badgeColor = 'bg-emerald-600 text-white';
+          avatarIcon = 'fa-microchip';
+        } else if (isServer3) {
+          senderName = 'Máy chủ 3';
+          badgeColor = 'bg-purple-600 text-white';
+          avatarIcon = 'fa-bolt';
+        } else if (isServer4) {
+          senderName = 'Máy chủ 4';
+          badgeColor = 'bg-cyan-600 text-white';
+          avatarIcon = 'fa-wifi';
+        } else if (isServer5) {
+          senderName = 'Máy chủ 5';
+          badgeColor = 'bg-orange-600 text-white';
+          avatarIcon = 'fa-shield-halved';
+        }
+
+        // Tách thời gian nếu có dạng [YYYY-MM-DD HH:mm UTC]
+        let timeStr = '';
+        let cleanText = trimmed;
+        if (cleanText.startsWith('- ')) cleanText = cleanText.substring(2);
+
+        const timeMatch = cleanText.match(/^\[([0-9\- :UTC]+)\]/);
+        if (timeMatch) {
+          timeStr = timeMatch[1].replace(' UTC', '');
+          cleanText = cleanText.replace(timeMatch[0], '').trim();
+        }
+
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-full`;
+
+        const bubbleContainer = document.createElement('div');
+        bubbleContainer.className = `flex items-end gap-2 max-w-[90%] sm:max-w-[80%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`;
+
+        const avatar = document.createElement('div');
+        avatar.className = `w-7 h-7 rounded-xl ${isUser ? 'bg-amber-400 text-amber-900 shadow-sm' : badgeColor} flex items-center justify-center shrink-0 text-[11px]`;
+        avatar.innerHTML = `<i class="fa-solid ${avatarIcon}"></i>`;
+
+        const bubble = document.createElement('div');
+        bubble.className = `p-3 rounded-2xl text-xs leading-relaxed whitespace-pre-wrap break-words ${
+          isUser ? 'chat-bubble-user rounded-br-sm' : 'chat-bubble-ai rounded-bl-sm font-medium'
+        }`;
+
+        // Header trong bubble
+        const header = document.createElement('div');
+        header.className = `text-[10px] font-bold pb-1 flex items-center gap-1.5 ${isUser ? 'text-amber-200 justify-end' : 'text-blue-700'}`;
+        header.innerHTML = `<span>${senderName}</span>${timeStr ? `<span class="opacity-70 font-normal">(${timeStr})</span>` : ''}`;
+
+        const body = document.createElement('div');
+        body.textContent = cleanText;
+
+        bubble.appendChild(header);
+        bubble.appendChild(body);
+
+        bubbleContainer.appendChild(avatar);
+        bubbleContainer.appendChild(bubble);
+
+        msgDiv.appendChild(bubbleContainer);
+        stream.appendChild(msgDiv);
+      });
+
+      if (forceScroll || isAtBottom) {
+        stream.scrollTop = stream.scrollHeight;
+      }
+    }
+
+    // Gửi tin nhắn lên GitHub
+    document.getElementById('chatForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (isSending) return;
+
+      const input = document.getElementById('inputMessage');
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      const token = getToken();
+      if (!token) {
+        tokenModal.classList.remove('hidden');
+        alert("Vui lòng nhập GitHub Token của Chủ tịch để cấp quyền gửi tin nhắn lên cụm!");
+        return;
+      }
+
+      isSending = true;
+      const btnSend = document.getElementById('btnSend');
+      btnSend.disabled = true;
+      btnSend.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin text-xs"></i>';
+
+      try {
+        // 1. Lấy SHA và nội dung hiện tại qua GitHub API
+        const getRes = await fetch(API_URL, {
+          headers: {
+            'Authorization': `token ${token}`,
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        });
+
+        if (!getRes.ok) {
+          throw new Error(`Không thể lấy dữ liệu chat (Mã lỗi: ${getRes.status}). Kiểm tra lại token!`);
+        }
+
+        const getData = await getRes.json();
+        const sha = getData.sha;
+        const currentContent = decodeURIComponent(escape(atob(getData.content.replace(/\n/g, ''))));
+
+        // 2. Định dạng tin nhắn của Chủ tịch Thăng theo chuẩn UTC
+        const now = new Date();
+        const yyyy = now.getUTCFullYear();
+        const mm = String(now.getUTCMonth() + 1).padStart(2, '0');
+        const dd = String(now.getUTCDate()).padStart(2, '0');
+        const hh = String(now.getUTCHours()).padStart(2, '0');
+        const min = String(now.getUTCMinutes()).padStart(2, '0');
+        const timeFormatted = `${yyyy}-${mm}-${dd} ${hh}:${min} UTC`;
+
+        const newLine = `- [${timeFormatted}] [Chủ tịch Thăng]: ${msg}\n`;
+        const updatedContent = currentContent + (currentContent.endsWith('\n') ? '' : '\n') + newLine;
+        const encodedContent = btoa(unescape(encodeURIComponent(updatedContent)));
+
+        // 3. Ghi đè file qua PUT request
+        const putRes = await fetch(API_URL, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `token ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/vnd.github.v3+json'
+          },
+          body: JSON.stringify({
+            message: `[AI Chat] Chủ tịch Thăng: ${msg.substring(0, 50)}`,
+            content: encodedContent,
+            sha: sha,
+            branch: 'main'
+          })
+        });
+
+        if (!putRes.ok) {
+          const errData = await putRes.json();
+          throw new Error(errData.message || `Lỗi lưu tin nhắn (${putRes.status})`);
+        }
+
+        input.value = '';
+        input.style.height = 'auto';
+        await fetchChatLogs(true);
+      } catch (err) {
+        alert("Lỗi gửi tin nhắn: " + err.message);
+      } finally {
+        isSending = false;
+        btnSend.disabled = false;
+        btnSend.innerHTML = '<i class="fa-solid fa-paper-plane text-xs"></i>';
+      }
+    });
+
+    // Nạp lần đầu và lặp lại tự động mỗi 4 giây
+    fetchChatLogs(true);
+    autoRefreshTimer = setInterval(() => fetchChatLogs(false), 4000);
+    document.getElementById('btnRefresh').addEventListener('click', () => fetchChatLogs(true));
+  </script>
+</body>
+</html>
