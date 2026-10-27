@@ -9,14 +9,38 @@
       "subtitle": "TFT Pin ↔ ESP32-S3",
       "icon": "fa-tv",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V (Onboard)"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCL", "esp": "GPIO 36"},
-        {"pin": "SDA (MOSI)", "esp": "GPIO 35"},
-        {"pin": "RES", "esp": "GPIO 33"},
-        {"pin": "DC", "esp": "GPIO 34"},
-        {"pin": "CS", "esp": "GPIO 37"},
-        {"pin": "BLK", "esp": "GPIO 38"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Onboard)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCL",
+          "esp": "GPIO 36"
+        },
+        {
+          "pin": "SDA (MOSI)",
+          "esp": "GPIO 35"
+        },
+        {
+          "pin": "RES",
+          "esp": "GPIO 33"
+        },
+        {
+          "pin": "DC",
+          "esp": "GPIO 34"
+        },
+        {
+          "pin": "CS",
+          "esp": "GPIO 37"
+        },
+        {
+          "pin": "BLK",
+          "esp": "GPIO 38"
+        }
       ]
     },
     {
@@ -24,10 +48,22 @@
       "subtitle": "Keyboard ↔ ESP32-S3 (TCA8418 I2C)",
       "icon": "fa-gamepad",
       "pins": [
-        {"pin": "BÀN PHÍM (56 PHÍM) I2C SDA", "esp": "GPIO 8"},
-        {"pin": "BÀN PHÍM (56 PHÍM) I2C SCL", "esp": "GPIO 9"},
-        {"pin": "BÀN PHÍM NGẮT (INT)", "esp": "GPIO 11"},
-        {"pin": "NÚT OK (G0 Button)", "esp": "GPIO 0"}
+        {
+          "pin": "BÀN PHÍM (56 PHÍM) I2C SDA",
+          "esp": "GPIO 8"
+        },
+        {
+          "pin": "BÀN PHÍM (56 PHÍM) I2C SCL",
+          "esp": "GPIO 9"
+        },
+        {
+          "pin": "BÀN PHÍM NGẮT (INT)",
+          "esp": "GPIO 11"
+        },
+        {
+          "pin": "NÚT OK (G0 Button)",
+          "esp": "GPIO 0"
+        }
       ]
     },
     {
@@ -35,8 +71,14 @@
       "subtitle": "IR Module ↔ ESP32-S3",
       "icon": "fa-bolt",
       "pins": [
-        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 44 (Đèn LED IR tích hợp)"},
-        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 1 (Grove SCL) / GPIO 2 (Grove SDA)"}
+        {
+          "pin": "IR TX (Phát hồng ngoại) - Chân SIG",
+          "esp": "GPIO 44 (Đèn LED IR tích hợp)"
+        },
+        {
+          "pin": "IR RX (Thu hồng ngoại) - Chân OUT",
+          "esp": "GPIO 1 (Grove SCL) / GPIO 2 (Grove SDA)"
+        }
       ]
     },
     {
@@ -44,12 +86,30 @@
       "subtitle": "SD Pin ↔ ESP32-S3",
       "icon": "fa-sd-card",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V (Khe MicroSD onboard)"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCK", "esp": "GPIO 40"},
-        {"pin": "MOSI", "esp": "GPIO 14"},
-        {"pin": "MISO", "esp": "GPIO 39"},
-        {"pin": "CS", "esp": "GPIO 12"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Khe MicroSD onboard)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCK",
+          "esp": "GPIO 40"
+        },
+        {
+          "pin": "MOSI",
+          "esp": "GPIO 14"
+        },
+        {
+          "pin": "MISO",
+          "esp": "GPIO 39"
+        },
+        {
+          "pin": "CS",
+          "esp": "GPIO 12"
+        }
       ]
     },
     {
@@ -57,10 +117,22 @@
       "subtitle": "BW16 Pin ↔ ESP32-S3",
       "icon": "fa-wifi",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V / 5V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "PB2", "esp": "GPIO 1 (Grove SCL / RX)"},
-        {"pin": "PB1", "esp": "GPIO 2 (Grove SDA / TX)"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V / 5V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "PB2",
+          "esp": "GPIO 1 (Grove TX / TXD2)"
+        },
+        {
+          "pin": "PB1",
+          "esp": "GPIO 2 (Grove RX / RXD2)"
+        }
       ]
     },
     {
@@ -68,10 +140,22 @@
       "subtitle": "GPS Pin ↔ ESP32-S3",
       "icon": "fa-location-crosshairs",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V / 5V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "TX", "esp": "GPIO 1 (Grove SCL / RX)"},
-        {"pin": "RX", "esp": "GPIO 2 (Grove SDA / TX)"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V / 5V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "TX",
+          "esp": "GPIO 1 (Grove SCL / RX)"
+        },
+        {
+          "pin": "RX",
+          "esp": "GPIO 2 (Grove SDA / TX)"
+        }
       ]
     },
     {
@@ -80,13 +164,34 @@
       "icon": "fa-tower-broadcast",
       "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "CE", "esp": "GPIO 2 (Grove SDA)"},
-        {"pin": "CSN", "esp": "GPIO 1 (Grove SCL)"},
-        {"pin": "SCK", "esp": "GPIO 40"},
-        {"pin": "MOSI", "esp": "GPIO 14"},
-        {"pin": "MISO", "esp": "GPIO 39"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "CE",
+          "esp": "GPIO 2 (Grove SDA)"
+        },
+        {
+          "pin": "CSN",
+          "esp": "GPIO 1 (Grove SCL)"
+        },
+        {
+          "pin": "SCK",
+          "esp": "GPIO 40"
+        },
+        {
+          "pin": "MOSI",
+          "esp": "GPIO 14"
+        },
+        {
+          "pin": "MISO",
+          "esp": "GPIO 39"
+        }
       ]
     },
     {
@@ -94,13 +199,34 @@
       "subtitle": "CC1101 Pin ↔ ESP32-S3",
       "icon": "fa-radio",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCK", "esp": "GPIO 40"},
-        {"pin": "MOSI", "esp": "GPIO 14"},
-        {"pin": "MISO", "esp": "GPIO 39"},
-        {"pin": "CSN", "esp": "GPIO 1 (Grove SCL)"},
-        {"pin": "GDO0", "esp": "GPIO 2 (Grove SDA)"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCK",
+          "esp": "GPIO 40"
+        },
+        {
+          "pin": "MOSI",
+          "esp": "GPIO 14"
+        },
+        {
+          "pin": "MISO",
+          "esp": "GPIO 39"
+        },
+        {
+          "pin": "CSN",
+          "esp": "GPIO 1 (Grove SCL)"
+        },
+        {
+          "pin": "GDO0",
+          "esp": "GPIO 2 (Grove SDA)"
+        }
       ]
     }
   ]

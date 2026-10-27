@@ -9,15 +9,42 @@
       "subtitle": "TFT Pin ↔ ESP32 (Onboard ST7789 135x240)",
       "icon": "fa-tv",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V (Onboard)"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCL", "esp": "GPIO 18 (TFT_SCLK)"},
-        {"pin": "SDA", "esp": "GPIO 23 (TFT_MOSI)"},
-        {"pin": "MISO", "esp": "GPIO 19 (TFT_MISO)"},
-        {"pin": "CS", "esp": "GPIO 17 (TFT_CS)"},
-        {"pin": "DC", "esp": "GPIO 16 (TFT_DC)"},
-        {"pin": "RES", "esp": "GPIO 5 (TFT_RST)"},
-        {"pin": "BLK", "esp": "GPIO 32 (TFT_BL, Mức thấp/LOW)"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Onboard)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCL",
+          "esp": "GPIO 18 (TFT_SCLK)"
+        },
+        {
+          "pin": "SDA",
+          "esp": "GPIO 23 (TFT_MOSI)"
+        },
+        {
+          "pin": "MISO",
+          "esp": "GPIO 19 (TFT_MISO)"
+        },
+        {
+          "pin": "CS",
+          "esp": "GPIO 17 (TFT_CS)"
+        },
+        {
+          "pin": "DC",
+          "esp": "GPIO 16 (TFT_DC)"
+        },
+        {
+          "pin": "RES",
+          "esp": "GPIO 5 (TFT_RST)"
+        },
+        {
+          "pin": "BLK",
+          "esp": "GPIO 32 (TFT_BL, Mức thấp/LOW)"
+        }
       ]
     },
     {
@@ -25,11 +52,26 @@
       "subtitle": "Button ↔ ESP32 GPIO (5-way Switch / 5 nút)",
       "icon": "fa-gamepad",
       "pins": [
-        {"pin": "SELECT / OK", "esp": "GPIO 34 (SEL_BTN)"},
-        {"pin": "UP", "esp": "GPIO 36 (UP_BTN)"},
-        {"pin": "DOWN", "esp": "GPIO 35 (DW_BTN)"},
-        {"pin": "RIGHT", "esp": "GPIO 39 (R_BTN)"},
-        {"pin": "LEFT", "esp": "GPIO 13 (L_BTN)"}
+        {
+          "pin": "SELECT / OK",
+          "esp": "GPIO 34 (SEL_BTN)"
+        },
+        {
+          "pin": "UP",
+          "esp": "GPIO 36 (UP_BTN)"
+        },
+        {
+          "pin": "DOWN",
+          "esp": "GPIO 35 (DW_BTN)"
+        },
+        {
+          "pin": "RIGHT",
+          "esp": "GPIO 39 (R_BTN)"
+        },
+        {
+          "pin": "LEFT",
+          "esp": "GPIO 13 (L_BTN)"
+        }
       ]
     },
     {
@@ -37,8 +79,14 @@
       "subtitle": "IR Module ↔ ESP32",
       "icon": "fa-bolt",
       "pins": [
-        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 21"},
-        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 22"}
+        {
+          "pin": "IR TX (Phát hồng ngoại) - Chân SIG",
+          "esp": "GPIO 21"
+        },
+        {
+          "pin": "IR RX (Thu hồng ngoại) - Chân OUT",
+          "esp": "GPIO 22"
+        }
       ]
     },
     {
@@ -46,12 +94,30 @@
       "subtitle": "SD Pin ↔ ESP32 (Khe MicroSD SPI)",
       "icon": "fa-sd-card",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCK", "esp": "GPIO 18 (SDCARD_SCK)"},
-        {"pin": "MOSI", "esp": "GPIO 23 (SDCARD_MOSI)"},
-        {"pin": "MISO", "esp": "GPIO 19 (SDCARD_MISO)"},
-        {"pin": "CS", "esp": "GPIO 12 (SDCARD_CS)"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCK",
+          "esp": "GPIO 18 (SDCARD_SCK)"
+        },
+        {
+          "pin": "MOSI",
+          "esp": "GPIO 23 (SDCARD_MOSI)"
+        },
+        {
+          "pin": "MISO",
+          "esp": "GPIO 19 (SDCARD_MISO)"
+        },
+        {
+          "pin": "CS",
+          "esp": "GPIO 12 (SDCARD_CS)"
+        }
       ]
     },
     {
@@ -59,10 +125,22 @@
       "subtitle": "BW16 Pin ↔ ESP32",
       "icon": "fa-wifi",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V / 5V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "PB2", "esp": "GPIO 22 (SERIAL_RX / RX)"},
-        {"pin": "PB1", "esp": "GPIO 21 (SERIAL_TX / TX)"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V / 5V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "PB2",
+          "esp": "GPIO 21 (SERIAL_TX / TX)"
+        },
+        {
+          "pin": "PB1",
+          "esp": "GPIO 22 (SERIAL_RX / RX)"
+        }
       ]
     },
     {
@@ -70,10 +148,22 @@
       "subtitle": "GPS Pin ↔ ESP32",
       "icon": "fa-location-crosshairs",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V / 5V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "TX", "esp": "GPIO 22 (SERIAL_RX / RX)"},
-        {"pin": "RX", "esp": "GPIO 21 (SERIAL_TX / TX)"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V / 5V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "TX",
+          "esp": "GPIO 22 (SERIAL_RX / RX)"
+        },
+        {
+          "pin": "RX",
+          "esp": "GPIO 21 (SERIAL_TX / TX)"
+        }
       ]
     },
     {
@@ -82,13 +172,34 @@
       "icon": "fa-tower-broadcast",
       "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "CE", "esp": "GPIO 26 (NRF24_CE_PIN)"},
-        {"pin": "CSN", "esp": "GPIO 33 (NRF24_SS_PIN)"},
-        {"pin": "SCK", "esp": "GPIO 18"},
-        {"pin": "MOSI", "esp": "GPIO 23"},
-        {"pin": "MISO", "esp": "GPIO 19"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "CE",
+          "esp": "GPIO 26 (NRF24_CE_PIN)"
+        },
+        {
+          "pin": "CSN",
+          "esp": "GPIO 33 (NRF24_SS_PIN)"
+        },
+        {
+          "pin": "SCK",
+          "esp": "GPIO 18"
+        },
+        {
+          "pin": "MOSI",
+          "esp": "GPIO 23"
+        },
+        {
+          "pin": "MISO",
+          "esp": "GPIO 19"
+        }
       ]
     },
     {
@@ -96,13 +207,34 @@
       "subtitle": "CC1101 Pin ↔ ESP32 (Header ngoài)",
       "icon": "fa-radio",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCK", "esp": "GPIO 18"},
-        {"pin": "MOSI", "esp": "GPIO 23"},
-        {"pin": "MISO", "esp": "GPIO 19"},
-        {"pin": "CSN", "esp": "GPIO 2 (CC1101_SS_PIN)"},
-        {"pin": "GDO0", "esp": "GPIO 4 (CC1101_GDO0_PIN)"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCK",
+          "esp": "GPIO 18"
+        },
+        {
+          "pin": "MOSI",
+          "esp": "GPIO 23"
+        },
+        {
+          "pin": "MISO",
+          "esp": "GPIO 19"
+        },
+        {
+          "pin": "CSN",
+          "esp": "GPIO 2 (CC1101_SS_PIN)"
+        },
+        {
+          "pin": "GDO0",
+          "esp": "GPIO 4 (CC1101_GDO0_PIN)"
+        }
       ]
     }
   ]

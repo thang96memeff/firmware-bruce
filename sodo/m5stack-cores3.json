@@ -9,15 +9,42 @@
       "subtitle": "TFT Pin ↔ ESP32-S3",
       "icon": "fa-tv",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V (Onboard AXP2101)"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCL", "esp": "GPIO 36"},
-        {"pin": "SDA (MOSI)", "esp": "GPIO 37"},
-        {"pin": "MISO", "esp": "GPIO 35"},
-        {"pin": "RES", "esp": "Quản lý qua PMU AXP2101"},
-        {"pin": "DC", "esp": "GPIO 35"},
-        {"pin": "CS", "esp": "GPIO 3"},
-        {"pin": "BLK", "esp": "Quản lý qua AXP2101 PMIC"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Onboard AXP2101)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCL",
+          "esp": "GPIO 36"
+        },
+        {
+          "pin": "SDA (MOSI)",
+          "esp": "GPIO 37"
+        },
+        {
+          "pin": "MISO",
+          "esp": "GPIO 35"
+        },
+        {
+          "pin": "RES",
+          "esp": "Quản lý qua PMU AXP2101"
+        },
+        {
+          "pin": "DC",
+          "esp": "GPIO 35"
+        },
+        {
+          "pin": "CS",
+          "esp": "GPIO 3"
+        },
+        {
+          "pin": "BLK",
+          "esp": "Quản lý qua AXP2101 PMIC"
+        }
       ]
     },
     {
@@ -25,8 +52,14 @@
       "subtitle": "Touch & Power ↔ ESP32-S3",
       "icon": "fa-gamepad",
       "pins": [
-        {"pin": "MÀN HÌNH CẢM ỨNG (FT6336U)", "esp": "I2C SDA: GPIO 12, SCL: GPIO 11"},
-        {"pin": "POWER / RESET BUTTON", "esp": "Nút cạnh bên, quản lý qua PMU"}
+        {
+          "pin": "MÀN HÌNH CẢM ỨNG (FT6336U)",
+          "esp": "I2C SDA: GPIO 12, SCL: GPIO 11"
+        },
+        {
+          "pin": "POWER / RESET BUTTON",
+          "esp": "Nút cạnh bên, quản lý qua PMU"
+        }
       ]
     },
     {
@@ -34,8 +67,14 @@
       "subtitle": "IR Module ↔ ESP32-S3",
       "icon": "fa-bolt",
       "pins": [
-        {"pin": "IR TX (Phát hồng ngoại) - Chân SIG", "esp": "GPIO 2 (Port A - Grove SDA)"},
-        {"pin": "IR RX (Thu hồng ngoại) - Chân OUT", "esp": "GPIO 1 (Port A - Grove SCL)"}
+        {
+          "pin": "IR TX (Phát hồng ngoại) - Chân SIG",
+          "esp": "GPIO 2 (Port A - Grove SDA)"
+        },
+        {
+          "pin": "IR RX (Thu hồng ngoại) - Chân OUT",
+          "esp": "GPIO 1 (Port A - Grove SCL)"
+        }
       ]
     },
     {
@@ -43,12 +82,30 @@
       "subtitle": "SD Pin ↔ ESP32-S3",
       "icon": "fa-sd-card",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V (Khe TF Card onboard)"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCK", "esp": "GPIO 36"},
-        {"pin": "MOSI", "esp": "GPIO 37"},
-        {"pin": "MISO", "esp": "GPIO 35"},
-        {"pin": "CS", "esp": "GPIO 4"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Khe TF Card onboard)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCK",
+          "esp": "GPIO 36"
+        },
+        {
+          "pin": "MOSI",
+          "esp": "GPIO 37"
+        },
+        {
+          "pin": "MISO",
+          "esp": "GPIO 35"
+        },
+        {
+          "pin": "CS",
+          "esp": "GPIO 4"
+        }
       ]
     },
     {
@@ -56,10 +113,22 @@
       "subtitle": "BW16 Pin ↔ ESP32-S3",
       "icon": "fa-wifi",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V / 5V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "PB2", "esp": "GPIO 18 (RXD2) / GPIO 1 (Grove SCL)"},
-        {"pin": "PB1", "esp": "GPIO 17 (TXD2) / GPIO 2 (Grove SDA)"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V / 5V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "PB2",
+          "esp": "GPIO 17 (TXD2) / GPIO 2 (Grove TX)"
+        },
+        {
+          "pin": "PB1",
+          "esp": "GPIO 18 (RXD2) / GPIO 1 (Grove RX)"
+        }
       ]
     },
     {
@@ -67,10 +136,22 @@
       "subtitle": "GPS Pin ↔ ESP32-S3",
       "icon": "fa-location-crosshairs",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V / 5V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "TX", "esp": "GPIO 18 (RXD2) / GPIO 1 (Grove SCL)"},
-        {"pin": "RX", "esp": "GPIO 17 (TXD2) / GPIO 2 (Grove SDA)"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V / 5V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "TX",
+          "esp": "GPIO 18 (RXD2) / GPIO 1 (Grove SCL)"
+        },
+        {
+          "pin": "RX",
+          "esp": "GPIO 17 (TXD2) / GPIO 2 (Grove SDA)"
+        }
       ]
     },
     {
@@ -79,13 +160,34 @@
       "icon": "fa-tower-broadcast",
       "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "CE", "esp": "GPIO 2 (Port A - Grove SDA)"},
-        {"pin": "CSN", "esp": "GPIO 1 (Port A - Grove SCL)"},
-        {"pin": "SCK", "esp": "GPIO 36"},
-        {"pin": "MOSI", "esp": "GPIO 37"},
-        {"pin": "MISO", "esp": "GPIO 35"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "CE",
+          "esp": "GPIO 2 (Port A - Grove SDA)"
+        },
+        {
+          "pin": "CSN",
+          "esp": "GPIO 1 (Port A - Grove SCL)"
+        },
+        {
+          "pin": "SCK",
+          "esp": "GPIO 36"
+        },
+        {
+          "pin": "MOSI",
+          "esp": "GPIO 37"
+        },
+        {
+          "pin": "MISO",
+          "esp": "GPIO 35"
+        }
       ]
     },
     {
@@ -93,13 +195,34 @@
       "subtitle": "CC1101 Pin ↔ ESP32-S3",
       "icon": "fa-radio",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCK", "esp": "GPIO 36"},
-        {"pin": "MOSI", "esp": "GPIO 37"},
-        {"pin": "MISO", "esp": "GPIO 35"},
-        {"pin": "CSN", "esp": "GPIO 1 (Port A - Grove SCL)"},
-        {"pin": "GDO0", "esp": "GPIO 2 (Port A - Grove SDA)"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCK",
+          "esp": "GPIO 36"
+        },
+        {
+          "pin": "MOSI",
+          "esp": "GPIO 37"
+        },
+        {
+          "pin": "MISO",
+          "esp": "GPIO 35"
+        },
+        {
+          "pin": "CSN",
+          "esp": "GPIO 1 (Port A - Grove SCL)"
+        },
+        {
+          "pin": "GDO0",
+          "esp": "GPIO 2 (Port A - Grove SDA)"
+        }
       ]
     }
   ]
