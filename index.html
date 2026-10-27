@@ -272,80 +272,2193 @@
 <body class="m-0 p-0 h-screen overflow-hidden flex flex-col select-none relative">
   <div id="root" class="h-full flex flex-col relative z-10"></div>
 
-    <!-- ========================================================================= -->
-  <!-- DUSCU FLASHER SECURITY ARMOR v3.0 | (C) 2026 CHỦ TỊCH THĂNG - DUSCU TEAM   -->
-  <!-- BẢN QUYỀN ĐÃ ĐƯỢC BẢO HỘ TOÀN DIỆN. MỌI HÀNH VI SAO CHÉP ĐỀU BỊ KHÓA CỨNG.   -->
-  <!-- ========================================================================= -->
-  <script>
-    (async function() {
-      'use strict';
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useMemo } = React;
 
-      // 1. KHÓA TÊN MIỀN ĐỘC QUYỀN (DOMAIN LOCK)
-      var _h = window.location.hostname;
-      var _p = window.location.protocol;
-      var _isApp = _p === 'file:' || Boolean(window.AndroidUSB);
-      var _authHosts = ['thang96memeff.github.io', 'localhost', '127.0.0.1'];
+    const GITHUB_API_URL = "https://api.github.com/repos/thang96memeff/firmware-bruce/contents";
+    const GITHUB_RAW_BASE = "https://thang96memeff.github.io/firmware-bruce/";
 
-      if (!_isApp && _authHosts.indexOf(_h) === -1) {
-        document.documentElement.innerHTML = '<div style="background:#0f172a;color:#ffffff;height:100vh;width:100vw;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,sans-serif;"><div style="font-size:54px;margin-bottom:16px;">🛡️</div><h2 style="color:#ef4444;font-size:24px;font-weight:800;margin:0 0 12px;">BẢN QUYỀN THUỘC VỀ DUSCU / CHỦ TỊCH THĂNG</h2><p style="color:#94a3b8;font-size:14px;max-width:520px;line-height:1.6;margin:0 0 20px;">Mã nguồn DUSCU Flasher được bảo hộ quyền sở hữu trí tuệ độc quyền của Chủ tịch Thăng.<br>Mọi hành vi sao chép, tải lậu hoặc lưu trữ trái phép đều bị vô hiệu hóa.<br><br>Đang tự động chuyển hướng về máy chủ chính thức...</p></div>';
-        setTimeout(function() {
-          window.location.href = 'https://thang96memeff.github.io/firmware-bruce/';
-        }, 2500);
-        return;
+    // Đa ngôn ngữ (i18n)
+    const I18N = {
+      vi: {
+        appSub: "Tiện ích nạp Firmware phần cứng • ESP32 • S3 • C5 (WiFi 6)",
+        syncBtn: "Đồng bộ Cloud",
+        syncTooltip: "Đồng bộ danh sách file từ GitHub",
+        serialSec: "Kết nối Thiết bị",
+        connectBtn: "Kết nối Cổng USB",
+        disconnectBtn: "Ngắt kết nối",
+        baudTooltip: "Tốc độ nạp Bootloader",
+        hardwareSec: "Bo mạch Đích",
+        profilesCount: "thiết bị",
+        morphTitle: "Morph S3 Flagship",
+        morphDesc: "ESP32-S3 N16R8 • Sniffer / Sub-GHz / BLE",
+        morphGuideBtn: "Sổ tay Morph",
+        morphGuideBadge: "Hướng dẫn",
+        morphGuideCardHint: "Xem chi tiết",
+        morphGuideTitle: "Cẩm nang sử dụng Morph S3 Flagship",
+        morphGuideSub: "Sơ đồ phần cứng • Thao tác phím • Cấu hình Web • Nạp Firmware",
+        morphTabControls: "Thao tác Phím",
+        morphTabHardware: "Phần cứng & Chân",
+        morphTabWebui: "Web Config",
+        morphTabFlash: "Hướng dẫn Nạp",
+        morphSelectNow: "Chọn nạp Morph S3 ngay",
+        morphCloseBtn: "Đóng",
+        launcherTitle: "Xingzhi Cube Launcher",
+        launcherDesc: "ESP32-S3 • Trình khởi chạy đa ứng dụng",
+        selectBtn: "Chọn",
+        activeBtn: "Đang chọn",
+        readyBadge: "Sẵn sàng",
+        cloudReadyBadge: "Cloud Sẵn sàng",
+        customLocalBadge: "Tệp Cục bộ",
+        externalTitle: "Nạp tệp .BIN ngoài",
+        offsetLabel: "Offset:",
+        dropHint: "Chạm để chọn tệp .bin từ máy tính",
+        localLoaded: "Đã nạp tệp cục bộ",
+        deselectFile: "Bỏ chọn tệp này",
+        eraseBefore: "Xóa sạch bộ nhớ trước khi nạp",
+        eraseAllBtn: "Xóa trắng Chip",
+        eraseConfirm: "XÁC NHẬN: Xóa sạch toàn bộ bộ nhớ Flash (Full Chip Erase)?\nToàn bộ NVS, WiFi, cài đặt và phân vùng sẽ bị xóa trắng!",
+        flashBtn: "Bắt đầu Nạp Firmware",
+        flashingBtn: "Đang nạp vào thiết bị...",
+        sodoTab: "Sơ đồ Đấu nối",
+        sodoSearching: "Đang tải sơ đồ đấu nối phần cứng...",
+        sodoNotFound: "Chưa có sơ đồ chân cho bo mạch này",
+        sodoColPin: "Chân Module (Signal)",
+        sodoColEsp: "Chân kết nối ESP (GPIO)",
+        sodoNoteTitle: "Lưu ý kỹ thuật",
+        sodoModulesTitle: "Chi tiết đấu nối các Module",
+        sodoUnconnectedHint: "Đang hiển thị sơ đồ chân tiêu chuẩn",
+        sysLogTab: "Nhật ký Hệ thống",
+        serialMonTab: "Serial Monitor",
+        clearLogTooltip: "Xóa màn hình nhật ký",
+        startMon: "Mở Monitor",
+        stopMon: "Dừng",
+        resetBoardBtn: "Reset Mạch",
+        txPlaceholder: "Nhập lệnh Serial gửi tới mạch (Nhấn Enter để gửi)...",
+        sendBtn: "Gửi",
+        sysPlaceholder: "// Chờ kết nối thiết bị USB hoặc lệnh nạp firmware...",
+        monPlaceholder: "// Bấm nút 'Mở Monitor' ở góc trên để chọn cổng COM và xem log (Hoặc bấm 'Reset Mạch' nếu mạch đang im lặng)...",
+        portOnline: "Đã kết nối USB",
+        portOffline: "Chưa kết nối",
+        catAll: "Tất cả",
+        catS3: "ESP32-S3",
+        catC5: "C5 (WiFi 6)",
+        catEsp32: "ESP32",
+        vipGroup: "★ Dòng máy Flagship / Nổi bật",
+        standardGroup: "Bo mạch Phần cứng Tiêu chuẩn",
+        logInit: "[INIT] DUSCU FLASHER v2.9 sẵn sàng (Chế độ bảo toàn Serial Monitor).",
+        logSyncSuccess: (count) => `[SYNC] Đã đồng bộ ${count} bản dựng firmware từ GitHub.`,
+        logSyncWarn: (err) => `[WARN] GitHub API: Sử dụng danh mục mặc định (${err})`,
+        logPortSuccess: "[PORT] Đã chọn cổng USB thành công (Không kích hoạt Bootloader).",
+        logPortDisconnect: "[PORT] Đã ngắt kết nối cổng USB Serial.",
+        logPortErr: (err) => `[ERR] Lỗi kết nối cổng: ${err}`,
+        logNoWebSerial: "Trình duyệt không hỗ trợ Web Serial API. Vui lòng mở bằng Chrome hoặc Edge trên máy tính.",
+        logNoEsptool: "Thư viện ESPLoader chưa sẵn sàng. Kiểm tra kết nối mạng.",
+        logEraseStart: "[CMD] Bắt đầu tiến trình xóa sạch Flash (Full Chip Erase)...",
+        logEraseExec: "[EXEC] Đang phát lệnh xóa chip qua Bootloader...",
+        logEraseSuccess: "[SUCCESS] ĐÃ XÓA SẠCH BỘ NHỚ FLASH THÀNH CÔNG.",
+        logEraseFail: (err) => `[FAIL] Lỗi xóa Flash: ${err}`,
+        logNoTarget: "[ERR] Chưa chọn bo mạch đích hoặc tệp firmware .bin!",
+        logLocalFile: (name, mb) => `[FILE] Nạp tệp cục bộ: ${name} [${mb} MB]`,
+        logFetching: (file) => `[FETCH] Đang tải firmware: ${file}...`,
+        logFetchFail: (file) => `Tệp ${file} chưa có sẵn trên GitHub. Bạn có thể chọn tệp .bin từ máy tính.`,
+        logSyncBootloader: (baud) => `[SYNC] Đồng bộ bootloader @ ${baud} baud...`,
+        logWriteFlash: (addr, erase) => `[WRITE] Ghi bộ nhớ tại địa chỉ 0x${addr} ${erase ? '(Kèm xóa toàn bộ Flash)' : ''}...`,
+        logFlashSuccess: "[SUCCESS] NẠP FIRMWARE HOÀN TẤT 100%.",
+        logReboot: "[REBOOT] Đang khởi động lại thiết bị về chế độ chạy bình thường...",
+        logFlashFail: (err) => `[FAIL] Ghi Firmware thất bại: ${err}`,
+        logMonitorStart: (baud, mode) => `[MONITOR] Đang đọc dữ liệu Serial @ ${baud} baud (${mode}).`,
+        logMonitorErr: (err) => `[ERR] Serial Monitor: ${err}`,
+        logResetPulse: "[RESET] Đã phát xung khởi động lại bo mạch (Normal Run Mode)."
+      },
+      en: {
+        appSub: "Hardware Firmware Utility • ESP32 • S3 • C5 (WiFi 6)",
+        syncBtn: "Cloud Sync",
+        syncTooltip: "Synchronize firmware list from GitHub",
+        serialSec: "Device Connection",
+        connectBtn: "Connect USB Port",
+        disconnectBtn: "Disconnect",
+        baudTooltip: "Bootloader flash baudrate",
+        hardwareSec: "Target Hardware",
+        profilesCount: "profiles",
+        morphTitle: "Morph S3 Flagship",
+        morphDesc: "ESP32-S3 N16R8 • Sniffer / Sub-GHz / BLE",
+        morphGuideBtn: "Morph Guide",
+        morphGuideBadge: "Manual",
+        morphGuideCardHint: "View Details",
+        morphGuideTitle: "Morph S3 Flagship User Manual",
+        morphGuideSub: "Hardware Pinout • Button Controls • Web Config • Flashing Guide",
+        morphTabControls: "Controls",
+        morphTabHardware: "Hardware & Pins",
+        morphTabWebui: "Web Config",
+        morphTabFlash: "Flashing Guide",
+        morphSelectNow: "Select Morph S3 Now",
+        morphCloseBtn: "Close",
+        launcherTitle: "Xingzhi Cube Launcher",
+        launcherDesc: "ESP32-S3 • Multi-App Partition Launcher",
+        selectBtn: "Select",
+        activeBtn: "Selected",
+        readyBadge: "Ready",
+        cloudReadyBadge: "Cloud Ready",
+        customLocalBadge: "Local File",
+        externalTitle: "External Firmware (.BIN)",
+        offsetLabel: "Offset:",
+        dropHint: "Tap to choose a .bin file from computer",
+        localLoaded: "Local binary loaded",
+        deselectFile: "Remove local file",
+        eraseBefore: "Erase flash memory before writing",
+        eraseAllBtn: "Wipe Chip",
+        eraseConfirm: "CONFIRM FULL CHIP ERASE?\nAll NVS data, WiFi credentials, settings and partitions will be permanently erased!",
+        flashBtn: "Flash Firmware Now",
+        flashingBtn: "Programming Device...",
+        sodoTab: "Pinout Diagram",
+        sodoSearching: "Loading hardware wiring diagram...",
+        sodoNotFound: "No wiring diagram found for this board",
+        sodoColPin: "Module Pin (Signal)",
+        sodoColEsp: "ESP32 GPIO Pin",
+        sodoNoteTitle: "Wiring Notes",
+        sodoModulesTitle: "Module Pinout Details",
+        sodoUnconnectedHint: "Displaying standard hardware pinout",
+        sysLogTab: "System Log",
+        serialMonTab: "Serial Monitor",
+        clearLogTooltip: "Clear console output",
+        startMon: "Open Monitor",
+        stopMon: "Stop",
+        resetBoardBtn: "Reset Board",
+        txPlaceholder: "Send Serial command to device (Press Enter)...",
+        sendBtn: "Send",
+        sysPlaceholder: "// Waiting for USB device connection or flash command...",
+        monPlaceholder: "// Click 'Open Monitor' to select COM port and view logs (Click 'Reset Board' if device is silent)...",
+        portOnline: "USB Connected",
+        portOffline: "Disconnected",
+        catAll: "All",
+        catS3: "ESP32-S3",
+        catC5: "C5 (WiFi 6)",
+        catEsp32: "ESP32",
+        vipGroup: "★ Flagship / Featured Profiles",
+        standardGroup: "Standard Hardware Profiles",
+        logInit: "[INIT] DUSCU FLASHER v2.9 ready (Serial Monitor safe mode).",
+        logSyncSuccess: (count) => `[SYNC] Synchronized ${count} firmware files from GitHub.`,
+        logSyncWarn: (err) => `[WARN] GitHub API: Using default profiles (${err})`,
+        logPortSuccess: "[PORT] USB Serial port selected (Normal App Mode preserved).",
+        logPortDisconnect: "[PORT] Disconnected from USB Serial port.",
+        logPortErr: (err) => `[ERR] Port connection failed: ${err}`,
+        logNoWebSerial: "Browser does not support Web Serial API. Please open in Chrome or Edge on Desktop.",
+        logNoEsptool: "ESPLoader library is not ready. Check network connection.",
+        logEraseStart: "[CMD] Starting Full Chip Erase process...",
+        logEraseExec: "[EXEC] Sending erase command via Bootloader...",
+        logEraseSuccess: "[SUCCESS] FULL CHIP FLASH ERASED SUCCESSFULLY.",
+        logEraseFail: (err) => `[FAIL] Flash erase failed: ${err}`,
+        logNoTarget: "[ERR] No target hardware or firmware .bin file selected!",
+        logLocalFile: (name, mb) => `[FILE] Loading local file: ${name} [${mb} MB]`,
+        logFetching: (file) => `[FETCH] Downloading firmware: ${file}...`,
+        logFetchFail: (file) => `File ${file} not available on GitHub. Please use local .bin loader.`,
+        logSyncBootloader: (baud) => `[SYNC] Syncing bootloader @ ${baud} baud...`,
+        logWriteFlash: (addr, erase) => `[WRITE] Writing memory at 0x${addr} ${erase ? '(Full Chip Erase)' : ''}...`,
+        logFlashSuccess: "[SUCCESS] FIRMWARE PROGRAMMING COMPLETED 100%.",
+        logReboot: "[REBOOT] Hard resetting target device into normal app mode...",
+        logFlashFail: (err) => `[FAIL] Flash programming failed: ${err}`,
+        logMonitorStart: (baud, mode) => `[MONITOR] Serial Monitor active @ ${baud} baud (${mode}).`,
+        logMonitorErr: (err) => `[ERR] Serial Monitor: ${err}`,
+        logResetPulse: "[RESET] Sent hardware reset pulse to board."
       }
+    };
 
-      // 2. CHẶN MENU CHUỘT PHẢI, PHÍM TẮT LƯU FILE & XEM NGUỒN (ANTI-INSPECT & ANTI-SAVE)
-      document.addEventListener('contextmenu', function(e) { e.preventDefault(); return false; });
-      document.addEventListener('keydown', function(e) {
-        if (e.keyCode === 123 || e.key === 'F12') { e.preventDefault(); return false; }
-        if (e.ctrlKey || e.metaKey) {
-          var k = (e.key || '').toLowerCase();
-          if (k === 's' || k === 'u' || k === 'p') { e.preventDefault(); return false; }
-          if (e.shiftKey && (k === 'i' || k === 'j' || k === 'c')) { e.preventDefault(); return false; }
-        }
+    // Danh sách 34 Bo mạch hỗ trợ
+    const MASTER_BOARDS = [
+      { 
+        id: 's3-mini-1_47-inch', 
+        name: 'ESP32-S3 Super Mini 1.47"', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        isHero: true,
+        desc: 'ESP32-S3 Super Mini 4MB, ST7789 1.47" 170x320, 3-Key Nav, Sub-GHz CC1101, NRF24, IR, SD.',
+        url: 'Bruce-s3-mini-1_47-inch.bin',
+        icon: 'fa-microchip'
+      },
+      { 
+        id: 'Morph-s3', 
+        name: 'Morph S3 Flagship', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        isHero: true,
+        desc: 'Morph S3 N16R8 Octal-PSRAM. Full Sniffer, Sub-GHz CC1101, NRF24, BLE & Web Config.',
+        url: 'Bruce-Morph-s3.bin',
+        icon: 'fa-wand-magic-sparkles'
+      },
+      { 
+        id: 'Launcher-xingzhi-cube-s3', 
+        name: 'Xingzhi Cube S3 Launcher', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        isHero: true,
+        desc: 'Official Multi-Boot Launcher for Xingzhi Cube S3. 240x240 ST7789 LCD, 3-Key Navigation.',
+        url: 'Launcher-xingzhi-cube-s3.bin',
+        icon: 'fa-cubes-stacked'
+      },
+      { 
+        id: 'bruce-c5-1_47', 
+        name: 'Bruce C5 1.47" (N8)', 
+        chip: 'ESP32-C5', 
+        category: 'c5', 
+        desc: 'ST7789 1.47 inch 170x320. RISC-V 240MHz, Dual-Band WiFi 6, 8MB Flash, 3-Key Navigation.',
+        url: 'Bruce-bruce-c5-1_47.bin',
+        icon: 'fa-bolt'
+      },
+      { 
+        id: 'lilygo-c5-1_9-inch', 
+        name: 'LilyGO T-Display C5 (1.9")', 
+        chip: 'ESP32-C5', 
+        category: 'c5', 
+        desc: 'ST7789 1.9 inch 170x320. RISC-V Single-Core 240MHz, 2.4/5GHz Dual-Band WiFi 6.',
+        url: 'Bruce-lilygo-c5-1_9-inch.bin',
+        icon: 'fa-bolt'
+      },
+      { 
+        id: 'mywatch-c5', 
+        name: 'MyWatch C5 (ESP32-C5 N16R8)', 
+        chip: 'ESP32-C5', 
+        category: 'c5', 
+        desc: 'ST7789 240x296, CST816S Pro Touch UI, RISC-V Dual-Band WiFi 6, 16MB Flash + 8MB PSRAM.',
+        url: 'Bruce-mywatch-c5.bin',
+        icon: 'fa-stopwatch'
+      },
+      { 
+        id: 'esp32-c5-tft', 
+        name: 'ESP32-C5 Generic / TFT', 
+        chip: 'ESP32-C5', 
+        category: 'c5', 
+        desc: 'Standard ESP32-C5 development board connected via SPI display.',
+        url: 'Bruce-esp32-c5-tft.bin',
+        icon: 'fa-microchip'
+      },
+      { 
+        id: 'lilygo-t-display-s3', 
+        name: 'LilyGO T-Display S3', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: '1.9 inch ST7789 8-bit parallel display, high-speed dual buttons.',
+        url: 'Bruce-lilygo-t-display-s3.bin',
+        icon: 'fa-tv'
+      },
+      { 
+        id: 'lilygo-t-display-s3-touch', 
+        name: 'LilyGO T-Display S3 Touch', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: '1.9 inch ST7789, CST816S Capacitive Touch with ProTouch kinetic engine, dual buttons.',
+        url: 'Bruce-lilygo-t-display-s3-touch.bin',
+        icon: 'fa-mobile-screen'
+      },
+      { 
+        id: 'lilygo-t-display-s3-pro', 
+        name: 'LilyGO T-Display S3 Pro', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Capacitive touch screen, camera support and LiPo charging circuit.',
+        url: 'Bruce-lilygo-t-display-s3-pro.bin',
+        icon: 'fa-mobile-screen'
+      },
+      { 
+        id: 'lilygo-t-embed-cc1101', 
+        name: 'LilyGO T-Embed CC1101', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Rotary encoder, built-in CC1101 Sub-GHz transceiver, horizontal 170x320 LCD.',
+        url: 'Bruce-lilygo-t-embed-cc1101.bin',
+        icon: 'fa-tower-broadcast'
+      },
+      { 
+        id: 'lilygo-t-embed', 
+        name: 'LilyGO T-Embed Standard', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Rotary encoder, 170x320 LCD, microphone and expansion ports.',
+        url: 'Bruce-lilygo-t-embed.bin',
+        icon: 'fa-pager'
+      },
+      { 
+        id: 'ES3C28P', 
+        name: 'ES3C28P Touch (2.8" IPS)', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: '2.8 inch 240x320 IPS, FT6336G Capacitive Touch, ES8311 Audio, SDIO MicroSD.',
+        url: 'Bruce-ES3C28P.bin',
+        icon: 'fa-hand-pointer'
+      },
+      { 
+        id: 'elecrow-advance-35-s3', 
+        name: 'Elecrow CrowPanel Advance 3.5"', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: '3.5 inch 480x320 IPS ILI9488, GT911 Capacitive Touch with ProTouch kinetic engine, I2S Audio, SD Card.',
+        url: 'Bruce-elecrow-advance-35-s3.bin',
+        icon: 'fa-tv'
+      },
+      { 
+        id: 'lilygo-t-deck', 
+        name: 'LilyGO T-Deck / Plus', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Physical QWERTY keyboard, trackball, SX1262 LoRa & I2S microphone.',
+        url: 'Bruce-lilygo-t-deck.bin',
+        icon: 'fa-keyboard'
+      },
+      { 
+        id: 'lilygo-t-watch-s3', 
+        name: 'LilyGO T-Watch S3', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Wearable smartwatch platform with capacitive touch & RTC.',
+        url: 'Bruce-lilygo-t-watch-s3.bin',
+        icon: 'fa-stopwatch'
+      },
+      { 
+        id: 'm5stack-cardputer', 
+        name: 'M5Stack Cardputer', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Credit-card sized terminal with 56-key keyboard, speaker & SD slot.',
+        url: 'Bruce-m5stack-cardputer.bin',
+        icon: 'fa-calculator'
+      },
+      { 
+        id: 'm5stack-cores3', 
+        name: 'M5Stack CoreS3', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'ILI9342C capacitive touch, camera, dual mics, AXP2101 power manager.',
+        url: 'Bruce-m5stack-cores3.bin',
+        icon: 'fa-cubes'
+      },
+      { 
+        id: 'm5stack-sticks3', 
+        name: 'M5Stick S3', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Compact ESP32-S3, 135x240 LCD, AXP2101 PMIC, battery & IR transmitter.',
+        url: 'Bruce-m5stack-sticks3.bin',
+        icon: 'fa-pager'
+      },
+      { 
+        id: 'xingzhi-cube-s3', 
+        name: 'Xingzhi Cube S3 (Bruce FW)', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Bruce Pentest firmware for Xingzhi Cube S3, ST7789 240x240 LCD.',
+        url: 'Bruce-xingzhi-cube-s3.bin',
+        icon: 'fa-cube'
+      },
+      { 
+        id: 'esp32-s3-devkitc-1', 
+        name: 'ESP32-S3 DevKitC-1', 
+        chip: 'ESP32-S3', 
+        category: 's3', 
+        desc: 'Standard ESP32-S3 DevKit development board.',
+        url: 'Bruce-esp32-s3-devkitc-1.bin',
+        icon: 'fa-microchip'
+      },
+      { 
+        id: 'CYD-2432S028', 
+        name: 'CYD (Cheap Yellow Display 2.8")', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.8 inch ILI9341 resistive touch dev kit.',
+        url: 'Bruce-CYD-2432S028.bin',
+        icon: 'fa-desktop'
+      },
+      { 
+        id: 'CYD-2USB', 
+        name: 'CYD 2USB Edition', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Cheap Yellow Display with dual USB ports (MicroUSB + Type-C).',
+        url: 'Bruce-CYD-2USB.bin',
+        icon: 'fa-desktop'
+      },
+      { 
+        id: 'CYD-2432W328C', 
+        name: 'CYD Capacitive Touch (2.8" C)', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.8 inch CST816T Capacitive Touch, ST7789/ILI9341 display, SD slot.',
+        url: 'Bruce-CYD-2432W328C.bin',
+        icon: 'fa-hand-pointer'
+      },
+      { 
+        id: 'CYD-2432W328R-or-S024R', 
+        name: 'CYD 2432W328R / S024R', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.4 / 2.8 inch Resistive touch display.',
+        url: 'Bruce-CYD-2432W328R-or-S024R.bin',
+        icon: 'fa-hand-pointer'
+      },
+      { 
+        id: 'CYD-3248S035C', 
+        name: 'CYD 3.5" Capacitive Touch (3248S035C)', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '3.5 inch 320x480 Capacitive Touch ST7796 display.',
+        url: 'Bruce-CYD-3248S035C.bin',
+        icon: 'fa-mobile-screen'
+      },
+      { 
+        id: 'CYD-3248S035R', 
+        name: 'CYD 3.5" Resistive Touch (3248S035R)', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '3.5 inch 320x480 Resistive Touch ST7796 display.',
+        url: 'Bruce-CYD-3248S035R.bin',
+        icon: 'fa-hand-pointer'
+      },
+      { 
+        id: 'lilygo-t-display-ttgo', 
+        name: 'LilyGO T-Display TTGO (16MB)', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Compact form-factor 1.14 inch IPS ST7789 LCD, 16MB Flash edition.',
+        url: 'Bruce-lilygo-t-display-ttgo.bin',
+        icon: 'fa-tablet-screen-button'
+      },
+      { 
+        id: 'm5stack-cplus1_1', 
+        name: 'M5StickC Plus 1.1', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Miniature wrist/pocket tool, 1.14 inch LCD, IMU sensor & battery.',
+        url: 'Bruce-m5stack-cplus1_1.bin',
+        icon: 'fa-pager'
+      },
+      { 
+        id: 'm5stack-cplus2', 
+        name: 'M5StickC Plus 2', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Upgraded 200mAh battery, PMIC and improved buzzer output.',
+        url: 'Bruce-m5stack-cplus2.bin',
+        icon: 'fa-pager'
+      },
+      { 
+        id: 'm5stack-core2', 
+        name: 'M5Stack Core2', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.0 inch touch LCD, vibration motor, RTC BM8563 & AXP192.',
+        url: 'Bruce-m5stack-core2.bin',
+        icon: 'fa-cube'
+      },
+      { 
+        id: 'smoochiee-board', 
+        name: 'Smoochiee Board', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Dedicated RF pentesting hardware with 5-button D-Pad navigation.',
+        url: 'Bruce-smoochiee-board.bin',
+        icon: 'fa-shield-halved'
+      },
+      { 
+        id: 'Marauder-Mini', 
+        name: 'Marauder Mini', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Handheld mini wireless security auditing toolkit.',
+        url: 'Bruce-Marauder-Mini.bin',
+        icon: 'fa-microchip'
+      },
+      { 
+        id: 'Phantom_S024R', 
+        name: 'Phantom S024R', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: '2.4 inch SPI ST7789 display instrument.',
+        url: 'Bruce-Phantom_S024R.bin',
+        icon: 'fa-wave-square'
+      },
+      { 
+        id: 'xk404', 
+        name: 'XK404 Pentest Device', 
+        chip: 'ESP32', 
+        category: 'esp32', 
+        desc: 'Portable hardware research node.',
+        url: 'Bruce-xk404.bin',
+        icon: 'fa-terminal'
+      }
+    ];
+
+    // ============================================================================
+    // WEBGL WATER CAUSTICS SHADER (Mặc định: Sóng Đại Dương - Crystal Aqua)
+    // ============================================================================
+    function WaterCausticsBackground({ theme = 'aqua', isFlashing = false }) {
+      const canvasRef = useRef(null);
+
+      useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+        if (!gl) return;
+
+        const vertexShaderSrc = `
+          attribute vec2 a_position;
+          void main() {
+            gl_Position = vec4(a_position, 0.0, 1.0);
+          }
+        `;
+
+        const fragmentShaderSrc = `
+          precision highp float;
+          uniform vec2 u_resolution;
+          uniform float u_time;
+          uniform int u_theme;
+
+          #define TAU 6.28318530718
+          #define MAX_ITER 5
+
+          void main() {
+            float time = u_time * 0.45 + 23.0;
+            vec2 uv = gl_FragCoord.xy / u_resolution.xy;
+            vec2 p = mod(uv * TAU, TAU) - 250.0;
+            vec2 i = vec2(p);
+            float c = 1.0;
+            float inten = 0.005;
+
+            for (int n = 0; n < MAX_ITER; n++) {
+              float t = time * (1.0 - (3.5 / float(n + 1)));
+              i = p + vec2(
+                cos(t - i.x) + sin(t + i.y),
+                sin(t - i.y) + cos(t + i.x)
+              );
+              c += 1.0 / length(vec2(
+                p.x / (sin(i.x + t) / inten),
+                p.y / (cos(i.y + t) / inten)
+              ));
+            }
+
+            c /= float(MAX_ITER);
+            c = 1.17 - pow(c, 1.4);
+            float caustic = pow(abs(c), 8.0);
+
+            vec3 baseColor;
+
+            if (u_theme == 1) {
+              // Crystal Aqua (Sóng Đại Dương - Mặc định)
+              baseColor = mix(vec3(0.72, 0.90, 0.97), vec3(0.58, 0.81, 0.96), uv.y);
+              vec3 col = baseColor + vec3(caustic * 0.88, caustic * 0.94, caustic * 1.0);
+              col -= (1.0 - clamp(c * 1.08, 0.0, 1.0)) * vec3(0.18, 0.22, 0.30);
+              gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+            } else if (u_theme == 0) {
+              // Pearl Daylight (Sóng Băng Ngọc)
+              baseColor = mix(vec3(0.84, 0.90, 0.98), vec3(0.88, 0.85, 0.97), uv.x * 0.7 + uv.y * 0.3);
+              vec3 col = mix(baseColor, vec3(1.0, 1.0, 1.0), clamp(caustic * 1.15, 0.0, 1.0));
+              col -= (1.0 - clamp(c * 1.1, 0.0, 1.0)) * vec3(0.14, 0.12, 0.22);
+              gl_FragColor = vec4(col, 1.0);
+            } else {
+              // Bruce Violet (Sóng Tím Bruce)
+              baseColor = vec3(0.18, 0.02, 0.32);
+              vec3 col = baseColor + vec3(caustic * 0.58, caustic * 0.28, caustic * 0.82);
+              gl_FragColor = vec4(clamp(col, 0.0, 1.0), 1.0);
+            }
+          }
+        `;
+
+        const compileShader = (type, source) => {
+          const s = gl.createShader(type);
+          gl.shaderSource(s, source);
+          gl.compileShader(s);
+          return s;
+        };
+
+        const vs = compileShader(gl.VERTEX_SHADER, vertexShaderSrc);
+        const fs = compileShader(gl.FRAGMENT_SHADER, fragmentShaderSrc);
+        const prog = gl.createProgram();
+        gl.attachShader(prog, vs);
+        gl.attachShader(prog, fs);
+        gl.linkProgram(prog);
+        gl.useProgram(prog);
+
+        const buf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(
+          gl.ARRAY_BUFFER,
+          new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]),
+          gl.STATIC_DRAW
+        );
+
+        const posLoc = gl.getAttribLocation(prog, 'a_position');
+        gl.enableVertexAttribArray(posLoc);
+        gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+
+        const resLoc = gl.getUniformLocation(prog, 'u_resolution');
+        const timeLoc = gl.getUniformLocation(prog, 'u_time');
+        const themeLoc = gl.getUniformLocation(prog, 'u_theme');
+
+        const resize = () => {
+          const scale = 0.75;
+          canvas.width = window.innerWidth * scale;
+          canvas.height = window.innerHeight * scale;
+          gl.viewport(0, 0, canvas.width, canvas.height);
+        };
+        resize();
+        window.addEventListener('resize', resize);
+
+        let animId;
+        let startTime = performance.now();
+
+        const render = (now) => {
+          const elapsed = ((now - startTime) / 1000.0) * (isFlashing ? 1.8 : 1.0);
+          gl.uniform2f(resLoc, canvas.width, canvas.height);
+          gl.uniform1f(timeLoc, elapsed);
+          const themeIdx = theme === 'pearl' ? 0 : theme === 'aqua' ? 1 : 2;
+          gl.uniform1i(themeLoc, themeIdx);
+
+          gl.drawArrays(gl.TRIANGLES, 0, 6);
+          animId = requestAnimationFrame(render);
+        };
+
+        animId = requestAnimationFrame(render);
+        return () => {
+          cancelAnimationFrame(animId);
+          window.removeEventListener('resize', resize);
+        };
+      }, [theme, isFlashing]);
+
+      return (
+        <canvas
+          ref={canvasRef}
+          className="fixed inset-0 w-full h-full pointer-events-none z-0 object-cover"
+        />
+      );
+    }
+
+    function App() {
+      const [isConnected, setIsConnected] = useState(false);
+      const [baudRate, setBaudRate] = useState(921600);
+      const [eraseFlash, setEraseFlash] = useState(false);
+      const [selectedCategory, setSelectedCategory] = useState('all');
+      
+      const [selectedBoardId, setSelectedBoardId] = useState('Morph-s3');
+      const [localFile, setLocalFile] = useState(null);
+      const [flashOffset, setFlashOffset] = useState('0x0000');
+      
+      // Mặc định là 'aqua' (Sóng Đại Dương)
+      const [waterTheme, setWaterTheme] = useState('aqua');
+
+      // GitHub live detection
+      const [githubFiles, setGithubFiles] = useState({});
+      const [isFetchingGithub, setIsFetchingGithub] = useState(false);
+      const [logoUrl] = useState(GITHUB_RAW_BASE + "IMG_4498.jpeg");
+
+      // Chip info
+      const [chipInfo, setChipInfo] = useState(null);
+
+      // Flash & Terminal state
+      const [isFlashing, setIsFlashing] = useState(false);
+      const [isErasingOnly, setIsErasingOnly] = useState(false);
+      const [progress, setProgress] = useState(0);
+      const [logTab, setLogTab] = useState('sodo');
+      const [sysLogs, setSysLogs] = useState([]);
+      const [devLogs, setDevLogs] = useState([]);
+      const [isMonitor, setIsMonitor] = useState(false);
+      const [monitorBaud, setMonitorBaud] = useState(115200);
+      const [serialInput, setSerialInput] = useState('');
+
+      // Sơ đồ chân state
+      const [sodoData, setSodoData] = useState(null);
+      const [isLoadingSodo, setIsLoadingSodo] = useState(false);
+      const [sodoError, setSodoError] = useState(null);
+
+      // Morph S3 User Manual Modal State
+      const [showMorphGuide, setShowMorphGuide] = useState(false);
+      const [guideTab, setGuideTab] = useState('controls');
+
+      // Quản lý Ngôn ngữ
+      const [lang, setLang] = useState(() => {
+        const saved = localStorage.getItem('duscu_lang');
+        if (saved === 'vi' || saved === 'en') return saved;
+        return 'vi';
       });
 
-      // 3. BẪY DEBUGGER TRAP (TỰ ĐỘNG LÀM ĐƠ NẾU KẺ GIAN CỐ TÌNH MỞ DEVTOOLS)
-      setInterval(function() {
-        (function() { return false; }['constructor']('debugger')());
-      }, 1000);
+      const t = I18N[lang] || I18N.vi;
 
-      // 4. GIẢI MÃ NHỊ PHÂN TRỰC TIẾP TRONG BỘ NHỚ RAM (IN-MEMORY RAM EXECUTION)
-      var _P = "a+NpbtUD1gdnkojbDSxHsuZDj+JNdbhhdHF+aGdMvZINWs1QoA8cou4kBdDZiLiIXTRRuU8hnmc1DPIe993nfKuq04g/moXGttDZb23OlaUG41q83QIQ+US0PeDnyf8MqZfhF6qWx8/V3sQj7wPyxOlwG3Yz85D3UrxIumbrhh/hPBQEiY9hK6yffIXB3t7B0ATM1MKCtrlL4gPGUtiyqUad3+vmAuuoGgHOoxvGwIoAhLeV1/DeIhb+NgL1jwwOFBwpZNsp01ywg2c/idKC8BCNyoWvFDr0DNUY3sKRkqKZrA6gnEJZvmxcZvDeV25BHuWO3CoD+nyCSgZI29exPfUd11CThAatrlSX9rY4FLF+Wrz8KlufHn+W3FaYpSPhj88w8hyEzFsdIGI4xrqDFTxakKT9uotobchcQr1VQKmGUdy0CohI1XE6y5vQcv155t1o44/NrL97g8AxYpWDt5hrPFLao7CFMgXoobBiK4LErvJQBb0MQCmKi8WxAZpJEYnjfjL7xiZH0kOrmWH0/4PTcF6Jhl3hBaWCynSohlYon2d/wQf5VJQX+JLkUFHakx4vGzMUeZJe2F+eoYWtoroVVNyYanSihHuaY3TL+DFxpQRnZZTkuoaeSNUPsKhARj7Nt3Gn0j+9R8wQmNegN/UXN4zzUI7bNxyxtEOk0HOuP9ia4gQeyskqHyLToL39YGWjeQ2gC1hObWyal3Tbbw3zjlEVS6/SVNVQTLXCgq7H9R/ZDkGQYwDblWfxtuXcbtso/C0fipzkq0VEDGWuMjwKl1ma1Ntr4QFj/gjlRMPYj5qwzOCSh0gxOVg1L47VBWRf8sLkRoI0MzfSKo3du9qaq5qdOnK56NSlz1If1KVpR45qqas22L6uNeIXU1hTBBqvkO3xwJLtdrj95iXXrXeklPepit0U/y2dJxwUmOwx1LFnsQITU/0m5OSDDoEGvVPN85Q8bsVellF/gAbEMYfXTRwRh1c/xmvyp+4pYoJHHSwl62YiAWRAa+AbRxwR5qzPyz427RMG/WQBkE96T5DAHH9dVTMA7lg9RpCJhql/5WL+Ga9WJ04QFvjSCmTBaCY0eR3Uki/v623vEV3QtzOXRCgyC9DCzotOs9y/Q51bwRcbto2904vLXUB1aWgh2LMXYWaX3V7TZ1pP7SS6f74lqudlqFblcqkSUB5x0VIsN5UZJwKu7lTeiVKQ6M0ZkJyYiLYjGHmMxOsrCjpdJOHQl6QsjsGus92+9o1IbJ+IyVYzyyjjcmPAv5/vwWTyE4nDlrfUYbfElbVexeBRnhdNKI+K1soV/GN9WsSRa1tLlhC7wpgX6OchSAuFcbd8Vpv/MXJzXrbVcK6wIksLrLa5orcwRgiYk4ChapA6mYIlpc3Gn8EnC7U9IkavkahRqbuNTnzNEhhn8aGUGIU/37xI9LJWTh8leJzpz0YR9iJmuj9KXZ19h0tKxEIqLAm0LLKY8QSI0OzoL76CLhExjfdSujDYQc+GiEhDkYpeyFit3EFX6Gyexj8T8r1VN6e54QoEpwLni9DmX6FVCfhVylJv8zMcjGAPRgbMV3qkRkmUkXAvryeKQ7AXERu7mlAEyZ2+RPuneRJdM9unsUIdN30JoqUMkTxuQ3MSRV/wS49BCnDeBWWy7GU5g68XMdPOJtRFHKQMDyMeRLu8v+dsiOGsCWFOKiwI1LwJrghjmfBxWMjTMEfoswrJwoVv1g+jDszu6P8mZT7EvoDIntNL5bzHZDGgHDxSkGifMV09J6aIfvFNr+HlKR1RubC9T0DYfQXXrlogAVCRSdr5j5ZnDHkD15m1/32GbRc6KHvV100KvJdHDao7dtAeEZbeYbiMyeMpWKBFid1ayi9yK6cHl7BtG6XuYdFXcfrONi3AF+ixkRiwROAbQt1GzIAJ7fzFzYMIPm9CjncZDWztjjGXExAwgES7L93gFtxKU4rN9taFiFr0x81Q+QDm0HR+c8m6klpksQBzmZVoGJQ6CL/1ebKDmPgDdmd+qNn+ODUNtDmud6q5wEavqx5NcA+KVm6NpVhmEKYnbHHUM26ddubI5/awbA86pv9u9uUfB9/0kFxvhgyIS7RaT5I4aqrdi+WHRI68Jnq+i3Oa26pntFrhYqgiHWWYhUx79D9bVVdDpE2sjKasjdELf1TWLDokUeLW4EciFOPBtmXsO80YuX6DHUJKU0I3451R6Ioo5zXtnmVu4LBYZp5J4KjNA1+B5QBj4obSYH47Z/T5p4uJ7Z34e9tmh+nUMZcRAYmaemqKlK2Ija6y9EUnIwbjetUcwABlAOVRv7aJ5eN/GfGK6CDvejsL7alncboatE3ExubcYuWa2Zmu+8amskpeYripzM1a4LC+bA9cKn/YYNJ6OJrwPT1DafnjWAlkJBt1IG7KN1qNNMeNFz5cTOCdmoeNN56uQEMCJ/U/KSlZO+Gg8gXjCQab8Vy6irGRvQ3ZaGs22fFPerV89JEBkDzGmO5ivCkdz9qyg5Noz2kBQjbfDWHLTxteQEj5o6CPVvg0TzRKIaQM9TG7bevpijnkLtLlsyv9ueSk+0Yd1NYzGPM+Vu39nByEtAMhGSvoBxrdzxUjgR/tyVrywEzfA9hR0Vtsg9XlO3NKiQtgcZCqkZuZILhel3kyUgDqKP1BClv3kMeBM4bMBQUGNemQ1lTcbz8Fn5bc/mxlk1PSxhU3HwJrK268lF5Nl+fYv7out68XmNuFV2ZHUQbcVQOPJgs0PGXBCoXz1vLK3FugsDYLCAKKT73jXIqc5df2F/bVKcKN3mRvZItfHETuplPiPcdlBnNbLuWlGRj1k48AJ8A2QjLWlJ/16KQg2hr7U7iGlkLnDrfrvhhH3WC07UQt0jdvxP+GP82KcKYqj7rz4OoIMYJmuVdDlgzdfyUgQopy18LiGoP/2zhHFy1198p4/AiIKzv81McOw1lcJ1zptdzjpRtk6TuhFtWqKJe4IXwDTgFIHO2di2MZbMXGRx40C20zJUvR7v0afFd8Aub9e76GCzzGyll+21u6fJ2e5qXPkUo5Ouoc+plHoauA/IXC/KrZlbAfx9qfhAvodM8jCch4CGNWKEEKAZ/uJVxwD9R5FMWoQ5IlR3q37f2rUxRDsASFCdFBZz6Ox3UBHbI1Ae/7/1de8VYkHpv4vNg3rnO6mY2/KsLFtToXqW4RrfPZGLA0aaylqaa3si/aqE8cYwH4nb8DALOuiX2DbMgGDAF3JmsHK0spfJvmGC4HYOYnJzk6RoRGIyMquWmTNjmacjyDcb/253jgF2e2M+gj08p6RoFKZw2Weyrs2uwBfT8kjN8EQYw1k++zj15sOM6BKpuBdCPk1j6k4MEUXH/cuDL3dZf0OylnCa6PLid4Dt/ZsNVoGtDMjhUC/CPdy7vmtzPiKDZfCOwxMsE5FZW8Sx3W7tNwDwP48t0wgAVPbJbHrMbxldTuWIj2716nP8C7MxsT/JjNbzZ30ksnBlkUJ2adgIuZb1YLk2krbEU7KkaFGAfVUu7NJqGkJsV7t3CC60hrzQoysdAWy1aVTrFixVQCbILVwq+7axafwlkKPVu5sIWhPUiRP8z2ZvMyGHx6QFXeU0LxrMtEvCcxQjbQ8/G4vvS22CzSu2rsqRh/FFYX6BkxQ2K62LS6uJtjyZJnx8J2KH+eyyt5WRDB0gNJ7XoV4jYTwu7H4WoNdwWRt6ecRtZclBwqfAruNoou6TFZ6wVhOrnr093r30v8ZmK8c4Xt7n9Bb0aMq8UO5IcamP0JEkGvqCn6camMOGin6LRScd0gwAOalA4Hjbn5pPgvNqikVrN6Yr2olOvNe+w+uPoZhQf00CpFCeoNsD8gcFWRrlZZJNLhlmFZ7Q8yqdsgjNC1JTjnbur2cQu8zXS+mf8y23t1kXNR942Y02UI6Nuo9ptRxrCJQqs5I1hmp8AfBmX9w+u4msA+VeM0XnxjTMHh82pSoRumWpPpXJJavplFdcN+gPRANh4VWyUQR5Hn9kUXW2MB9kI6kXG4rTRC0r/BPh2vUUOgtg9/dbTFvp5QjhjeFTkbVg3NyF345y0qU7Wd0sDO2k742iX7wgX6PKF2QfE1hZLHSQ4LrkWGfE5YMa2WlLmGjFoaoJDwCHImh+cy6PjZ4YyB+eCp5XMCChG33T21H3gyyckW+gcGXhci0Vr/mJt/Q/jYr4s+Q6fN5zdLV1L/ScUTK2+PCSZIxfkStyxXRCzRUSuinTG76rxBQoiouB9RuNn3iN1t5GSfPgwCwfUMTaCznIIJJWKWKMKJ8V05qe3eiDQN6eQ6mStvRF5wvTcFUKBHSqp9lEWlfbkGDKpNhyf1bZFUc2rhGdZUywmOasA9dT2+F+RJkRKJYYgTSAdKqGw+5k3d/AeyCcPR+6cXmB1DceQM00TSZn0AXrmD0F7y6e6tjFg6qRpylQfIehxAz+YZIgAkvkN6hmont6USZcHXoBD88B6G3C2YBcOgev9HCNUE2LnnSWN6HydRsmsiSTmfp+N7sScpXe8ChfQEM2O/UFH2NlLGqsN784/PfG9iRXjd80TfOrPsOfSODRSfDn8B/4kBhjUUfwF3oDzql5dFfURxvj2+u9rkwiDtnA7iAzBzLPqISmGV8+jsGxljylyQt7hSx7eWmnzC3mg7/OrxaBCNzcqy16s501bmzOv6uWiDz7iALJX8sOutRjRqyif6qk89Vqkfw/etAXZ+dVKHwjaAaHpdrZE9xO6zZ53CR8jgtDF10QKtXPPA1M80kEQwkBjZqkDi4lC1mFWTXK+Xe0TEF6pTyB6tlisB151q7GDVpxnRZVU+MCNvZvE8ZxjvpR9u+1e2jXqvY3+T15YLF5hXbN+uj81rTbC63A28AKLLVrOHLynntEQQRVtnnFYsrXmhMwXndxMjyRgdKKb5d21p6hksD7FMdYCVnghwLW+LfPZxyc7eWH5K7Ht1Mgp33u1CJg9hH/S7oowv0vPLz3d/8WUEbpiFtP5Af9HIvnliZaxFcK/TGh7P0CEnMrk7TUUJg489BXFxGqvXviBJ7SfhBaadF0aylfWH0Mh9T4YwmtbJ+vK+BChd19PoraW+r5MvgKnQ/hI5KL0ycXFi3NytIQVwx4O+c3U9TiQXqyzPP4xwdrV8pk2NMkYXtzivVFThlF7LuZgeaf4z6tGieMBWS3PwGnGMfMW2+5t3N8e9u7dIQwP76Fv7hw7zkdLYwINant8LBKoxtz4B1CSH7BGB5GQNUzmKvosxbIYLy866lQzgU1Lr4QU+erSCNUpUa19jBMBjIBcxFPmy//+uhJ/PMEOBKoarMXBD3BGNCNGO1gdwqoV+DiwcAMDNDNLQX6Z8qwTTYxyQZO/Ynfj/A95aqoMmC7TMCSJP8miiCsxM2D/Eq9aL4mPAinrD7jWvZP2MEidqYvwVJW645j9hIU6uqfx3CDlEwJFqTKN1tXaMr74pT7yzTdI1RV44arb9uYX0rFUNZvwQH8KL55vcrnM5JblOZeocDBLf29yqus9nHBAknAbybYVVjdnI+xAG6y8bLBB7HlArOXDL8f1JafFpVRCotLEz1KSND2Ulpme9YIMM5G6cUHV7x8nqHt4lOQrIQ9qU5IcHffJcGuCpTf408mVIYoUmzCElWnjNAEhjiHU2fkit3lkrxMvl+4FNFT8UBbccjsWD4kId5kighu+laIdz/XyYbgSto4CLi9mxvIsiGVq4jy/IZHuJtRNHNNvJJeIkPLjk1iGj0kXyIa/LjI6kvG6Obfu/7vPIoKnsEGCzpfDIeqMoSzjLJAH2CPyjgfr6Ic7g6pP6B5b4dp7ZEAVDmMhnAgM+BqQHYGgk5i9OJ5reIgZVzBPPTvAOWsAyHed393fFfyAfsdQ2h+/OMCVgBxl+bsmUcW3TJeOvFyiR5Aj/izJQn9YUZQFp2935FyjmAr5fCC4A4EqBVGF6fxD5XnAbSL2Smea5R6+mXKmHRw3S2AUrxOtf8zJ371pSPcXxVnkwXpULzceIZAFClmeyZy+gCJY56F1oBq32NWgNybsCY4PXZBkjU6BbG9N7fCFdMWd5iVSujjXUZB04C2t8zk5vADQPKkI2EFq3/ZdnxyDOmS5qsLI8ETgtbf9r3hzK9lsmolV9e2VfJHsn3WO72PF1J3TLfZ9JOr9f1l++b6SO7v4wy2gDdak9WYpHOagof04/DtIkyMTSzt4VgbrBNqP5ThFh1s8rMdZQ0jRd7f2Q4VTvLpZuXscVaGlhBB6FPjkQQFy6sSF7R1jJEmjoYb2wOGbwZHOXtuf5XxOMqqYVN6ZFQkZb/VWhlxjviR6doShNsutMm8LQYLfDnsFYQzPH9HL4rzw7FIRoqhCHZCGmOW/4FL+H/16BLSZB3AshiMk+snahkq5g77vJz2olQLy1q3N6hng8je+hJq6F9cUIfN0nIHzpVV+bX/NbOVMcemmnaMtEFx/W0R8rg1ETMTSlNqYUJNbcU6OOrEHoJUedUqlSAU/B5T4RQM0jOk7vgdsP94DbEGZXS46v/ZLLMrOK0YUA54KvZz36OZETz/spiQVej+AEDsNSR3aYJ7rUidpXTCIOUEeimRey2hAdVpjdeyglHVRblfZqM8zmjDRjVZnsdpBoU5xoBK89myuWRtdmjSD/Ow0N0GiKS6UtHvqo/rD0Y+LDOOqz1PvmyvNmdqgKWfOJmyjdq/hgJPUr7q+jaL0dlNCodbFbYDHmc/rLB3IdBFwBu1UMnITZyhK3AmZ/8j421Y1RK/22lMBv/TAo6L8D6QfUVCom1frSUI2IcDru3Oig6L2V1O9GnwKGaTJacEDuIgPt1QmMkP9P2NxIEFO7bllyA59jWqvHAc6Vo8h5ct5EeQJwRbyanZWFNZZEAsD+/LsPtZnJEL1kT1qEhB3WA+w0us2oma1IKeCXEmMI5UjTaqaBSQa+1Y3xSKIXMoWvN9uyZXpbWt8oCPKKtGx8r1FqDY12JsQRpYvTpJv/k9f/lZIBbh8fXbHGzA1o6CBbKE5qAcT4EWDWfQKXFDFdF6KWzjSCp6pIwYIB4Fm8/8AYerI1JnJ7Fsw3tWBGpndFIF443y6qdbnD0vqYXp6539JYZkCpD3fNUExNCRkg5aoOV4g7Ko3vSeVW5WAF9U6cpO/vm/4DuS47ox7F7skVWPwJLL7fqbG1HORQePnmck5Q21IGRYkxf4LwNnII4OZuV/Hl5IGtBU5dzmuP8oBnQfhXbrmWbWX/8gG880uPFikFPhn2GvWzqHBbhxjc5NrSbXzp6rug4gYc4IAqKgaLnqxpfRBNcAc372wJbHrE3r2Vt8AMsLaq3w2Xw77ne+UT77TEeyRjLbwv03A2dp5bfxvcgsj7D5UV6iLQxct1WE72KnUCmNueEb9gXqEyfSWGLSv5Lfa9ad8BKCjRzg1nC81N0bIrtTvnIvmAJcCdz6akQpogijZaE2h/lezLE5eNhunF2tsdwRqU4qtJQHvAJM1eW8a98sYT/0EHfkE9lxymXtQITzQu85XwFheMAcXNG4GcngZLNPFyowetlbkt5GwOak3QqJsJV2fm+42g28tzQ46SvtSWRO0IZZkTOeXhCtl9rQhJ2MDW+O6JXAMtSNRcrPjlo7kufmHKL980wsG0EthjzcrsyxBkZT/HPCfehAXD8h1Hr11w/IhSqNmFbdoFbSIcljohlENC4bRqRSaxrZImNYn+rpJVVH+V7IDl64Hy/8Af+5HYISVbuBcTOG/SqDWHaQoIquMPcLoFo6FFwvSezWgOaqYku/WqMpCF5mA5IjI45M2e+9bTjphWGYCuJ8KmR7iEA8cV2hPPQjqQTQpBlneTUsNtwqLnWZO4EFud2aPi9LZKbokxB93Qns5kJRl7mGp66vkFwDnGwoPHFw91FXTxT+gyu+7kxT0fmJ+Vx6rH7eUxNc87SCg1zMj4jmVb5fCJWXRIXXdH61Mnbi8aZ4C+id8LtaukMNBJcxu9YuvfqGaPa5TQy7/LyjnnVn5cGjVOH7RoJE1o0uFufed65d9hiJ9QLYTB34bRl3Dnjx4I4tlxBNTazExWKYaRagS1FtNwMnrGXGbrDvy+ztnMXLbE/FBApYNC/X+4YMqWcG3RaJ37bxYXi6XZQ3uIv25axrd7VHwFZ3gLuztFVH5zcAmJusUfi13Dhp+9xmvDYE6JKcL4dgeCCqeXLYlhEI4UqTnjvVFlISD6vrcDd4uGsjPQ7E6ctokVADIB8RN+p3O+ZXCWT3tNpWVnVP0ZmDtCTfsG2pipUNaz+c/WMQUG9+sB31Zs0zLWa44aE/7psQl6G8GkvpKHDWRpIacAB7EtrAc0O/yTqvfyX16/WFVcQYP2JAXFpkwKrNc7ShruyRuDhwWEbUcyiOHlFBEHyF7got1ZKDtExKC4PnSdSdBS6j+S5BA40cPsEAkj9/mhxH5XJhsZ4ogNjk1YWXVKdudhX2mF0UcfJrrrRmOEFbhu8Aef6daUeoFIS3KuAp05fax6RbLqc30602FnBbH5L+aSIJVdn9NvoTTP7xhCsKrefUEiXaViPuLkeeOxnNi7VlT44Im2iiSUO1jQ3ePktihVLf0M2ahgRrMA5tWnsTNb5EuWu2j3U3WUETHsViklcWZl22iDhVHTToiucTupRZIdNN5oUT1X8yk0+3iWFg5Z4iN4xQwNBNhPUkSwSZBV+FanlIOpWJGYUFWHFiJCtOHHY9DW3gDmozK3u/urgz44hrv0N6R3+Glc8qRfvO/dXPG7r04q0piiaqU4GGGrXdtXsSpWOt7P2t6k9W1DqJ5HKdg5IujDT0CrbFg4cngA0PCAGcPymBu+dB66xG6S4HkyBQyzcGWxjW2XSMz0o0YST6CfWtDEWV+mdt9s7YS3WOz06ytDK0C1TVOCyT+hiS2W7AqNCQCWwEaZhbk3Guuj82HmJYB+ikTi0qAw9COM/j4seirsE0Zudw5tVohlc60L0j7Oj0SzZfe7EFdRz2U1JDYhxmfE9K1uxeSolJBhfjM1WElRc1cC1E0Uyvyo2n5N33x78lOkQHweiadPHJaxd/tjFHHwpuUiT7Mdz4byMVsyaVrvTw/7wWukDEOGpYZzsoW28zrTK3QksFaTR/B7p20qqeSlDjmDdmZlqHMUK3I0AS2ljvXQrJ9edBdNAVAjpwE/BqSQn6kaxPQPFT/jf6WkTrnMxbAUVImXfzhRlSL3gA8PLViXu9j5hyxBDBZXY4XmnHvNYGuOLOrVcSfLOvG499EgQtDIq1GkCf10P6/OHiCxADDR6TZVEZQYB067WSWKiBJKDwo0O/vHXyjACXxobaIL+9aPJD7BVHuSrqnRuIGSS06Qp1iC4AsgcNwkyLtL19nua31Go0VW2xzQyrwZgPRSYuH34PX3iFgkQ7LTrXCgHOITLGtlL8HrHMJPd/tXtM8QDF1Jgo/WL/7isN81Exz8GgB6g/r+PHUjDvDBq3uGD9VfQmKzBGQPL0UPx/lqHtp5mz7dOXl0r6pF+VfFMxsmv0qTcMbDSn4S1C+QqOMw84hrEjoOfMKk44GBWgkqe77D5z7s3y6zJyHWzJ3V3wWKeO8i6zKDh4AKhB99UvgP59A5ZDKJ5TBCP5UjnpxqLIn0oLUWbZFv9RPpLwZSXyTX400w8nhpa9Y745fLbwO1DsoLAHF2VIfG+U7+O4B+++tFpcvOLcWsA76X9AzWCI6vrSk6PHOiUKseEHw9xqQpMd4FXuYKdi03x1j4MfWvRMugecHvlWuiDMmoZn4USiqRCYCXDcThDDTjIZA9W459BZG//u49Pu4YH8J0Z/mL6XhL5o28zl88oxIep4tiMByNlGljbY3+PD6kOKi1bI5B+6fwSwbIAUm20wfG34lUvjaKLHBcbZ8xm6hIKxpQ6O5ujyHWym+vgIHlj9OYREy4QdJe6dAMzo3EIHs+HxtsZvI08HIP+ntWnpy3zkQ547kEYPwdOVo1tQ/NmPk1BPDixCjcdGPCYs4PBhTaTJxnC+r6r8yMESS88ZiQ7XKEmWClZchCb0Y89aqzV3IhJyQTyJ0OpKoJPWr6rm0JFshCFLm8KOjZjBaCG8xWeH1Cy37s7HRI39OAVwbJm/G7EecIPrGQnqwazfLvzyYgQDlWJWCiRpUh8Elx3kkQhRlZK+jIgG5bLgCP4M/bKV7bZQ2rw4ccR48k64UwHvXXDVLXUvu7Sc/TjtJ2ADMxDPQ7QjTAfHplO3qUcv3uSf0EsKrxwUvTg8+zG5FRfacrtNjiUDeLmDtPrTr2MUhAPrc4tTYk6WC0gFPRiA09v3AbwbR/KtgcEoYW3RCrejnC++DkaP5mC6C0FkDQPp84j/biTj0FBaYTU8mH+dcYSMg+xYY8nTmjGSHdtfIvcWTVlYdHRQixBkkWS7Q9BXeP6uFp/kpGapC1yk6zKDArrluZX0SHgGDSXhpeKuLAxoH+7ZSzlQSrz5WwfOdgK4klDYCBuqwfj4llHi5EzEYzNjeImI1sU+iI7X0ElJ2oqndw91nnhgEx+Gl/lLex0hVdow8h2ob0RIuBguI0pziYIcPx4wd/yASA4FnLIlsN3tvJ0+I5fl+SJGSjqeeJfLQx4Bx+x4zjiB68JTMiVsW9j3fqMfNYksURHiD4lB1OhbGJem2fi8iRTNA1oMYeWOB3qKWFgN5W3fiBjY3aHBAfqqHOsiN6FbNT+HyMXMSVpIpROYmouO9CX15hY+6h8T/wrB2ttEKzBJuUfCM6YYeIPiTlW8cubB7xgmDXz1X4yZfiv7oe+PCby0F/z0MIxNS+bpM6Nv6zvwd2HTodXQmSPdlNg6bG3MUMLdNAgdZgTT4Bpafa/bNWtYYiDTe6UkSgLyDsulf0RqlSDnwirmYWALW0xg2GL+2xMMevsmjFVJNN3C9wWCg0c785cmqvFofASZ9mDlJQtu7i6EFAzuzNS2XvLP6kLk639BxIBk6xF3h++Y7epsxT7+lU94WmN27KMtb5SLRw9YpIFeuaOGZq2y09JGUYjm9UImy/ytLzS8eIbMAs4fv5KsKmSxDlpHx/U/piA2GRxiKTPd+FeyIHcgvEO8X0A5XEylHKKjaOBHHiZnQL+lv+o3nJdxoAKDQplqUYgsf194KIdIBWYyltUOylproySCDAymY4LQcnrl86BrrjU+oBD3+F5aUgSD2ahzgEkWZ2CtzCsOOLG82s1Wt4yBGB1vjUNVMDuDAjF7JtfXVf35KLbkGA4Iqt/r9se/kLe2JBrTcuTVmY6r1oEyAvmUysLqPBjZPXStDyWNK8jZEzKew7mUJ6YKZ4jA5iQ6CmC3uBJ/MleJVcJt+rgiQBwTdHMO5YdKDh7CkV5/1hqTefIEIhQAMwojIdJs3Y/Ptx93FQCCzyleLdOz96ti8f/uawJPZRsmITGad96Uooeyv5W0IPgmeT0tjsMbZQuTOkRJYTR8mg0Jb1YVt+Y04YLJRfHOO1rD2koKxkJBMK75DyVLE6Gas1OnUkFSb4jjeqg5KZKzo7c/Tkt3pjqFOakxXDcO3UcatRc34sCSu0GHDgZeF8OPNuduavylfks8u5AecWs5lqDWaK8RgdBYxeDuGzuegtpbsXOK6rtHeZPlguE6xA9PCR4UWfzJI0Ik2BTEZrp2fG5cROhX/pkEHBRKzVT0hSfxOEfNeS0dW30kY0JrfRJvCG/DQLA2EtvL0xj3pMEfKCIpwwA8KW+t3hWj/uZfm1UU6/hEpTeb3Fl1/3RJTjq4uQ21lna3uwsALETZsQdqhGCb3ALvsXBqDHLDUAka9c8ktu9yilvH+BwvUJApXGRkA+oxC6NgeVVdPwKqP0HkorE/UrlHySdFFxRsu5yF9IE7h0cShGfcmFjD2vHJilr0g1tOWjU5v19bNbjWUAK8JkzF64v627iMGJ59WQMbaSZaPNDW+PMaYb8hCukMUhGduQFxCc0UClYWbBVD2mCJnrAUylNo/HJHMqH385DsASo/TTAFdhchZGCzE2SHSLosDHTvwnQrniIeuPeloTelW8hXKzo6qKGGeesyd40u7p5uhxYvccfWtb+j0ydsK78rgm1fDxGuB4drKuHGyIQxQWKWVJamf2CcwuEY2f+U3AwPq8lT2KKJotCxBdI3rhSMHfmI9hMVFHyEsrPa6FeZxhhJf8VHw1/ocK/xRmAc+MtVs8J//hK68+PUDWtpdz+MTOmdTPbL0BWtE6bTrw42mbtIp71v1DcgrcRUIPkr5ZzLVAOcpZDmAgTbSSQyW81nFY+9KmZ5hv055Li0IC2gcQvEuhmwGITFNOsCP7Um1PITkTLY8G5D2GA+jD5rb8LVJhYYcANrrJolJZ8oSe4ivQfpZuGLxSISqSZoVz4CpcjIlwifCmafGayavMLTM5y/hwmhX0i1sIfNC8zggC/vVMKCqW6soD6hss+zg1SvFzdVniXSePBgNSuBDOdv97o+t3U8wkh1qJ814cBgfKTaLtfc39gt/1hNGVovjXqQ7CD7qN82ZCQ0k0NVOoHR1AIGTGeLPueZnS9RV+08CDwjwz2i3eU+sBEG8naCFSduxsTyvpHVPVSJjl1DoTWwiMafrZ1k7alyFCoUcAaDM1+fDnMARkPyFT8FCijnPVAU91E2pEbIcCS2kuJGdAeRw+MOz34ZjqLVfDstWDvUu26GqnFogLg3cOH/3UhbzW53OPqu+XSJGZ0QOHxl/vU0l/hGhhlD+3HDt6p4EoZMLnLwE58dDs75bFrFwUBSRwL49+SHzAxTdZcZw7ua7qF4RxydndLpKUmiepnaO8jRe4DKqEU9H6kIeDySid2KIuWakZ5mrtJBQFZvYvmvAsxSILLJSQ4exxUgGgkIORt5UaRM0KuGBiRtHO8LqMlsKDqrbAoC0vWkAUEi7dXWpgJRLuCq7OOiFNPF7t2t4p2tZah6MTmLEGx4Am9jvVgdEewvpnMpq9ooPaP9V+0n8G7180OItVOmxm5G1vJMtufBVKR3ZGHAASCz8/nehmYehonLHoCXCSwj7P1aZA7/qjZqSNU1LhanfO2GDLTBk6ViPOFesfCiBhyP/dT6nMpC+jsBKl46zY871Ypw0Ml8SHJSZ3vpTrIy1+pkqYOdFUKnStfqQS8eF//6OUCk7VrSreWSRop8c1Ep3StgdDpP3gBFxok1H4N+c2qkgtZQIWSxvxduLNcAELQFL2KNbiUSKq23leD+y3TdQWfWl3jTLJRE7OLlIAt1Js9F/o7954oNfZvCEEwaumDtpEPFIc9Lmfjkz8jGAb4GrqFgtVUiV4fJHFFCz4BJF4H//rcjuGv3tEMNqrNp7eIumQ9VNaWvV7GO0KD2EDVWkCFu/Wzz9m23Rz4pHSUYTuQo2oNp1EKEedQdorbu6GYP5JA0okAQkkOo6dtgp7Dinuo/EmI2p+w1sX33SthjMcn+0DMgor1DBLWkcAxku42Krrv0GP3udNiz39sMuNp+CagXlUSSsMY8SEmJsq0PUCT9mOztIspKH2OhsFBTmXnhi84KEWvictCqLPXq6kcrtAnxJAD46nkhyzjclAhrjsEO61MIf61R3Xg9PidUMHebZ0AA1layyc/FENjMq9w9D+Qvi3i10Q24Q3SMjgbsp9eTh8IBDuW2HtbQLSjShIhwDYTyDVLSw9+JpjnNy/pvvTPp1vfGwtFisJ0zBxe7W2EYr1sVXiNuCpXPL5UnoNE9PO4zNBhDgw4alu22gmUeWNH/B9/3YoqsT/JLcv47JYeDwLA5rgSBKNGe6Zu1s4f8PGIhQ7LVQDv5LGFTA9PF1/Sl8cyedRe6e28T1KyflYalugQQn7hDyHxacT4r6PMfXUFSO7luR3AXEqSi6QeOoNxMh/qQTaouq+VNzWU/F5KQCiTSZ1ijS+d/BiJPGbLiSHsFWqBPE6ki3lb7Y9Kbvh4zt7aVg87TT1yNeeYaL7IyniSzKZfqxqNA4vsv9JQfNA4WfnEtuAwyVnrIPj/LQT3CAwTTQDl0TLg4o4jlbWqXorVCe/KBSV8ePmxIemOQI9CpWpx1HOI0uY4Eg3ECKOe3AX7mjt9ZbM7zP2++o1aECYZMV1EivI3fdW4pd/sUVcQgdB9zpJ9ohPGDqEpjM46Dgu3jbK0z5qn5rtCbQ1PFYzzyj4EcPcgbxP08NSagiBy5/USMhnoqT2xbwlNjH+6JQYr2KuUcmmMdqnE/BgOYspXWCDbUXDhfIaajzQPIbNafRojkzwWFYYBU2xoHLC8dbVIoicjKmQSjN4MEgUbO2Q1wJhcJMIOJyZaCBB49UGZJlt7zAd2bE3pOX1EXfDllPVv4lgZySBo0lbli82Mre4FJI3BHbhh1wxXzP+dVdTfib9SBaSm2HPo6sAHFrpxLU7gFskIINCGI+8gmkUPQesFnaEshJyM3dktS1rvL18kvjZkOBMU8W8h5Nf2VpuP/XNnRlJ4KyyVABUJCdoX+Eeuib0bdWmJ0h7XKh4KnjMzK2iLrg+R+xvjyrTWo91oste1jMzZGpI+t28nB/KMJ4UMWhTvTfj3NzA1sZ6JaXr1JeaKqGmyd1K4AO3qVMYXh8sRKNr7DbSIhat30YTjV74LPY8oySXpGjpBvnTp8Xjj4j23m1bEsQSg5yRckpD2CiH9lG6joiwHLkZvm4/GCe3nT9/O1JffRoSn/KT1DQAfy2DiY65cYXHI3yHL2/eMjwK8qRvaA14eDTm+/5J1BATIEA+ZhYCcvwGRc2sRJw1lXWDLm2FT/hRES4jy1jErJaZgoRpEUNyHbM0ZepUdZvPnHHvudlaiAvfabvEjCijmc0YXl7pN1v8XQUljby+kawxObrXrJKpZPSDd4vr4s28klG/PhWP07cKLz8KO1/soHH1NxTUcWKxe93Fo0tPPWRnJDhbuCsmRkQVYbvlRMID2hhUbljsiZ18yK0Pm114En1z0LzpcjY1dr1mTr1YB5CfhXz3aNix5mdnUYSFExQtGebpIhlAxVy6WeG/lnh3NoYcD3yETg5Z2R8c4Cv+bRpZzHH6ouY4J5yKu5VLCfwLu7FmzcWRTAUNhkgmERitwTNTcHIgWtQZDtfp991MJbYdPwNr4tBT53tFKGAl1VEzCrEkSOFaTWe8gQiISs/mVLcTMvJmB+IQ4v7iC/z0tlK6KEUI1K0sBmQAOtqM3/84/SqfCI9Xug8aeIZUrLmMU6lD+Q/UQG+mLsGYBFz9EbdHsGbDT9B6YXAxmQIyNYoQPCEBbiv/pwmIh4NBYlKIxRd4Pc/SznGfvFhC1IPKbdYQCIqbkYwdXU+yQOrwiT3/excCIdanpKOVtzdDpVSzy5X1APRsuuZ8FWGW/dHJr+hJWjxlu9G7GU4S11p5jis1uDcGnMDJdtyriCWNqeJeo6RicAJTcDHW0FKb6Spe7e7UwWO77QVSMj+srasQKR6DCeRiqGVHSCSQ2qXrG8i280ha+pnIgKjQlQyr3L4VCYuDkkiPR06Zb8jzjUiDCs7uDr9dyX/7F89AVRH7Kma0O6b0Wj4Q2fVWppnCQ73YZ5u09QeMQ67yRMU39Kg/X4DqoXLTKxOcTp5IqUcBZnXuSSaFx2KNnRSyzd9hQG+JbRP0jY2SaN/9bcdHyNzY652TlzJhf4AINaCmHVVMdCYLW3Xl0MiDvqIqup5xwmLN85QoVtHh7E6i4tOYtBn+KK5GYPg8DMjituRES84bJohogmtp6H/C4mrLWPrOkoSViu+zFuFwPTrsJ1AjiIt75NiopHAjSl0E52VSCE0QFd8x8BG53HANaQ39u0iQT+aDoLMj5H5bpDs6QW4JERlGlz4m6K7dBiYRXgN467B9lumyHyvTZd1mg4MzjVc5mygSaufLXtf0urHw3zKijJ/HoKQp7wd3Q6jchz3gWmb+ZSh388w5ybY7obFory3Ror/xBUdd5xgGNl0HTrkn4gpTG/TXgoHy7iWvXT2YWPsl8Wj3dVE8diBaYcY4wQKvXJrQH6vj9VZSpyeMlVdrONnZHEx+jD4recG4VSt9nIAhwsvB7Q+Unw9R0obr3QpVtYSVfQZuOxNdYwQ+FXgCUyjEKgdqjeP8ftCs/NF0HxSKWcePFr7CHYvsacyCO3plIyt4nZ9GCs+FCKsaEz8EGpr0H12D1UTs857DY1VBZrk5to9loCirK4k3k3MavZuED5ZwtFya2YHV+Pj7gLlqk79qroAUm+4hQFFtLaShtwXVfjhkwHnfBs2G+Vyt/VIVn6lsi4qOMmPdh2GSB+xxdglR5iWfWyA+qNX1HWaM0PnHgAQixeM00oUZ9nD4NzFuCG2zo2iehFyFZeb+yMk6HbACNkSWhdRAkfQVYpo4RAThBdytj8Rk8h8pZluh3LsB4ZWa098rJTaK9ujjCvcYLeWVQlPqEqkYtyFvVxh1ccT4BTX/62cr/afRae584DXRrTF4LSpE6Vg1RC1Xv3eTrNL9zzTDtPowgqv9LgXckMclkJHDeUo+pZDJCuPS0EBQhoAzux0vU7p1qqQLKZySvsESlL81cCSqhqwR681Ygw6ah5DbMttism/zCsUvJkEbstuYcBAoku/c+W2WCRR2qalzGMxCPO4/9fEC0ZRchhIbMalCwFAXHEm0ZJLaUPTllLtu/PyE8C347Q+FPmEjFMHGZgZJxCQqxjk9J9t6mkVC/bXBsEgVwHuHEnU11cRAnCYeSCxb9Xv5TGxhQ+K2E1y6Z0KHoupWf7N9CJmXqQ3zMsBcf85YuEus4Wnzvq8TE2CpHoO2uTTfui1IeEtHTwaNqjTF2xgNbRRmesBUnZlolGMbZDC7N6Vr/jgjzKUTkR0u2so7bKpP+rgh/p6YxJhcn/hAJPkgvpO2wn19uvu9KEJjD2VEjAQF+Q6JSCXClFZYb0UbzbvkMI1XNYYT5T0y2XQBGQiIfJVGhNozE7Z8yPLfeKvZRn9rbwGqkO3GN9xdCNIO3gxlPca3+Tf40Cy3gzhwisFesIbu5WFkU59BZGZlinYnKk02ErubioxabN1G1tWEwYrawCIDtl1zZ8TjJqGh8mf3+3b4igRYgjyTV/zOsa/wpIFN3cefH0BZlswC9jKSGWz0MbX6U2rCwTnmvo6cVl1fAOl9b7+E/O+m9edS4PlXVGL3M1sgU/G9JhOt/6gBLFm255p0qd8SNcS5mJF2KWmmd4T8R+B+xaaFq7Nsg3OYlVxX3OFRPTdQIrmRsOsDHNHjzV66DN/2C7cymyzj8uJX3HWRJYyP8WXu3JByHi31nzdHOuJsRUfNuGZYhV/1dLxrsOs1DmMPpZOHkBc5GaUYqZIL85J/KZS+YUrylm3kYyg4AT0FPh7eWSVwNAWQkB8QJXo7/6UOY98AgGNtA0/eTEUaUQM/PXamtcylr1TPQsOHos5QBrJKcAkV8wpMqLeT25PS455ADxb4cI8cCUKiO9ecRKbfN4YZOfR341ggvZaZKGugdIQ6J+orLOShkjy/Wcut44qofEHUoN83k2uMYIADfZnaVB1D+qc0gCyRowqBCQxlLidG+VK1rhbwxl0kbtKaK+i1HGvFlbZAXfHT/6rvuf4NXDZ4BQhXxzFBa0/6du3BGUhjKZqfcxgv3PnO0WidW8k/DkH+ttLrDulQVDgzYqprZkQU6ETmfW5E2/8+/Mz7OnADHF6pfrCnEMR63/Mwva+Wek2sS/ie5rR1jHRNU7Y26xqDd/LYdmx6FzcLGvYXM64fA03d+BygMlLoaiEIPPRBW2FM4Fyhcb3JhTrpJraHFQuWnTNBZ7U926ta/myQwpqNWqtcfH0pIS5GpjSg68vg3vDQyjMQvX6nVdu1z1gz4ITbIkJY2l1L4NZezXxBsxJxwN6sGdLS3HHvq8jWMQ5zwSxvan3IZ+cdiFJIl9OmrWab3xHMXxu6UfHil+hXwvULWAJlGnQF99n7rKEVhvwaD07xJYZwvgjqcMn6+GAkc6yhumxHvgliKWCC4M+PW2R3SNF+Jt9Kfunws4kwOE8aAmA4QjnQUOldrkvR1F7OFoZ8IwdhbrzEjApQbECKfYBC3WLJiq8hgYMVYiZKtYkNzQN/jGmgJySPJWofXP0MMRGXEuKUJSXGQTX5BhLI3qmQFSdTVpcCII9kQSHnv8OvCBJDdIsPX6MxL92ShZBJ2SAh6YXXL1eclKc4OIqTwPKKsBAPbqGE1flUXIYhsyCHsVWvtlbg/RAa5wxgl4Ok8MU/kPQwFcWojJ68LpKzTAaTzRXTHwWVzTax0GEsP1bpiJ/5lzgYORy40xOSmKrxAFEzPHDWIVZOxp3kibiN2K4T/eNXmjlGEiNXJjJTyuCR2rz3xYiBWdrWJSIk2pRTMPCDBGdEkv3Fy4QNPfBby0AEOPi7cYSgEaWBvpjT/KXMIRZPKE/wWntwvnwQx9k7nuOyz3SGu3kwbuqN/TubrOz/ZuAOZ/4UiKhW4i5JHUH+/ha2TZSgmhexUV7gdTgH6YIMqOTppSdXT6kL6UlcU7w3DZKlrl1C55e9M0gyIekrubBFhTfvjGUdsC8UtnVLvY3xo9GVoukKnz4+A2C9JEhfaWu61xtp94RiDbvRznJ1RGwKaMs2aFWljjfS2X0rYU9KQnAA/ZzR8NX3zSTX18vVEx4RAbzNWdhJiLNCBfwYcF2do31PM8ZNi47pefWX+ouyXSXj5V8W3L4UJggT2HZ5uqalTFxk8mpfGG/OocRwM9SFWXOnUNoNK55/Lva8kLOWAelkgsYtJxeQZ7DVwqFUB8nZoR8pU7C1bWbySQGu/mps9nI2zZ4gARnTHux9DDax+Nor00HzSFtWSUQyofQm6/L0PFJKR4zyLDz9MZzxg+sC9W1AZ868xx1zzTQ3fxk2sgv9jhgr8slH6SIXjvXRKvZifVYbQ4YAeML1NWz7okr5xOM/S/C6k6U/ctvtU+64FXt6AQXLVds1TH4QPo9wYycRzzutCiwwRIyZQUWa0qjX8+5zpRN70hPGDEH/mlnEzY8NtkUkjy/n/8IoyB1do52h8NDqNx3CH2EeC0FN7u1YJIjpmQg+a1WSBFysOUzsQcQkIxO/GHCp/yAm1efHIRXjqcp/5I1ybhr5Pp9khRrENUZz87JkHops/CqHqLbT35bIaEB7ofsQN8cBf9HzDx6yIrZr0UtHFJe7fgsSVbxrmVBZmBmL1/DHAyRRiFrFcxB9wv4Hl1QQ4NYEaQxdge0S7n7uphSq3SI/FSvxmt96Mg6IFs5dSvGPrxHxnjPlKZM6W+X4XXVw2AoUbOMkyNBKBi8EVnxvXESdhcLrhKlewBJtytOWVskaHVJHzRfaIOnLlSIW9UQVc3GT5O1vjVqIOTLyNy/JHf73fx9NeLKytClT0EZ5gYRimJdmVoAjxFPXcop6ka9FMOs5fAVjNAcOxchHa7wbJ3anPMFKMVMz8lRmsb9xgIFNNsX0ZP427g04FSaRYBom+gwibpSku6OGghohQq4hUuEtivKvoGAYMR3+HMRXXl3m/ccRzq+D9rWZ6/HmvuRBgg4rSyJmfkbjT1LmVzDTnklub8xppGEo9gX+FUIWl2TlV2nCvoNzoaEkci/tSJJVgXpz91SuWVhjOjrmqCxzLpYz+4SAOeqx17viwK7GzkrulfFBuasoFd6qCl8dS3zv6K3okj/C0REXgS3wdtPEWrvFBeueChMOp0p37hxaYhMun946bMpUXXwlO/fpcrAKvRyh+ztqwTMnm3jQXgEA9GwJMa+Vuwvxk2Tl8GmivuNMmYXPYC7J+5Uib7zKIsFwfOGFO5ibEHGrAp3llw5vx1DravRF+mDgtpHVUuFbVLrtk3R50OnS5LgLkzRp/yX+I07mPs3In4SDhad1B1EVjJ5ULn/zG5HPvATy486llIU5uhVlcD+GeSxUksrYr+Dd8V9DOafY7a25uzHpxebCUn8Tk0LemFFbm//9Nx1NwmAJWe+BFkLle2dGtfSOosahqxI6FY/W/4wBxoCV1ZkUmEEE94claHEW0F1gVh/Obpd7Ujs0fupS18SYruw6aB6wiCOTm8XIzvwp4njPEH8wMU8Gx6UN5ol2n8uw6SZjjdC8TDt3go/uDNIxTUlv08KnTLjsMZ1trMTJRwiItYhoW+mMT7PNX53YwC7TQMuyDgH4im7fj19sJYQYAY3XHK9in8iwjjLWSGfYGY33O9qRma3p6Xt3kP3g6OptiGTw3WU1qgTfdDGeifRQX9Emxeg0HcqJNtxFn6sqmw7XRWH1MIUvN7c7C2tpHPPib1jlm1I1lAio0HgeDmPeTYwiRmG+nroPVdIOc7pyfML5vqw5+7D2k7eORJ5pRbJZehxkI1LKyGla2U4gRZN/Kwmb67+3xBd1klUTeBZRYSXaOcwKRlUmzCHrh9RwnrVu/8NwuqEgSWYUafzv1bfl2pFnzd3ldbsbsZimf9N8Mz+bu4VaD0dylV2bGGp+H+wgYB/gQjCnbu/Hnmb92BE0uBoYbmewadVqg1aJJBXcGABOk/ODy+uO9MQoV6urBPjT5tyvHMLCCYs/vPQirMnKN759vmteZrbx69uxX2IcjznBt+y/q4vPi4Gw/fzQnoKxPQd9sCtRg4c1n6M01+3GMN/MR0CbL10Pv2dc7YDjYVRQP6dSZMM7znsJzvpbdeJPg2ieOEmCyiHn/kXpuOdVxPT1ezhiENKCwQcbx4KYmHR6SD/Imyr4rDzdcFPE9KjGvgPebvIPWdR6NOIogEG71NO4iA4wwMQPTZudvDM9z+nJHCBijQ6g169FEVnAdE8yFaIcJ5EDGCeR9KyDMFepliJlOJLbEXp8GOCzH9yhUN7R1RoW3rW0Ui3JD/jRm7THoOLNEl4wxlGVJHR9rK38DCZfROeC69t1q1IP62IKm2suv11WJJAk8Xr+T0d8BtOPxmx3n0GRjoyX3vJosmy8I4tVYIiZhJrICAxQujbNnIYOPVaadHu3RnQNqeZq48Fge/OZi3RFZ0QRJrpy9XVB0Ac47u5kfgRSZGXB0hiyGdoQKNLiedtRcjinN+6nAtPaKhHOfsAqpF8HIwcQZmzAJncBDhPZI3xYjM2cXevey+e4YaLS5IqGZO0G7NiEpgtSu2qM/XKARggPAZPoNiLDU+WnN2vBUFFP4AiOs/D7ANwUmDiUE6TrNz6MR/rNqEO6n9V7Qj8VB6jJ2F2kpUcsibkYdvmM/hylJfYFuCCMhzbdGA4fjMJvHn7zd9pjvXHDths3wZtSU8THAA67iv3r8ilNc+KBEPzdXf55JlE7uLmRZ9nnATzajREN2/i21rKod9y7+jr3G4yTgGzxwXGqI6HG9bR7OncW+FftS0DXjV68fnJS6zJbDAmk8cfR2AS+wAGrV+I4L65japJHL+QJ/7D3C6u6/rdls1YXJem0oVei1JiN72aGs7OJCJy4XlHsRKCrjqbgYeFERejKEmsiXxfjLbnBQEIBh9X7FRU/VC6ZFPVa/s3ZFJPOVfozBKi1dT0LJYEKDIF7EWFzPmOsnL93RvvjmtH4gKmCQYeeiT04T2/IaINgKdlDC89//WrYtE1MiGQc7TRyBb/oMSnNbhrzTUHgUnRiQ0OWXSkooyrvSKAD4TtmZYG440jnwtSkUyu7hgmKGYKsW8XItohirxnE4OSU6+6fDg/LR9m2eNBUNWNmKDje539dcCVLj1YSX9DlEdv3hCI0GBAzJFbeAIjQgZvr5EBTgbx8WvlNFIZ/wU+KVZpCvv6bv8cohQMWMNnBwOhFWKSmSpgr1QjgDtX8o2bocnnFqz7DUmlj/d6S1J2bsFmtoOvyD+IZQEHBUdbcTWRsQOeBW3AvoUxQMrP1bktNK+H2dKVEIcJOpXfzMnGlmuthQJiLRKnRkntCX8MjhKYxEIxLJV3Epe2LsbdUL6JZZhBUqkLSDJ8CyDE2NoKb18wQqDHRtQe8qQ7qYHbI7iTHL0+mqyihyl9yEuchJl3ktD9DyN3orpPx68QAuh4vOJPeO20O3lNzTbyoJ97P0L4BS8x24qy/LD0iVLPOJf0QwjXA2xlXNO1bDtsUGqeDi4VrXXmWccXlcnY6pXSHngLn0PKq0+Dp7wtSLTQXAhbwrozrj7t7annsdaMIMwvNgiKbJZyJHTyKPq+WJl/Sw9vjtxWrCj936DdA5QisMpfe4Ou6tiqjFVeHeusimnOIidmMp2EPHT8L9h8yDXqj8/vUWa9JJmMpiU7/WwuViC7mZMTctQ2JBaqjExUSHnfknMT+I/dVowvXMb4X28NflP45sBtW1QQ2ndch9O+xhFNlwWUel461S1H424BPrGFz3G+Cs/1HrUGFm6dIdbWlK8aflkk44CbFMje5h2t6GdBgfIAdY3K1TTjNLzqvHqa9yKd5cR3A2sixPGiaJ2QY6wdV0PJIFRySX9AuDIalcbPs5uqDhvU1mQoKkLLGnvsAvFeQTYebhaM2RWuCAgcYCIjR02/vM0uH3QUQ2uFpPDTBNlE0v7IimoKdT4rFmdrO+1X6jZWKKDEwvM8d4YgeSc1ja63hr10EmDzGv8bp3XNMVGcwS1TEpQyhMyz1NVPZRSgZJkfH7rSahKkxfum7jrjiGreteaDYt8PGJXJp8U7fxSDi/1IP5Y7fOVfwSPCZgU86h25wg/aW9ktb9dyBt1zYU9bHF8v6da9rNabeY1xokQwpmduWwOIvxlJFphILFAY7umKiiOswkSE3NPJJvai7q7iIZQ+59j7dhScd7f5LO+wib2Ng0ZNTbTZf6Ix6J4SPIgiVStEzXPvg/0jQ4E3uyZ5ZviepWBncTnlANNXxhi+wDWX06LQxjVhJidHd9XRnP6quhQPCybHOQ2Utcd/mizPUz61eholUUj670eRFbG60vFTvnxerUxBUlpreu3mlr0gY1eBmNKFR3rkXfrjcfl2vb6vatE3sBzK/geFP2/R77w8m8+S6urUvQtG27bBPk+tn1i7hGLkuMjP+y0I7pqK/siSXz5+x+cseMRArVj9S1tsXoyoHWOuNTpJXlrNxKgszQiIkGEYobVPvuC2uWR6OKyW2DvKX/7SDOT/kjduylC4zf/dzVAENdufc5k/EpkyBZUis8HcqWmfV4y2sIL21U/aMy//jS0JgeGJxfhSzpWwTGemTGGurSyfcyfdm3kQFXzuh+il4ypFC+VUWqfWjGaHz5kXI3ROONtVJ9Pw5Sn4kXRN1mXZlucAs/KHaCVal8twd6NAnk/+xOuuxF1/dY8amu9R7vvG/8KwTxvA/jyl1MC9Z9gh5bXScfK4VeHxV95xPQhElHxkCPMnRTfRk0HbEyd2puiy+DOS7P+OPrdx/n+p1w3QhyArhxYtf4KRYIw13wp/MCp1d/udf3K1IxJOsPD7tvguvk+uS1K2ab9RjT0rXlmcDFkiet3QJuIdsl6XTNM/d0lRry8YhAENrTeqs2nU/ut19JP/Q1ImLj3hHvED6G4gxXMtVq2nuNDWkgKrf5x9FiJfjtTrUAgQCI7B5Qd9X6moeCP+Qgxl2OmUQgW3oFEvwIFj2ulqjma/wc4jpPNKRp+FuigOYL5wDEVLLeyNhGs/Ys0h/0WxJPglVeGe+ukMqdERpBj6Zrz5iPJuh5tpxml2LK5ruIojt4ym8DcV4NUMGvSJatSUIiBG6txRI1ks53C1h6nUbBFjLmrLdm7aGod9bGS3XSZL6oiSetjKoE8j3C/T30kIkLE+b1n7/bDhs/ZI/w7BY/6lROvIIV9A6zWIdfD0lbVn5mjbwXOn78dmx39yc2GNlPM1UlsThRfj0KLUb9YABB3sG+4oyl3MJHGe5PLPmwXxwivfK+8MIBKnGLcrlaKJCezd5Lpws+lR7YcX9KXhsAcWpm/TQXxp/L94hGy0xZBG035p2EfC+kFSgovWER9aMc6r73T9Xnvp7y2VWKnCNEt1B/UwL5+ak9Y0BdnrUgtdDJXcs7dl96d1Jo5RYfa+/UDsMF+vpfsdHHbPhrnMzWk1C4DRf1DowfZUR6Wx2TY8XoXV2F71M0u5sZZtv74/6Z/VFS2N9tqGcHIddUbx2dCwN3QPETUrJ6hpp/+QXH01E688UrwzH1D4sWvyWgPCd1Wnd9Ci3Fi4HjzByspede2dUhBuS7D/sVz5Pm/2KjpDKoTOWnSnHSUuAAiOzP7pqIBUdwffCLPp7OEaqqfQTUODCURIIu+X8tWwkqvNaVLrTrPkNqHHuUw5XSURbdBq84DUk82MoxIgEibFNLBBzXFyUr8LOQC7hDZlCsweDdJJB9BVHnY0MCdctMXkEE1dCj/P3hF4pVRHIbJA7MTNEGkGxsLHfD7Wa6V7F7kzwJhul5ApR7ylLS3g+vOjhSLnx8kqNaKTf9gik/ZcrMsXZxBRpy2AUwC2vNG2HJsXCiUVHVe2oUpwzWSCkVrnCaMoRlPi1hZcMW/prA9l5mKq8cEwUlCIRGUEzn/EYdNwYM5SH2hsVu8uZaI9St926y7zO4dt3Pmrk2vqM5WBEppNWm60TugXqRg2EwIgwudpWDXMkaBfuQiir1jcUxqx+cTs3TfeUwVbnLtmacvH8SsKSeYcPEv+at9fY6DMDaR6c3qkh0Les8xryvjvj8lQxotfRnujO4iJ9SdNzjISxRzN4RcEb1TGX6DFJovLNo/CsjnKwGoKp0neRLQgiJXN6WJF2RxfS4jnk30wxpOj+fxv7taEldE3BUbjAosuhXJaPMFdXO2Mf0IH8DRk/FZK29kuW3/sEdsQerv6sjehX00pjGomCw7yJg+aOLPtdaNg/pzPb8Eb58bIzmC6Ia8F0yCMIIHYW3I1brpzPLvpfkLesf03xv6m5JqdqsL6pbQe/Mx94wPDcU+DG1UVDuk08GUfLStbm1XB7JK4LwbTVbAA7qZlm/riav1omVGEOiej0Oz5wB+y0cvB5Q+JiJWFUfmDpIjVvcpthhj6Q3xCec2uris12J2fOiL1vSNZW28UjqescnhMHkAwcixL5F+LZG7AFs+rvZsShd0iMQtg/e64UUOqqJFPRDM06MFX0h+tI6eREPQd8ujARgB+9tCXvjSgTeeY0fhyUncIzHu2FFIb4GRqHuF/U4URZFA8eJbZjWdb5KbMkKg3ZTY0WYonRBz8PbWWZIiNl+A6SegqfRsNf7LEOPmtu8WhNJ5vZ8iI3xaBTrEBcWgpTiaC9R6Gkb68MyYm3hHKurFQ7OL6yRISDd9a/l+rZTfaINN0VCloIF8mLoG1WwB4A4VB7K8R1fwUb2Th8PzAXa3JOivNu1shOFv7QyZyp+x94QmEjAEGe7K9Nk19DNVWxzFfcTkrOqHonHB9uTDpw4ipyOMHwpwG4nzV87hR1DCJZD723jByJ7ZNyuIZZ7wQvVjkil+GTP73zTZkM7b2snrFD4oa1sY6YsPUIzRjMYje7ewljimXAwN6VV97obOdxsmFhVgscYsQmdKWUHnTeCpwXEzv4KRhn7QPD5lVUjvyObElmk3Ol5F5mMasZrqLkZpXC2cYQBLZnoSyA1pwa5zuI1qLFbzec+RtBpCdzfoX8K4yMFdiuelV+U5TQOLSLSRrqdRqJzqHVUJCVxcg21TLWXOihpGN5Tzds7cU31fgcxr4M9a6Q0NzBnns7mprW6wdkPobl/dRoSGkISuyOolP5GVmhK9W23Um1BOq3Hnty7QKpt932NY2AuuQQJJoe6vElVEMO7U5ZGv+bNeRCJUjrkBSeQMlNpQ/EzIgSLQLOD12O7nvErnpJrWqGfKa6aaqvlEV2z5264BSqKlIL/SJp2FqxLrKaMZmTSVOvtifzbnApu5rLLX1FJpYPzkgy+baOAd4mk2JA9DYqzoZ7u8R2EYlckTsBNL2//Nrp55mBzWEEqr5Uh6e9vn94pwSxJaA7q8HttpCog98hhB3NKCL4KCvXq2Loo9TXLyCzYckNy6iTZIRev4PoIkUWNX4T17h5Sa2MXA1Y4L3LdB9WbwtSjBv+4Y5fPwm+XlhonA1khZ8/pBpa0fneGrMY00+t8qPu6TN+CdTkLcb8VpoDUqCRa7tfRp7OL+zhT8uvLjD3+XgFZAUfwxZVROUP1gaEo9pYs6vPsvAPXNHRttYAyl37568X31Ap0a4AYLzQ97VWclMteZd4HrdxQktvwXvBPtPOkb4pk5eWBGskScSdOsnmfacFPYUY+2XZDLFFXxgJktlem/rWlFU8bBllIhz5vpMrZylnTW53V4KMqR9vr66o8Bbeu+By1xwRq2+ewbvtNSy50w3kvMenrlxBouLlnzK934qzRvSixBGSctr/RRcP/yLCi6DNcD935fCjv+stP6cIWWvm/cBR7ifykyit+2R7uu1N8Dq/oRolNQlwNUPclRZnTjLYktWyFDaYvGH1lkJQvGr0bFQ0z4hIy73SVp6fn89EqDqBU+au9nG2z8t2qdhvxLBERBku34lqlGrPr2VEwbjE10tNI1jsOmtGJzPT0bqAPPZEbbT3zDahQc/4dGjgA/oiKJ6BVoej1CJgssKx1ReJUfayXbYSb2mItKsQYLEqtzAPOzz6e47g9xn7lSSLLs6a8m2LGaEKI9FfOuCR8IG1cCiqLVkWzaD9BeBQmFvmDXKEkrE1fRqTmZgKkyJOpdYwwzB2YXiwx9q8N9AZWpo+l2R3x9ee3bq9nmq2ifYwm5diu9hNoHXG97FIlJdqCuSMtV1IFg60mlaMqP063xnlySwiIOYzLjHqgtpZv+4aYnsyvutv+F/2/hB+3pV/oDP9LwtCC06eGhOCR+Ipxn2okNchDs3NioQlalOmB8W1iC/SWzWgYKRSUKlh7IR6Z6v9ADXtZ2cn6wnkA4Ptp8Xv2CF4Xa8diYymv5VfXaQbQ7D5/5sfepXLXPfPSH7F/avTJlVuI30CwSjGnMJ9YIF2hBfdS85jxBiXOJqxZUP/ZZhNyXVntqLSZjH1QbYfz8RZTjboyXCWS/heTfJ3dquWBqjM99leeF75IZvyGWUqWvdx/8aVe0ZBgoWgKqHbbmShI4fSaxDikuGBMCGp2QsSLcghb0WtljNjgLmoKY4jmisWFXeirJBwls9DWgOljtbvGsgX5chyab5H1cuqduLHJEPOO13+s2xWOhIIuyR06aftkEKu3+TYivH8xW29IgbesPVZOcGyomPU3L4fCexdYKKnV0sNVh+wOpevraeFOnEf9j/pq8aOGFpFqyLnnJWa17SmaATiyHeHzKUIkentFa9B7aMCaKU/UOE7FctdxaoT3NFG/OVk2/EJ/73FXeSFXeso+F0lDgk3vlBNdBuY6bkK9wY7zo7ykqA83CMeSIhOtOG2DseAGr3T+Afsqoof0qGVCHLCHNqdgjLie6iRiSUTeQFAAkn/OU/FIhRWrbg15U1eNozzOh/ekJRo0OutykJ4lbGW1sKWoER1nDn8Vqk2Bo04StMpSqNdU7gepIgOXJt+CJ2T+eSQP12Zd8sp/Z/zV+i8BlUZghoTw0sas8Ofuud9S4LMC6xf9V44s0IMPk4I46Hx74qsIsOecpHkkcWPHa2Pw38LC6PPyZKNYp5/47jBohxW9eGfuLSr9RWTpK9AiqpWUp0LuQib5rHEvEQV0zhB+2oNLhP6W4azO6Jie1wUQGQAQME63Q7ESan2z858r6ktIEJX+NnHqX/7WsD1DUMZk04isQjF1ttMq+B+oH8n/4zRuSHGn/yaBCR2lc3HK2L71/y43vREwbd7rQlLBjauaDxyq+otoVV7Y/mu5FfB+Uv/OZbc4pU+nm6DVrsMz9BDceS6YovNeIvTgOjAgICgkVLTUZgaREqRa97FojQ3BGkuXKvyCdza9UXzMaNqd4RMvrBLDJ9WT2JmYfCltqQJIcE+oKsP7jLhlb2QZYSWDX7b+XHc9b1AYGaEhuaeuxn1rHT5rfGEpBLzDZa5wYofpNuLDeGmYehhBmVlze9OuunOKLakB+mPld5FXrOv05IB2C+Kulwz4TFJppIlQ8GviqvuRihGx61v3oSNO2fN8Fu5h0hAAQLxpvR7s5ax+TxEEu2XqYZWF79gYXV0hS+VHAqN61nFstntM+hx2vOtTYMjrh0b9fRoXDbaph+8tlvl1i16ShYoFhYxqahj0EAGMiTXjAEFMyquhNIMZe82BJ7vge9SoIsfsv/fKxVDuEzhpsOHbXqT2AX0Cc+kKv6AACSoZl308FlCTOYzWDPnjMM+dELTlmpB1Kw2OzcHLI4n0cssPCwHemQQOQLhF9Xi52MhSfn6yxdQYC66rSfmBna+rRyOjUx2S1k4MSySbhPbd8H0UrK3q6y2jzubn3bcgKEntrzz4MDxLAq234tno3VChKbi3G1Kvp2FDp7EQcTiEtbuVqC2tzpwJ6pRwvkZlMxRU+XycPb4iH6rVdD/QOODXW90kax63zFBDBiDQdJUuJtu0UGxmUI1JA6qoy7D0DBui4BwLk+gAcGq1q6hf/hXIPilbFt/LjQvQmAnSuSZNCVMgfRPQ1N456JxbpTCRF2KJmy6L9+cbtzBjB3wKHd96x0fDzAR14f8aJ7oTJHr77aYItMjt2KyIxQ3/fjbELbUt3NfrfxlBjfkZjsdkx+WcoOSozV8rq4bM8EYH0Xn+uMYyGZ9/2wHSAQMIErtX61rFkSHM/CfGt5jX3mgjx5bik/3HedLXBQWAjV1axBemELxEKu1ymUPyYBgS6T8EUlLGmg6SWN4J5fPLQuU54hbotBiRA3dt/9R6J4WPrmn2Q58kiPRpRkvKfz5gwZ9alSv4lWo0znSjfP4sEG/A3MRoyt7TkeaBGqLMtfGXgGwDDgt/S54OKYubdkXKzOPbaXRSOxsLnVURWyY+IlxGyW4WhNS33QCqT+wmP3iqc0IRfwN4IdG2TndgDTrrWFP4/P4LyJD+W2aRlmuqYiCQ8WrZUr93eaKzfSp7AKIYzBCXkPm37TmLqbV+1sWcuPQJCOJnqXbGfTCtGQ4+c2MknECMfzIPnpn4JMGHyB5vdkKWfvt565aOMoPfigJxPfnVUwjq3+xPPTmmJ+0dclrGZyN2nmmpxW056qDV2zFlgi/8+i2wpUFnNRhJL6PLGuWfgOsRfgF1ozvKBRUyD8v2hlW9Ct6k2QxIWDykLNpg0k64Uyu046kEcGSQZoIybYysyOpJlxuipyC8zK7CCJ+oMvypuXM1dmd+Fsy02+6dNYDiDh0Ah3EhJI1WUcST4HyQo+cgwJwvde+KspiCvstiy7iODtAhKp3wlD+3ob8mFik1YkDkW9Ons5K5AtStsgimpfKSttJ8NJFVQ82MBtp7ZSeYhUbspPBKPz9JGQOSBDGHz51Uu6PpY+rnl76Tooil0Tcxe+1ZiChiyY/HcxBDg/yyOOaRWTwDsJzWvUM6HbZjSQWhOqmKUOJOIOv0MzlLTNgi5ayNQcyBAYA5xUCWJolz4Fc83zZiEApSmyFTBG8olInMVWtDDC+V10P3eefJm4tyP+Quvej0YXhhtWVOCO253cNQ+qCARyE9T4801CdLw4U3asjoRVBD+reOHKid35fNjxih/0WhGjQIeQFTw3vGtbR2AoFelaJXW+2hncpRmh99f2Xn22LQmEvaRBRiCZW52ao6Uh+K+nLoWmrJmfAQ0sXWvM60UauFn6jmnv1OsAkBA1ixJs7KU1ptP1Uitp0RYFa2yqFE29ZdCClvP5RLJiXHu6LIp+9ZUNkXM1Sc2MVpio9KZUhcfO42MrgAwRF7YILZnqUjP94ksPbLBdQMu1JCSXthREhTfeqAzO+ZQwnx8Cb+DYAXyYbqCSyUqxZAePM5FCXjMWCpD7mBFwHlyglC3aIyZ8OvIhx1N5UcHCpzU1YqIDrBzBQeo2I41TwRgVQc979lL6/VmSxKCHfElhhIOHzUFSRMDJgipS/bvgB8PIBvS8CUG0GT71DitH+Q3OxuRxmIJAjIVmJDvG9dQlJ2oV4gfu7xLJqukZdxcuKNkmW7Yhb/Z7IIzydgtrpqaJdL/SjVvCVAy5tLlWXt1FgTGPw6yRABpPZWh9sRRwxBPrXw3S8wddLl/4wIKEIBkY0LEoTB9KAAChnw2yVjmDmDCSXmUcnWsJClQMZehlfmlUiJuuSrhfHimX2UXiQJ4FYppeIPg7VIZLuuJSTsK2vrArlBJt7aHnke26BvSyfpCRca3CTHAsyQPKBfhSBh/CW04WLz09Kuh6B542//a++0AE2q5wIJKi/zuFJ4Z98OXS+V8gpkI2tD9ir8IUafVs1VA093D9J106QFonJFoKfNASuRFtegc002ArKKVIcvYLrrlRyfG4YAgiByN3RMMYMkZY1CyJZxr+3vL1jaghbxca7g/q1L3+J6fBJQ80C2W5JfvCllm8om78FlTU1DXk98hDHAE36bL6+fytmfFNgowP1VQzuP8Fz+BcqOjeiqURy2Lfy619Nayr1lQEnmcHwACjds8tqxSICb+X0EqTgWjJf3rZDZbEqNV33l9ULAQEqimN1g6oclEOp62FcKjiFX/9uYhk7qq60vdDloINCYkhP8UZ1h6tFTZ25mflfPiWrfIOWb+uoQE4Wv7XwD6nipHHz3kU4Ek6zwlqx0GPKGvW+sbeDYpBgqp6wgxdo1rgKoK+HVvvClGOHTvtFF7613/db5aDeWYCZz50KPOK4B9Lw/Rvpc+hJjEIpQJye4asyekf4OnY/qvfhSh2hvN/y5gaBAlNx2mauvECbDqy0imVMfKT7Dl15GetiY/Nr/NWdgL7d5sZ/CNp77RPFlmEd04FG9XYdWU6IXw22rjSDrtAGh51U+A6otzOSyv4cEcb+ae6qsNCGvqnlOrUFegqBRRbCIQb68avbXMsrLFf/p1XmVJno9GaFjLnzxvr+qVO+ki33Mde0Im8Cxeoa6oDtaOdIuuriiRjAuPOumppPb+PwczbzNALGOTyGcvMie+Uk9Y/da0m47bFawtj7LTj7qYA4ClA6j1e6MJKo9mbL4C//CE+lTMqK9jnQdrMr+kBZ0XdinszKXaHhwtUk0hVDU7qEwMUeL0w/fECApEyiFnbMMjaayojxMoED4CNSbbBgPIzJfCPQ7g0zLoaZgK8nZxOS1w5IiB1D/SvnZYY0EUimBoqXXGrZ41/OJiSQFTPTTonPssUmE+TYUV02Fw8xnn2n5NB2Zg8BtEmLP6Idvppxd1p1ig8+4lvsje3ljAD+cHKKMYfVk7mKc86IRIAHhVUqT3HTLRyAf4kopA0GGAENtApiqoxaji6B35q8N7Tx56qPo4YL2chdMFxE7cn9Cjq6dcDEkKAbhSaZ+w+qfpw6Iw6uhJ1+7jOXS5fi5SsbXzlEzEvUZr75J3qvIcpmmpaUEpihuEFqM9yD7KSSykgJgsSdOJi5826Q0FJeXIsAQZGaocrQ+jIYAU+yz+06ddeYc3A68caCDp6GOAgAMznflDe1TAfpuPtcG1X1WYYVciPuehAFi8pUD5I/QSvin2tm3xSdYLDtlpP3Tmu/i8UbVEJ/NInk6gtnvC6u7Ad1yc2u0eYYB+klhbvav6paELDveGgn2mL+e9uRARijD303Vl3Cjn/14qWMTHZ/iHy5J2cs3pvGuaHXn2D+iycVTzx8e+7MThNOY23TCU5EtflZXk/4K9c67DrKXxiae+XCxFL1Wo8I6kkZjk4SdacaVpKZj55ttjELotbstwvzh9PF1ZITGsIcujXBpZ/DqECrvscm0J2MNkOn9Nsx2oCDry1Vwr24SYUc1I40+Im9j9PyX4/yLJDNAXbpzjJ3OMIsYEZ3qDbScAns6ai1G3VcLn/SyaJgvrG4DOHy9qO/Jt1TrX3M+9ryA6rWHDzNT0ygI7R5uwFa8KI0w6ez8ZJOxT0rF/m6jOxcyK935jCPfka+SwPZzZWgdQop3TpAuMJJXfnUO9fZNfUGNmEaTyawfyBv/nJDDxhrRKbUnVff3/6DA5lOawECmykMENRrS37TjHMMrtKxhCPCP/Nib2k0GzM4Pe7YISexZaO8FgI+zYgCMt5JQcggYN1X7PwNmVajA0F1LCqxe0P6i0J/7xsyazHlXN/onpW+ZSsDCAurfohseqJf9BOYiozu0qzV7tmIJkAGReKsrH0wmVMOPTkqHHaagGm/We1GJbuqcdWDcThrKINDuYJLy/33RHZ67YRe4Gp/vbyG32dPRgzRUKuu0i3orC+JiaWAQjWn/3Xce1fpOI9ROWCthSW04x0Tsd/e92fvVZ6G0V2GDRTp8FQBIzP/vTCxlaUvxsCxCK7mESUFr6x3cAdRn3cGq8ln/Dqs8qRXasZ6806k/OoG/whw75e37wHrUPXUxJmeKLP7p8YFLoS6xcRaZnEN5jEYOwn5nPd/xtckMQRYiNb5swEpFhKvQjekAIIfhAa9wDK8ze0zJv2OP87elO+Dml0UiQbQ4fiAssFnK9QPhYQ+OYCee+C7qL3WtWkewcTFYKtCOdNOqcljNQEKjZZ8V78AbwFqa69bmbufy6qdHYxEf3jmtiyUV9tr+tybpMAW0GpaVap5oUhRaFie4VkG3WsAG5vFq/byDY+o8h42JMTrs+FzeJR1WTVgsrwPu/HZpnYobotX3E7tMqtPnpjngedH9kzun2s4AcDshsqIBevcfECQfYhlMGivXyqPL/MGl3yJ361SGmr5KCQRPM1PxPWR5VH5cRn68VQw6ZPR4Qjm8XDfApFf+EXF8eFRs89QrqwP4M36GAe8uO4s5L5RcBL+Hp1jNdOjmFsOuMDN1i2+/MUT5/cK2wB6acmiattY/lG5PFcqDZzJAWrgPLsEEcwS6bw6NjYBxyeD1vTpZFCgEg1Q5lxGsO81pjIDEs5XP7rdxrpis+LZ4u3N99WjETfS2WsQNKQ+8zlHpc0iRRPWHYubWD2C9gxV029n";
-      var _K = "dGhhbmc5Nm1lbWVmZl9kdXNjdV8yMDI2X3NoaWVsZF9rZXk=";
+      const toggleLang = () => {
+        const nextLang = lang === 'vi' ? 'en' : 'vi';
+        setLang(nextLang);
+        localStorage.setItem('duscu_lang', nextLang);
+      };
 
-      try {
-        var encStr = atob(_P);
-        var keyStr = atob(_K);
-        var encBytes = new Uint8Array(encStr.length);
-        for (var i = 0; i < encStr.length; i++) encBytes[i] = encStr.charCodeAt(i);
-        var keyBytes = new Uint8Array(keyStr.length);
-        for (var j = 0; j < keyStr.length; j++) keyBytes[j] = keyStr.charCodeAt(j);
+      const cycleWaterTheme = () => {
+        setWaterTheme(prev => prev === 'aqua' ? 'pearl' : prev === 'pearl' ? 'bruce' : 'aqua');
+      };
 
-        var gzBytes = new Uint8Array(encBytes.length);
-        for (var k = 0; k < encBytes.length; k++) {
-          gzBytes[k] = encBytes[k] ^ keyBytes[k % keyBytes.length];
+      // Refs cho thanh trượt Tab (Sliding Pill Indicator)
+      const tabContainerRef = useRef(null);
+      const tabRefs = {
+        sodo: useRef(null),
+        sys: useRef(null),
+        dev: useRef(null)
+      };
+      const [pillStyle, setPillStyle] = useState({ left: 4, width: 120 });
+
+      useEffect(() => {
+        const updatePill = () => {
+          const activeEl = tabRefs[logTab]?.current;
+          const containerEl = tabContainerRef.current;
+          if (activeEl && containerEl) {
+            const cRect = containerEl.getBoundingClientRect();
+            const aRect = activeEl.getBoundingClientRect();
+            setPillStyle({
+              left: aRect.left - cRect.left,
+              width: aRect.width
+            });
+          }
+        };
+        updatePill();
+        window.addEventListener('resize', updatePill);
+        return () => window.removeEventListener('resize', updatePill);
+      }, [logTab, lang]);
+
+      const termRef = useRef(null);
+      const portRef = useRef(null);
+      const transportRef = useRef(null);
+      const readerRef = useRef(null);
+      const activeTransportRef = useRef(null);
+      const isMonitorRef = useRef(false);
+      const logTabRef = useRef(logTab);
+      useEffect(() => { logTabRef.current = logTab; }, [logTab]);
+      const monitorBaudRef = useRef(monitorBaud);
+      useEffect(() => { monitorBaudRef.current = monitorBaud; }, [monitorBaud]);
+
+      const loadSodo = async (boardId) => {
+        if (!boardId) return;
+        setIsLoadingSodo(true);
+        setSodoError(null);
+        setSodoData(null);
+
+        const boardObj = MASTER_BOARDS.find(b => b.id === boardId);
+        const candidates = [
+          boardId,
+          boardId.toLowerCase(),
+          boardObj?.url ? boardObj.url.replace(/^Bruce-/, '').replace(/\.bin$/, '') : null
+        ].filter(Boolean);
+        const uniqueCandidates = [...new Set(candidates)];
+
+        let loaded = null;
+        for (const cand of uniqueCandidates) {
+          try {
+            let res = await fetch(`./sodo/${cand}.json?t=${Date.now()}`);
+            if (res.ok) { loaded = await res.json(); break; }
+            res = await fetch(`${GITHUB_RAW_BASE}sodo/${cand}.json?t=${Date.now()}`);
+            if (res.ok) { loaded = await res.json(); break; }
+            res = await fetch(`https://raw.githubusercontent.com/thang96memeff/firmware-bruce/main/sodo/${cand}.json?t=${Date.now()}`);
+            if (res.ok) { loaded = await res.json(); break; }
+          } catch(e) {}
         }
 
-        var ds = new DecompressionStream('gzip');
-        var writer = ds.writable.getWriter();
-        writer.write(gzBytes);
-        writer.close();
-        var rawCode = await new Response(ds.readable).text();
-
-        // Nạp và kích hoạt ứng dụng qua Babel
-        var scriptEl = document.createElement('script');
-        scriptEl.type = 'text/babel';
-        scriptEl.text = rawCode;
-        document.body.appendChild(scriptEl);
-
-        if (window.Babel && typeof window.Babel.transformScriptTags === 'function') {
-          window.Babel.transformScriptTags();
+        if (loaded) {
+          setSodoData(loaded);
+        } else {
+          setSodoError(`sodo/${boardId}.json`);
         }
-      } catch(err) {
-        console.error("Lỗi bảo mật:", err);
-      }
-    })();
+        setIsLoadingSodo(false);
+      };
+
+      useEffect(() => {
+        loadSodo(selectedBoardId);
+      }, [selectedBoardId]);
+
+      const releaseAndClosePort = async (port) => {
+        if (!port) return;
+        if (activeTransportRef.current) {
+          try { await activeTransportRef.current.disconnect(); } catch(e) {}
+          activeTransportRef.current = null;
+        }
+        if (transportRef.current) {
+          try { await transportRef.current.disconnect(); } catch(e) {}
+          transportRef.current = null;
+        }
+        if (readerRef.current) {
+          try { await readerRef.current.cancel(); } catch(e) {}
+          try { readerRef.current.releaseLock(); } catch(e) {}
+          readerRef.current = null;
+        }
+        try {
+          if (port.readable || port.writable) {
+            await port.close();
+          }
+        } catch(e) {}
+      };
+
+      const logSys = (msg, type = 'info') => {
+        setSysLogs(prev => [...prev, { time: new Date().toLocaleTimeString('en-GB'), msg, type }]);
+      };
+
+      // Ghi log Serial theo thời gian thực (hỗ trợ cả chuỗi chưa có \n)
+      const appendSerialChunk = (chunkText) => {
+        if (!chunkText) return;
+        const cleanText = chunkText.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '');
+        const nowStr = new Date().toLocaleTimeString('en-GB');
+
+        setDevLogs(prev => {
+          const next = [...prev];
+          const parts = cleanText.split(/\r?\n/);
+
+          for (let i = 0; i < parts.length; i++) {
+            const segment = parts[i];
+            if (i === 0 && next.length > 0 && next[next.length - 1].partial) {
+              next[next.length - 1] = {
+                ...next[next.length - 1],
+                msg: next[next.length - 1].msg + segment,
+                partial: (parts.length === 1)
+              };
+            } else {
+              if (segment.length > 0 || i < parts.length - 1) {
+                if (segment.length > 0) {
+                  next.push({
+                    time: nowStr,
+                    msg: segment,
+                    partial: (i === parts.length - 1)
+                  });
+                }
+              }
+            }
+          }
+          return next.slice(-1000);
+        });
+      };
+
+      const fetchGithubContents = async () => {
+        setIsFetchingGithub(true);
+        try {
+          const res = await fetch(GITHUB_API_URL + '?t=' + Date.now(), {
+            headers: { 'Accept': 'application/vnd.github.v3+json' }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            const map = {};
+            if (Array.isArray(data)) {
+              data.forEach(item => {
+                if (item.name && item.name.endsWith('.bin')) {
+                  map[item.name] = {
+                    size: item.size,
+                    download_url: item.download_url,
+                    html_url: item.html_url
+                  };
+                }
+              });
+            }
+            setGithubFiles(map);
+            logSys(t.logSyncSuccess(Object.keys(map).length), 'success');
+          } else {
+            throw new Error(`HTTP ${res.status}`);
+          }
+        } catch (e) {
+          logSys(t.logSyncWarn(e.message), 'warning');
+        } finally {
+          setIsFetchingGithub(false);
+        }
+      };
+
+      useEffect(() => {
+        logSys(t.logInit, "info");
+        fetchGithubContents();
+      }, []);
+
+      useEffect(() => {
+        const handleUsbDisconnect = (e) => {
+          if (portRef.current && e.target && e.target !== portRef.current) return;
+          logSys("[USB] Thiết bị đã ngắt kết nối.", "warning");
+          isMonitorRef.current = false;
+          setIsMonitor(false);
+          if (readerRef.current) {
+            try { readerRef.current.cancel(); } catch(err) {}
+            try { readerRef.current.releaseLock(); } catch(err) {}
+            readerRef.current = null;
+          }
+          portRef.current = null;
+          setIsConnected(false);
+          setChipInfo(null);
+        };
+
+        const handleUsbConnect = () => {
+          logSys("[USB] Phát hiện thiết bị USB mới. Bấm 'Kết nối Cổng USB' hoặc 'Mở Monitor' để chọn cổng.", "info");
+        };
+
+        if ('serial' in navigator) {
+          navigator.serial.addEventListener('disconnect', handleUsbDisconnect);
+          navigator.serial.addEventListener('connect', handleUsbConnect);
+          return () => {
+            navigator.serial.removeEventListener('disconnect', handleUsbDisconnect);
+            navigator.serial.removeEventListener('connect', handleUsbConnect);
+          };
+        }
+      }, []);
+
+      useEffect(() => {
+        if (termRef.current) termRef.current.scrollTop = termRef.current.scrollHeight;
+      }, [sysLogs, devLogs, logTab]);
+
+      // =========================================================================
+      // FIX 1: LUÔN HIỆN BẢNG CHỌN CỔNG COM (requestPort) KHI CHƯA KẾT NỐI
+      // Tuyệt đối không dùng getPorts() tự đoán cổng cũ gây lỗi Failed to open serial port
+      // =========================================================================
+      const requestUserSerialPort = async (forcePopup = false) => {
+        if (!('serial' in navigator)) {
+          throw new Error(t.logNoWebSerial);
+        }
+        let port = portRef.current;
+        if (!port || forcePopup) {
+          port = await navigator.serial.requestPort();
+        }
+        if (port) {
+          portRef.current = port;
+          setIsConnected(true);
+          const info = port.getInfo ? port.getInfo() : {};
+          const vid = info.usbVendorId ? `0x${info.usbVendorId.toString(16).toUpperCase().padStart(4, '0')}` : null;
+          const pid = info.usbProductId ? `0x${info.usbProductId.toString(16).toUpperCase().padStart(4, '0')}` : null;
+          const isEspNative = info.usbVendorId === 0x303A;
+          if (vid && pid) {
+            setChipInfo({
+              chip: isEspNative ? 'ESP32 Native USB' : 'USB-UART Bridge',
+              mac: `${vid}:${pid}`
+            });
+          }
+        }
+        return port;
+      };
+
+      // =========================================================================
+      // FIX 2: NÚT TO "KẾT NỐI CỔNG USB" KHÔNG BAO GIỜ ĐẨY MẠCH VÀO BOOTLOADER
+      // Nếu đang ở tab Serial Monitor, tự động mở luôn luồng đọc Serial!
+      // =========================================================================
+      const connectPort = async () => {
+        try {
+          const port = await requestUserSerialPort(true);
+          if (!port) return;
+
+          logSys(t.logPortSuccess, "success");
+
+          // Nếu người dùng đang đứng ở tab Serial Monitor -> Mở luôn Serial Monitor, không chuyển tab!
+          if (logTabRef.current === 'dev') {
+            await startMonitor(port);
+          } else if (logTabRef.current === 'sodo') {
+            setLogTab('sys');
+          }
+        } catch (err) {
+          logSys(t.logPortErr(err.message), "error");
+        }
+      };
+
+      const disconnectPort = async () => {
+        await stopMonitor();
+        if (portRef.current) {
+          await releaseAndClosePort(portRef.current);
+          portRef.current = null;
+        }
+        setIsConnected(false);
+        setChipInfo(null);
+        logSys(t.logPortDisconnect, "warning");
+      };
+
+      // =========================================================================
+      // FIX 3: SERIAL MONITOR MỞ CỔNG AN TOÀN, CHỐNG LỖI FAILED TO OPEN SERIAL PORT
+      // =========================================================================
+      const startMonitor = async (customPort = null) => {
+        if (isFlashing || isErasingOnly) return;
+        try {
+          // Nếu chưa chọn cổng COM nào, lập tức hiện bảng chọn cổng COM của trình duyệt
+          let port = customPort || portRef.current;
+          if (!port) {
+            port = await requestUserSerialPort(true);
+          }
+          if (!port) return;
+
+          // Giải phóng reader cũ nếu đang chạy
+          if (isMonitorRef.current || readerRef.current) {
+            isMonitorRef.current = false;
+            if (readerRef.current) {
+              try { await readerRef.current.cancel(); } catch(e) {}
+              try { readerRef.current.releaseLock(); } catch(e) {}
+              readerRef.current = null;
+            }
+          }
+
+          const baud = parseInt(monitorBaudRef.current) || 115200;
+
+          // Kiểm tra nếu cổng chưa mở thì mở, nếu đã mở ở phiên trước thì đóng sạch rồi mở lại
+          if (port.readable || port.writable) {
+            await releaseAndClosePort(port);
+            await new Promise(r => setTimeout(r, 150));
+          }
+
+          try {
+            await port.open({ baudRate: baud, bufferSize: 16384 });
+          } catch (openErr) {
+            // Nếu hệ điều hành vẫn báo cổng đang bận hoặc không mở được, cho phép chọn lại cổng ngay
+            logSys(`[WARN] Cổng đang bận hoặc đã đổi số COM (${openErr.message}). Vui lòng chọn lại cổng COM...`, 'warning');
+            portRef.current = null;
+            port = await requestUserSerialPort(true);
+            if (!port) return;
+            await releaseAndClosePort(port);
+            await new Promise(r => setTimeout(r, 150));
+            await port.open({ baudRate: baud, bufferSize: 16384 });
+          }
+
+          // Thiết lập tín hiệu DTR/RTS chuẩn để KHÔNG vào Bootloader
+          const info = port.getInfo ? port.getInfo() : {};
+          const isEspNativeUsb = info.usbVendorId === 0x303A;
+
+          try {
+            if (isEspNativeUsb) {
+              // ESP32-S3 / C3 / C5 USB gốc: DTR = true, RTS = false để nhận dữ liệu USB CDC mà không reset vào Bootloader
+              await port.setSignals({ dataTerminalReady: true, requestToSend: false });
+            } else {
+              // Chip UART CH340 / CP2102: DTR = false, RTS = false để chân EN=HIGH, IO0=HIGH
+              await port.setSignals({ dataTerminalReady: false, requestToSend: false });
+            }
+          } catch(sigErr) {}
+
+          isMonitorRef.current = true;
+          setIsMonitor(true);
+          setLogTab('dev');
+          logSys(t.logMonitorStart(baud, isEspNativeUsb ? 'Native USB CDC' : 'UART Normal Mode'), 'success');
+
+          const decoder = new TextDecoder('utf-8', { fatal: false });
+
+          while (isMonitorRef.current && port.readable) {
+            try {
+              const reader = port.readable.getReader();
+              readerRef.current = reader;
+
+              while (isMonitorRef.current) {
+                const { value, done } = await reader.read();
+                if (done) break;
+                if (value && value.length > 0) {
+                  const textChunk = decoder.decode(value, { stream: true });
+                  appendSerialChunk(textChunk);
+                }
+              }
+            } catch (readErr) {
+              if (isMonitorRef.current) {
+                await new Promise(r => setTimeout(r, 80));
+              }
+            } finally {
+              if (readerRef.current) {
+                try { readerRef.current.releaseLock(); } catch(e) {}
+                readerRef.current = null;
+              }
+            }
+          }
+        } catch (err) {
+          logSys(t.logMonitorErr(err.message), 'error');
+          isMonitorRef.current = false;
+          setIsMonitor(false);
+        }
+      };
+
+      const stopMonitor = async () => {
+        isMonitorRef.current = false;
+        setIsMonitor(false);
+        if (readerRef.current) {
+          try { await readerRef.current.cancel(); } catch(e) {}
+          try { readerRef.current.releaseLock(); } catch(e) {}
+          readerRef.current = null;
+        }
+        if (transportRef.current) {
+          try { await transportRef.current.disconnect(); } catch(e) {}
+          transportRef.current = null;
+          activeTransportRef.current = null;
+        }
+        if (portRef.current) {
+          await releaseAndClosePort(portRef.current);
+        }
+      };
+
+      // Nút Reset Mạch về chế độ chạy Firmware bình thường (Normal Run Mode)
+      const resetBoardFromMonitor = async () => {
+        try {
+          let port = portRef.current;
+          if (!port) {
+            port = await requestUserSerialPort(true);
+          }
+          if (!port) return;
+
+          if (!isMonitorRef.current || !port.readable) {
+            await startMonitor(port);
+          }
+
+          const info = port.getInfo ? port.getInfo() : {};
+          const isEspNativeUsb = info.usbVendorId === 0x303A;
+
+          // Kéo chân EN xuống thấp (DTR=false, RTS=true) trong 100ms để khởi động lại vào Firmware chính
+          await port.setSignals({ dataTerminalReady: false, requestToSend: true });
+          await new Promise(r => setTimeout(r, 100));
+          if (isEspNativeUsb) {
+            await port.setSignals({ dataTerminalReady: true, requestToSend: false });
+          } else {
+            await port.setSignals({ dataTerminalReady: false, requestToSend: false });
+          }
+          logSys(t.logResetPulse, 'info');
+        } catch (e) {
+          logSys(`[WARN] Reset: ${e.message}`, 'warning');
+        }
+      };
+
+      // Gửi lệnh từ ô Input xuống thiết bị qua Serial TX
+      const sendSerialCommand = async (e) => {
+        e.preventDefault();
+        if (!serialInput.trim()) return;
+        try {
+          let port = portRef.current;
+          if (!port) {
+            port = await requestUserSerialPort(true);
+          }
+          if (!port) return;
+
+          if (!isMonitorRef.current || !port.writable) {
+            await startMonitor(port);
+          }
+          if (port.writable) {
+            const writer = port.writable.getWriter();
+            const payload = new TextEncoder().encode(serialInput + '\r\n');
+            await writer.write(payload);
+            writer.releaseLock();
+            appendSerialChunk(`\n> ${serialInput}\n`);
+            setSerialInput('');
+          }
+        } catch (err) {
+          logSys(`[ERR] TX: ${err.message}`, 'error');
+        }
+      };
+
+      const handleEraseOnly = async () => {
+        if (!isConnected || !portRef.current) return;
+        if (!confirm(t.eraseConfirm)) return;
+
+        setIsErasingOnly(true);
+        setLogTab('sys');
+        logSys(t.logEraseStart, "warning");
+
+        let eraseTransport = null;
+        try {
+          await stopMonitor();
+          await releaseAndClosePort(portRef.current);
+          await new Promise(r => setTimeout(r, 200));
+
+          eraseTransport = new window.ESP_TOOLS.Transport(portRef.current);
+          activeTransportRef.current = eraseTransport;
+          const esploader = new window.ESP_TOOLS.ESPLoader({
+            transport: eraseTransport,
+            baudrate: parseInt(baudRate),
+            terminal: { clean: ()=>{}, writeLine: (msg)=>logSys(msg, 'info'), write: (msg)=>logSys(msg, 'info') }
+          });
+          await esploader.main();
+          const chipDesc = `${esploader.chip.CHIP_NAME || 'ESP-Device'}`;
+          const macStr = esploader.macAddr ? esploader.macAddr().map(b => b.toString(16).padStart(2,'0')).join(':').toUpperCase() : 'N/A';
+          setChipInfo({ chip: chipDesc, mac: macStr });
+
+          logSys(t.logEraseExec, "info");
+          await esploader.eraseFlash();
+          logSys(t.logEraseSuccess, "success");
+          try {
+            if (typeof esploader.after === 'function') await esploader.after("hard_reset");
+            else if (typeof esploader.hardReset === 'function') await esploader.hardReset();
+          } catch(e) {}
+        } catch (err) {
+          logSys(t.logEraseFail(err.message), "error");
+        } finally {
+          if (eraseTransport) {
+            try { await eraseTransport.disconnect(); } catch(e) {}
+            eraseTransport = null;
+            activeTransportRef.current = null;
+          }
+          await releaseAndClosePort(portRef.current);
+          setIsErasingOnly(false);
+        }
+      };
+
+      const handleFlash = async () => {
+        const board = MASTER_BOARDS.find(b => b.id === selectedBoardId);
+
+        if (!localFile && !board?.url) {
+          return logSys(t.logNoTarget, "error");
+        }
+        if (!portRef.current) {
+          return logSys(t.logPortErr("Chưa kết nối cổng USB!"), "error");
+        }
+
+        setIsFlashing(true);
+        setProgress(0);
+        setLogTab('sys');
+
+        let flashTransport = null;
+        try {
+          await stopMonitor();
+          await releaseAndClosePort(portRef.current);
+          await new Promise(r => setTimeout(r, 200));
+
+          let fwData = null;
+          if (localFile) {
+            logSys(t.logLocalFile(localFile.name, (localFile.size / 1048576).toFixed(2)), "info");
+            const buf = await localFile.arrayBuffer();
+            fwData = window.ESP_TOOLS?.toUint8Array ? window.ESP_TOOLS.toUint8Array(buf) : new Uint8Array(buf);
+          } else {
+            const remoteFile = board.url;
+            logSys(t.logFetching(remoteFile), "info");
+            const fetchUrl = GITHUB_RAW_BASE + remoteFile + '?t=' + Date.now();
+            let resp = await fetch(fetchUrl);
+            if (!resp.ok) {
+              if (githubFiles[remoteFile]?.download_url) {
+                resp = await fetch(githubFiles[remoteFile].download_url);
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+              } else {
+                throw new Error(t.logFetchFail(remoteFile));
+              }
+            }
+            const buf = await resp.arrayBuffer();
+            fwData = window.ESP_TOOLS?.toUint8Array ? window.ESP_TOOLS.toUint8Array(buf) : new Uint8Array(buf);
+          }
+
+          if (!fwData || (fwData.length === 0 && fwData.byteLength === 0)) {
+            throw new Error("Dữ liệu firmware trống hoặc không hợp lệ.");
+          }
+
+          logSys(t.logSyncBootloader(baudRate), "info");
+          flashTransport = new window.ESP_TOOLS.Transport(portRef.current);
+          activeTransportRef.current = flashTransport;
+
+          const esploader = new window.ESP_TOOLS.ESPLoader({
+            transport: flashTransport,
+            baudrate: parseInt(baudRate),
+            terminal: { clean: ()=>{}, writeLine: (msg) => logSys(msg, 'info'), write: (msg) => logSys(msg, 'info') }
+          });
+
+          await esploader.main();
+          const chipDesc = `${esploader.chip.CHIP_NAME || 'ESP-Device'}`;
+          const macStr = esploader.macAddr ? esploader.macAddr().map(b => b.toString(16).padStart(2,'0')).join(':').toUpperCase() : 'N/A';
+          setChipInfo({ chip: chipDesc, mac: macStr });
+          logSys(`[READY] Bootloader connected. Chip: ${chipDesc} | MAC: ${macStr}`, "success");
+
+          const writeOffset = parseInt(flashOffset, 16) || 0x0;
+          logSys(t.logWriteFlash(writeOffset.toString(16).toUpperCase(), eraseFlash), "info");
+
+          await esploader.writeFlash({
+            fileArray: [{ data: fwData, address: writeOffset }],
+            flashSize: 'keep',
+            eraseAll: eraseFlash,
+            compress: true,
+            reportProgress: (fileIdx, written, total) => {
+              const pct = Math.round((written / total) * 100);
+              setProgress(pct);
+            }
+          });
+
+          logSys("----------------------------------------", "success");
+          logSys(t.logFlashSuccess, "success");
+          logSys(t.logReboot, "info");
+          logSys("----------------------------------------", "success");
+
+          try {
+            if (typeof esploader.after === 'function') await esploader.after("hard_reset");
+            else if (typeof esploader.hardReset === 'function') await esploader.hardReset();
+          } catch(e) {}
+
+          try {
+            await portRef.current.setSignals({ dataTerminalReady: false, requestToSend: true });
+            await new Promise(r => setTimeout(r, 100));
+            await portRef.current.setSignals({ dataTerminalReady: false, requestToSend: false });
+          } catch(e) {}
+
+        } catch (err) {
+          logSys(t.logFlashFail(err.message), "error");
+        } finally {
+          if (flashTransport) {
+            try { await flashTransport.disconnect(); } catch(e) {}
+            flashTransport = null;
+            activeTransportRef.current = null;
+          }
+          await releaseAndClosePort(portRef.current);
+          setIsFlashing(false);
+          setProgress(0);
+        }
+      };
+
+      const filteredBoards = useMemo(() => {
+        if (selectedCategory === 'all') return MASTER_BOARDS.filter(b => !b.isHero);
+        return MASTER_BOARDS.filter(b => b.category === selectedCategory && !b.isHero);
+      }, [selectedCategory]);
+
+      const isMorphSelected = selectedBoardId === 'Morph-s3' && !localFile;
+      const isLauncherSelected = selectedBoardId === 'Launcher-xingzhi-cube-s3' && !localFile;
+
+      return (
+        <div className="flex-1 flex flex-col min-h-0 relative p-2.5 sm:p-4 gap-3">
+          {/* NỀN SÓNG NƯỚC TỤ SÁNG (MẶC ĐỊNH: SÓNG ĐẠI DƯƠNG) */}
+          <WaterCausticsBackground theme={waterTheme} isFlashing={isFlashing} />
+
+          {/* THANH FLOATING HEADER TRONG SUỐT */}
+          <header className="liquid-shell rounded-full px-4 py-2.5 flex items-center justify-between shrink-0 z-20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/45 border border-white/80 shadow-sm flex items-center justify-center overflow-hidden p-0.5">
+                {logoUrl ? (
+                  <img src={logoUrl} className="w-full h-full object-cover rounded-full" alt="logo" />
+                ) : (
+                  <i className="fa-solid fa-water text-blue-600 text-sm"></i>
+                )}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-sm sm:text-base font-extrabold tracking-tight text-slate-900">
+                    Duscu Flasher
+                  </h1>
+                </div>
+                <p className="text-[11px] text-slate-700 font-medium hidden sm:block">
+                  {t.appSub}
+                </p>
+              </div>
+            </div>
+
+            {/* Cụm nút Pill Bo Tròn Nổi 3D trên Header */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={cycleWaterTheme}
+                title="Đổi màu nền sóng nước (Sóng Đại Dương / Sóng Băng Ngọc / Sóng Tím Bruce)"
+                className="liquid-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5">
+                <i className="fa-solid fa-droplet text-blue-600"></i>
+                <span className="hidden md:inline">
+                  {waterTheme === 'aqua' ? 'Sóng Đại Dương' : waterTheme === 'pearl' ? 'Sóng Băng Ngọc' : 'Sóng Tím Bruce'}
+                </span>
+              </button>
+
+              <button 
+                onClick={() => setShowMorphGuide(true)}
+                className="liquid-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5 text-indigo-800">
+                <i className="fa-solid fa-book-open text-indigo-600"></i>
+                <span className="hidden sm:inline">{t.morphGuideBtn}</span>
+              </button>
+
+              <button 
+                onClick={fetchGithubContents} 
+                disabled={isFetchingGithub}
+                title={t.syncTooltip}
+                className="hidden lg:flex liquid-btn px-3.5 py-1.5 text-xs items-center gap-1.5">
+                <i className={`fa-solid fa-arrows-rotate text-slate-700 ${isFetchingGithub ? 'fa-spin text-blue-600' : ''}`}></i>
+                <span>{t.syncBtn}</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              </button>
+
+              <a 
+                href="https://github.com/thang96memeff/firmware-bruce" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="liquid-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5">
+                <i className="fa-brands fa-github text-slate-800 text-sm"></i>
+                <span className="hidden md:inline">GitHub</span>
+              </a>
+
+              <button 
+                onClick={toggleLang}
+                className="liquid-btn w-9 h-8 text-xs flex items-center justify-center font-bold text-slate-800">
+                {lang.toUpperCase()}
+              </button>
+            </div>
+          </header>
+
+          {/* KHÔNG GIAN LÀM VIỆC CHÍNH (2 CỘT KÍNH TRONG SUỐT) */}
+          <main className="flex-1 overflow-hidden flex flex-col lg:flex-row gap-3.5 min-h-0 z-10">
+            
+            {/* CỘT TRÁI: BẢNG ĐIỀU KHIỂN NẠP FIRMWARE (445px) */}
+            <div className="w-full lg:w-[445px] liquid-shell rounded-[32px] flex flex-col overflow-y-auto custom-scrollbar p-4 space-y-3.5">
+              
+              {/* THẺ 1: KẾT NỐI THIẾT BỊ (HIỆU ỨNG KÍNH MỜ XUYÊN THẤU) */}
+              <div className="liquid-card p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-blue-500/20 text-blue-700 flex items-center justify-center text-[11px]">
+                      <i className="fa-solid fa-usb"></i>
+                    </span>
+                    {t.serialSec}
+                  </span>
+                  <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${
+                    isConnected 
+                      ? 'bg-emerald-500/20 text-emerald-800 border-emerald-400/60' 
+                      : 'bg-white/35 text-slate-700 border-white/70'
+                  }`}>
+                    {chipInfo ? chipInfo.chip : (isConnected ? t.portOnline : t.portOffline)}
+                  </span>
+                </div>
+
+                <div className="flex gap-2">
+                  {!isConnected ? (
+                    <button 
+                      onClick={connectPort}
+                      className="flex-1 liquid-btn-primary py-2.5 px-4 text-xs flex items-center justify-center gap-2">
+                      <i className="fa-solid fa-plug text-[11px]"></i>
+                      <span>{t.connectBtn}</span>
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={disconnectPort} 
+                      disabled={isFlashing || isErasingOnly}
+                      className="flex-1 liquid-btn py-2.5 px-4 text-xs text-rose-600 font-bold flex items-center justify-center gap-2 disabled:opacity-50">
+                      <i className="fa-solid fa-power-off text-[11px]"></i>
+                      <span>{t.disconnectBtn}</span>
+                    </button>
+                  )}
+
+                  <select 
+                    value={baudRate} 
+                    onChange={e => setBaudRate(e.target.value)} 
+                    disabled={isFlashing || isErasingOnly}
+                    title={t.baudTooltip}
+                    className="w-28 liquid-input px-3 text-xs font-mono font-semibold text-slate-800 outline-none cursor-pointer">
+                    <option value="115200">115200</option>
+                    <option value="460800">460800</option>
+                    <option value="921600">921600</option>
+                    <option value="1500000">1500000</option>
+                    <option value="2000000">2000000</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* THẺ 2: BO MẠCH ĐÍCH (HIỆU ỨNG KÍNH MỜ XUYÊN THẤU) */}
+              <div className="liquid-card p-3.5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-700 flex items-center justify-center text-[11px]">
+                      <i className="fa-solid fa-microchip"></i>
+                    </span>
+                    {t.hardwareSec}
+                  </span>
+                  <span className="text-[11px] font-semibold text-slate-700 bg-white/35 px-2.5 py-0.5 rounded-full border border-white/70">
+                    {MASTER_BOARDS.length} {t.profilesCount}
+                  </span>
+                </div>
+
+                {/* 2 THẺ HERO FLAGSHIP KÍNH MỜ */}
+                <div className="space-y-2">
+                  {/* MORPH S3 FLAGSHIP */}
+                  <div 
+                    onClick={() => { setSelectedBoardId('Morph-s3'); setLocalFile(null); }}
+                    className={`cursor-pointer p-3 rounded-2xl ${
+                      isMorphSelected ? 'liquid-card-active' : 'liquid-subcard'
+                    }`}>
+                    <div className="flex items-center justify-between gap-2.5">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-sm shrink-0 shadow-sm ${
+                          isMorphSelected ? 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white' : 'bg-white/50 text-indigo-700 border border-white/80'
+                        }`}>
+                          <i className="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="text-xs font-extrabold text-slate-900 truncate">
+                              {t.morphTitle}
+                            </span>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); setShowMorphGuide(true); }}
+                              className="text-[10px] font-semibold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-800 px-2 py-0.5 rounded-full transition-colors">
+                              {t.morphGuideBadge}
+                            </button>
+                          </div>
+                          <p className="text-[11px] text-slate-700 truncate">{t.morphDesc}</p>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full inline-block ${
+                          isMorphSelected 
+                            ? 'bg-blue-600 text-white shadow-sm' 
+                            : 'bg-white/45 text-slate-700 border border-white/80'
+                        }`}>
+                          {isMorphSelected ? t.activeBtn : t.selectBtn}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* XINGZHI CUBE LAUNCHER */}
+                  <div 
+                    onClick={() => { setSelectedBoardId('Launcher-xingzhi-cube-s3'); setLocalFile(null); }}
+                    className={`cursor-pointer p-3 rounded-2xl ${
+                      isLauncherSelected ? 'liquid-card-active' : 'liquid-subcard'
+                    }`}>
+                    <div className="flex items-center justify-between gap-2.5">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className={`w-9 h-9 rounded-2xl flex items-center justify-center text-sm shrink-0 shadow-sm ${
+                          isLauncherSelected ? 'bg-gradient-to-br from-cyan-500 to-blue-600 text-white' : 'bg-white/50 text-cyan-700 border border-white/80'
+                        }`}>
+                          <i className="fa-solid fa-cubes-stacked"></i>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-extrabold text-slate-900 truncate">
+                              {t.launcherTitle}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-700 truncate">{t.launcherDesc}</p>
+                        </div>
+                      </div>
+
+                      <div className="text-right shrink-0">
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full inline-block ${
+                          isLauncherSelected 
+                            ? 'bg-blue-600 text-white shadow-sm' 
+                            : 'bg-white/45 text-slate-700 border border-white/80'
+                        }`}>
+                          {isLauncherSelected ? t.activeBtn : t.selectBtn}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* THANH CHỌN DANH MỤC CHIP */}
+                <div className="flex gap-1.5 p-1 rounded-full bg-white/25 border border-white/60">
+                  {[
+                    { id: 'all', label: t.catAll },
+                    { id: 's3', label: t.catS3 },
+                    { id: 'c5', label: t.catC5 },
+                    { id: 'esp32', label: t.catEsp32 }
+                  ].map(cat => (
+                    <button
+                      key={cat.id}
+                      onClick={() => setSelectedCategory(cat.id)}
+                      className={`flex-1 py-1.5 px-2 rounded-full text-[11px] font-bold transition-all duration-300 ${
+                        selectedCategory === cat.id 
+                          ? 'bg-white/75 text-blue-700 shadow-sm border border-white' 
+                          : 'text-slate-700 hover:text-slate-950'
+                      }`}>
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* DROPDOWN DANH SÁCH BO MẠCH */}
+                <div className="space-y-2">
+                  <select 
+                    value={selectedBoardId} 
+                    onChange={e => { setSelectedBoardId(e.target.value); setLocalFile(null); }}
+                    disabled={isFlashing || isErasingOnly}
+                    className="w-full liquid-input p-2.5 text-xs font-semibold text-slate-900 outline-none cursor-pointer">
+                    <optgroup label={t.vipGroup}>
+                      {MASTER_BOARDS.filter(b => b.isHero).map(b => (
+                        <option key={b.id} value={b.id}>
+                          [{b.chip}] ★ {b.name} {githubFiles[b.url] ? `(${(githubFiles[b.url].size/1048576).toFixed(2)} MB)` : ''}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label={t.standardGroup}>
+                      {filteredBoards.map(b => (
+                        <option key={b.id} value={b.id}>
+                          [{b.chip}] {b.name} {githubFiles[b.url] ? `(${(githubFiles[b.url].size/1048576).toFixed(2)} MB)` : ''}
+                        </option>
+                      ))}
+                    </optgroup>
+                  </select>
+
+                  {/* THÔNG TIN CHI TIẾT BO MẠCH ĐANG CHỌN */}
+                  {(() => {
+                    const b = MASTER_BOARDS.find(item => item.id === selectedBoardId);
+                    if (!b) return null;
+                    const hasCloud = Boolean(githubFiles[b.url]);
+                    return (
+                      <div className="liquid-subcard rounded-2xl p-3 space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs font-bold text-slate-900 truncate flex items-center gap-1.5">
+                            <i className={`fa-solid ${b.icon || 'fa-microchip'} text-blue-600`}></i>
+                            {b.name}
+                          </span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            hasCloud 
+                              ? 'bg-emerald-500/20 text-emerald-800 border border-emerald-400/50' 
+                              : 'bg-white/40 text-slate-700 border border-white/60'
+                          }`}>
+                            {hasCloud ? t.cloudReadyBadge : t.customLocalBadge}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-700 leading-relaxed">{b.desc}</p>
+
+                        {b.id === 'Morph-s3' && (
+                          <div className="pt-2 border-t border-white/50 flex items-center justify-between">
+                            <span className="text-[11px] font-semibold text-indigo-800">
+                              Wi-Fi AP: <code className="font-mono font-bold">Morph-Config</code> (192.168.4.1)
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setShowMorphGuide(true)}
+                              className="text-[11px] font-bold text-blue-700 hover:underline">
+                              {t.morphGuideCardHint} →
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* THẺ 3: NẠP TỆP .BIN TỪ MÁY TÍNH */}
+              <div className="liquid-card p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-800 flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-sky-500/20 text-sky-700 flex items-center justify-center text-[11px]">
+                      <i className="fa-solid fa-file-arrow-up"></i>
+                    </span>
+                    {t.externalTitle}
+                  </span>
+                  <div className="flex items-center gap-1.5 text-slate-700 font-mono text-[11px]">
+                    <span>{t.offsetLabel}</span>
+                    <input 
+                      type="text" 
+                      value={flashOffset} 
+                      onChange={e => setFlashOffset(e.target.value)} 
+                      disabled={isFlashing}
+                      className="w-16 liquid-input px-2 py-0.5 text-center font-bold text-blue-700 outline-none" 
+                    />
+                  </div>
+                </div>
+
+                <label className="border-2 border-dashed border-white/75 hover:border-blue-400 rounded-2xl p-3 flex flex-col items-center justify-center cursor-pointer transition-all bg-white/25 hover:bg-white/40">
+                  <input 
+                    type="file" 
+                    accept=".bin" 
+                    onChange={e => { if (e.target.files[0]) setLocalFile(e.target.files[0]); }}
+                    disabled={isFlashing || isErasingOnly}
+                    className="hidden" 
+                  />
+                  {localFile ? (
+                    <div className="text-center">
+                      <div className="text-xs font-bold text-blue-800 truncate max-w-[300px]">{localFile.name}</div>
+                      <div className="text-[11px] text-emerald-700 font-semibold mt-0.5">
+                        {(localFile.size / 1048576).toFixed(2)} MB • {t.localLoaded}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center text-slate-700 text-xs font-medium py-0.5">
+                      <i className="fa-solid fa-cloud-arrow-up mr-1.5 text-blue-600"></i>
+                      <span>{t.dropHint}</span>
+                    </div>
+                  )}
+                </label>
+
+                {localFile && (
+                  <button 
+                    onClick={() => setLocalFile(null)} 
+                    className="text-[11px] font-semibold text-rose-600 hover:underline block text-center w-full">
+                    {t.deselectFile}
+                  </button>
+                )}
+              </div>
+
+              {/* THẺ 4: NÚT THỰC THI NẠP & XÓA CHIP */}
+              <div className="liquid-card p-3.5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={eraseFlash} 
+                      onChange={e => setEraseFlash(e.target.checked)} 
+                      disabled={isFlashing || isErasingOnly} 
+                      className="w-4 h-4 rounded accent-blue-600 cursor-pointer" 
+                    />
+                    <span className="text-xs font-semibold text-slate-800 select-none">
+                      {t.eraseBefore}
+                    </span>
+                  </label>
+
+                  <button
+                    onClick={handleEraseOnly}
+                    disabled={!isConnected || isFlashing || isErasingOnly}
+                    className="liquid-btn px-3 py-1 text-[11px] text-rose-600 font-bold disabled:opacity-40">
+                    <i className="fa-solid fa-trash-can mr-1"></i>
+                    {t.eraseAllBtn}
+                  </button>
+                </div>
+
+                <button 
+                  onClick={handleFlash} 
+                  disabled={!isConnected || isFlashing || isErasingOnly}
+                  className={`w-full py-3.5 px-5 rounded-full text-xs sm:text-sm font-bold tracking-wide flex items-center justify-center gap-2 relative overflow-hidden ${
+                    (!isConnected || isFlashing || isErasingOnly) 
+                      ? 'bg-white/30 text-slate-500 border border-white/60 cursor-not-allowed' 
+                      : 'liquid-btn-primary cursor-pointer'
+                  }`}>
+                  {isFlashing ? (
+                    <>
+                      <i className="fa-solid fa-circle-notch fa-spin"></i>
+                      <span className="z-10">{t.flashingBtn} {progress}%</span>
+                      <div 
+                        className="absolute left-0 bottom-0 top-0 bg-white/25 transition-all duration-150" 
+                        style={{ width: `${progress}%` }} 
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <i className="fa-solid fa-bolt"></i>
+                      <span>{t.flashBtn}</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+            </div>
+
+            {/* CỘT PHẢI: KHUNG KÍNH TRONG SUỐT SƠ ĐỒ CHÂN & NHẬT KÝ */}
+            <div className="flex-1 liquid-shell rounded-[32px] flex flex-col overflow-hidden min-w-0">
+              
+              {/* Thanh Tab Pill Bo Tròn có hiệu ứng Trượt Kính (Sliding Glass Pill) */}
+              <div className="flex items-center justify-between px-4 py-3 border-b border-white/45 bg-white/15 shrink-0 flex-wrap gap-2">
+                <div 
+                  ref={tabContainerRef}
+                  className="relative flex items-center gap-1 bg-white/25 p-1 rounded-full border border-white/65">
+                  
+                  {/* Viên thuốc kính trượt tự động theo Tab */}
+                  <div
+                    className="sliding-glass-pill absolute top-1 bottom-1 rounded-full pointer-events-none z-0"
+                    style={{
+                      width: `${pillStyle.width}px`,
+                      transform: `translateX(${pillStyle.left - 4}px)`
+                    }}
+                  />
+
+                  <button 
+                    ref={tabRefs.sodo}
+                    onClick={() => setLogTab('sodo')} 
+                    className={`relative z-10 py-1.5 px-4 rounded-full text-xs font-bold transition-colors duration-300 flex items-center gap-1.5 ${
+                      logTab === 'sodo' 
+                        ? 'text-blue-700' 
+                        : 'text-slate-700 hover:text-slate-950'
+                    }`}>
+                    <i className="fa-solid fa-diagram-project text-[11px]"></i>
+                    <span>{t.sodoTab}</span>
+                  </button>
+
+                  <button 
+                    ref={tabRefs.sys}
+                    onClick={() => setLogTab('sys')} 
+                    className={`relative z-10 py-1.5 px-4 rounded-full text-xs font-bold transition-colors duration-300 flex items-center gap-1.5 ${
+                      logTab === 'sys' 
+                        ? 'text-blue-700' 
+                        : 'text-slate-700 hover:text-slate-950'
+                    }`}>
+                    <i className="fa-solid fa-terminal text-[11px]"></i>
+                    <span>{t.sysLogTab}</span>
+                  </button>
+
+                  <button 
+                    ref={tabRefs.dev}
+                    onClick={() => setLogTab('dev')} 
+                    className={`relative z-10 py-1.5 px-4 rounded-full text-xs font-bold transition-colors duration-300 flex items-center gap-1.5 ${
+                      logTab === 'dev' 
+                        ? 'text-blue-700' 
+                        : 'text-slate-700 hover:text-slate-950'
+                    }`}>
+                    <i className="fa-solid fa-wave-square text-[11px]"></i>
+                    <span>{t.serialMonTab}</span>
+                    {isMonitor && <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>}
+                  </button>
+                </div>
+
+                {/* Các nút điều khiển phụ bên phải */}
+                <div className="flex items-center gap-2">
+                  {logTab === 'sodo' && (
+                    <button 
+                      onClick={() => loadSodo(selectedBoardId)} 
+                      className="liquid-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5">
+                      <i className={`fa-solid fa-arrows-rotate text-[11px] ${isLoadingSodo ? 'fa-spin text-blue-600' : ''}`}></i>
+                      <span className="hidden sm:inline">Làm mới</span>
+                    </button>
+                  )}
+
+                  {logTab === 'dev' && (
+                    <>
+                      <select 
+                        value={monitorBaud} 
+                        onChange={e => setMonitorBaud(e.target.value)} 
+                        disabled={isMonitor}
+                        className="liquid-input px-3 py-1.5 text-xs font-mono font-semibold text-slate-800 outline-none">
+                        <option value="115200">115200</option>
+                        <option value="9600">9600</option>
+                        <option value="74880">74880</option>
+                        <option value="921600">921600</option>
+                      </select>
+
+                      {/* Nút Reset Mạch trực tiếp */}
+                      <button
+                        onClick={resetBoardFromMonitor}
+                        disabled={isFlashing || isErasingOnly}
+                        title="Khởi động lại mạch về chế độ chạy bình thường để xem log từ đầu"
+                        className="liquid-btn px-3.5 py-1.5 text-xs flex items-center gap-1.5 text-indigo-800 disabled:opacity-40">
+                        <i className="fa-solid fa-rotate-right text-[11px] text-indigo-600"></i>
+                        <span className="hidden sm:inline">{t.resetBoardBtn}</span>
+                      </button>
+
+                      <button 
+                        onClick={isMonitor ? () => stopMonitor() : () => startMonitor()} 
+                        disabled={isFlashing || isErasingOnly} 
+                        className={`px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 ${
+                          isMonitor 
+                            ? 'liquid-btn text-rose-600' 
+                            : 'liquid-btn-primary'
+                        }`}>
+                        <i className={`fa-solid ${isMonitor ? 'fa-stop' : 'fa-play'} text-[10px]`}></i>
+                        <span>{isMonitor ? t.stopMon : t.startMon}</span>
+                      </button>
+                    </>
+                  )}
+
+                  {(logTab === 'sys' || logTab === 'dev') && (
+                    <button 
+                      onClick={() => logTab === 'sys' ? setSysLogs([]) : setDevLogs([])} 
+                      className="liquid-btn w-8 h-8 flex items-center justify-center text-slate-700" 
+                      title={t.clearLogTooltip}>
+                      <i className="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* NỘI DUNG CHÍNH CÓ ANIMATION MỖI KHI CHUYỂN TAB (key={logTab}) */}
+              {logTab === 'sodo' ? (
+                <div key="tab-sodo" className="tab-pane-animate flex-1 p-4 sm:p-5 overflow-y-auto custom-scrollbar select-text">
+                  {isLoadingSodo ? (
+                    <div className="h-full flex flex-col items-center justify-center text-slate-700 space-y-3 py-16">
+                      <i className="fa-solid fa-circle-notch fa-spin text-2xl text-blue-600"></i>
+                      <div className="text-xs font-semibold">{t.sodoSearching}</div>
+                    </div>
+                  ) : sodoData ? (
+                    <div className="space-y-4 max-w-5xl mx-auto">
+                      {/* Thẻ tiêu đề Bo mạch */}
+                      <div className="liquid-card p-4">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div className="flex items-center gap-2.5">
+                            <span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm"></span>
+                            <h2 className="text-base font-extrabold text-slate-900">
+                              {sodoData.board_name || sodoData.board || selectedBoardId}
+                            </h2>
+                            <span className="text-xs font-bold bg-blue-500/20 text-blue-800 px-2.5 py-0.5 rounded-full">
+                              {sodoData.chip || 'ESP32'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-slate-700 bg-white/45 px-3 py-1 rounded-full border border-white/75">
+                              <i className="fa-solid fa-microchip mr-1.5 text-blue-600"></i>
+                              {sodoData.modules ? sodoData.modules.length : 0} Modules
+                            </span>
+                          </div>
+                        </div>
+                        {sodoData.notes && (
+                          <p className="mt-2.5 text-xs text-slate-700 leading-relaxed border-t border-white/50 pt-2.5">
+                            {sodoData.notes}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Danh sách các bảng đấu nối Module */}
+                      <div className="grid grid-cols-1 xl:grid-cols-2 gap-3.5">
+                        {sodoData.modules && sodoData.modules.map((mod, modIdx) => (
+                          <div key={modIdx} className="liquid-card overflow-hidden flex flex-col">
+                            <div className="p-3.5 bg-white/25 border-b border-white/60 flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-8 h-8 rounded-xl bg-blue-500/20 text-blue-700 flex items-center justify-center text-xs shrink-0">
+                                  <i className={`fa-solid ${mod.icon || 'fa-microchip'}`}></i>
+                                </div>
+                                <div className="min-w-0">
+                                  <span className="text-xs font-extrabold text-slate-900 block truncate">
+                                    {mod.name || mod.title}
+                                  </span>
+                                  {mod.subtitle && (
+                                    <span className="text-[11px] text-slate-600 block truncate">
+                                      {mod.subtitle}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <span className="text-[10px] font-bold bg-white/45 text-slate-700 px-2.5 py-0.5 rounded-full border border-white/75 shrink-0">
+                                {mod.pins ? `${mod.pins.length} chân` : ''}
+                              </span>
+                            </div>
+
+                            {mod.warning && (
+                              <div className="mx-3.5 mt-3 p-2.5 rounded-xl bg-amber-500/20 border border-amber-400/50 text-amber-950 text-xs font-medium flex items-center gap-2">
+                                <i className="fa-solid fa-triangle-exclamation text-amber-600 shrink-0"></i>
+                                <span>{mod.warning}</span>
+                              </div>
+                            )}
+
+                            <div className="p-3.5 flex-1">
+                              <div className="rounded-2xl overflow-hidden border border-white/65 bg-white/25">
+                                <table className="w-full text-left text-xs">
+                                  <thead className="bg-white/40 text-slate-600 uppercase text-[10px] font-bold border-b border-white/65">
+                                    <tr>
+                                      <th className="py-2 px-3.5 w-1/2">{t.sodoColPin}</th>
+                                      <th className="py-2 px-3.5 w-1/2">{t.sodoColEsp}</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-white/45 font-mono">
+                                    {mod.pins && mod.pins.map((p, pIdx) => (
+                                      <tr key={pIdx} className="hover:bg-white/35 transition-colors">
+                                        <td className="py-2 px-3.5 font-semibold text-slate-800 border-r border-white/45">
+                                          {p.pin || p.name}
+                                        </td>
+                                        <td className="py-2 px-3.5 text-blue-700 font-bold flex items-center gap-2">
+                                          <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0"></span>
+                                          <span>{p.esp || p.gpio || p.pin_esp}</span>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center p-6 text-center space-y-3 py-16">
+                      <div className="w-12 h-12 rounded-2xl bg-white/45 border border-white/80 shadow-sm flex items-center justify-center text-blue-600 text-xl">
+                        <i className="fa-solid fa-folder-open"></i>
+                      </div>
+                      <div className="text-slate-900 text-sm font-bold">
+                        {t.sodoNotFound}
+                      </div>
+                      <p className="text-slate-700 text-xs max-w-md">
+                        Tệp <code className="text-blue-700 font-mono bg-white/45 px-2.5 py-0.5 rounded-full border border-white/70">sodo/{selectedBoardId}.json</code> đang được cập nhật.
+                      </p>
+                      <button 
+                        onClick={() => loadSodo(selectedBoardId)} 
+                        className="liquid-btn px-4 py-2 text-xs flex items-center gap-1.5">
+                        <i className="fa-solid fa-arrows-rotate text-[11px]"></i>
+                        <span>Thử tải lại</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                /* MÀN HÌNH CONSOLE TRONG SUỐT CÓ ANIMATION KHI CHUYỂN TAB + Ô GỬI LỆNH SERIAL */
+                <div key={`tab-${logTab}`} className="tab-pane-animate flex-1 flex flex-col min-h-0 bg-white/10">
+                  <div 
+                    ref={termRef} 
+                    className="flex-1 p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar break-all select-text">
+                    {(logTab === 'sys' ? sysLogs : devLogs).length === 0 ? (
+                      <div className="text-slate-600 select-none italic">
+                        {logTab === 'sys' ? t.sysPlaceholder : t.monPlaceholder}
+                      </div>
+                    ) : (
+                      (logTab === 'sys' ? sysLogs : devLogs).map((l, i) => (
+                        <div key={i} className="flex gap-2.5 mb-1 py-1 px-2.5 rounded-xl hover:bg-white/25 transition-colors">
+                          <span className="text-slate-500 shrink-0 select-none">[{l.time}]</span>
+                          <span className={`whitespace-pre-wrap ${
+                            l.type === 'error' ? 'text-rose-700 font-bold' : 
+                            l.type === 'success' ? 'text-emerald-800 font-bold' : 
+                            l.type === 'warning' ? 'text-amber-800 font-semibold' : 
+                            'text-slate-900 font-medium'
+                          }`}>
+                            {l.msg}
+                          </span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Thanh nhập lệnh Serial TX (chỉ hiện trong tab Serial Monitor) */}
+                  {logTab === 'dev' && (
+                    <form onSubmit={sendSerialCommand} className="p-3 border-t border-white/45 bg-white/20 flex gap-2">
+                      <input
+                        type="text"
+                        value={serialInput}
+                        onChange={e => setSerialInput(e.target.value)}
+                        placeholder={t.txPlaceholder}
+                        className="flex-1 liquid-input px-4 py-2 text-xs font-mono text-slate-900 placeholder-slate-500 outline-none rounded-full"
+                      />
+                      <button
+                        type="submit"
+                        className="liquid-btn-primary px-5 py-2 text-xs flex items-center gap-1.5">
+                        <i className="fa-solid fa-paper-plane text-[10px]"></i>
+                        <span>{t.sendBtn}</span>
+                      </button>
+                    </form>
+                  )}
+                </div>
+              )}
+
+              {/* Thanh trạng thái dưới cùng */}
+              <div className="px-5 py-2.5 border-t border-white/45 bg-white/20 flex items-center justify-between text-xs text-slate-700 font-medium">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex items-center gap-1.5 font-semibold">
+                    <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-500' : 'bg-slate-400'}`}></span>
+                    <span>{isConnected ? t.portOnline : t.portOffline}</span>
+                  </span>
+                  {chipInfo && <span className="text-slate-800 font-mono">• {chipInfo.chip} [{chipInfo.mac}]</span>}
+                </div>
+                <div className="font-mono text-[11px] text-slate-600">ESPLoader v0.7.0</div>
+              </div>
+
+            </div>
+
+          </main>
+
+          {/* MODAL CẨM NANG MORPH S3 */}
+          {showMorphGuide && (
+            <div className="fixed inset-0 z-50 bg-slate-900/20 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 select-text">
+              <div className="liquid-shell rounded-[32px] max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden shadow-2xl bg-white/45">
+                
+                {/* Modal Header */}
+                <div className="p-4 sm:p-5 border-b border-white/60 bg-white/35 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center text-base shrink-0 shadow-md">
+                      <i className="fa-solid fa-wand-magic-sparkles"></i>
+                    </div>
+                    <div className="min-w-0">
+                      <h2 className="text-sm sm:text-base font-extrabold text-slate-900 truncate">
+                        {t.morphGuideTitle}
+                      </h2>
+                      <p className="text-xs text-slate-700 truncate">
+                        {t.morphGuideSub}
+                      </p>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => setShowMorphGuide(false)}
+                    className="liquid-btn w-9 h-9 flex items-center justify-center text-slate-800 shrink-0">
+                    <i className="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+
+                {/* Modal Tab Bar */}
+                <div className="flex border-b border-white/60 bg-white/25 px-4 py-2 gap-1.5 overflow-x-auto custom-scrollbar shrink-0">
+                  {[
+                    { id: 'controls', label: t.morphTabControls, icon: 'fa-gamepad' },
+                    { id: 'hardware', label: t.morphTabHardware, icon: 'fa-microchip' },
+                    { id: 'webui',    label: t.morphTabWebui,    icon: 'fa-wifi' },
+                    { id: 'flash',    label: t.morphTabFlash,    icon: 'fa-bolt' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setGuideTab(tab.id)}
+                      className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 ${
+                        guideTab === tab.id 
+                          ? 'bg-blue-600 text-white shadow-sm' 
+                          : 'bg-white/45 text-slate-800 hover:bg-white/75'
+                      }`}>
+                      <i className={`fa-solid ${tab.icon} text-[11px]`}></i>
+                      <span>{tab.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Modal Body */}
+                <div key={guideTab} className="tab-pane-animate flex-1 overflow-y-auto p-5 space-y-3.5 text-xs text-slate-800 custom-scrollbar leading-relaxed">
+                  {guideTab === 'controls' && (
+                    <div className="space-y-3">
+                      <div className="liquid-card p-4">
+                        <div className="font-extrabold text-blue-800 mb-2 text-sm">
+                          1. Chế độ 3 Phím Tiêu chuẩn
+                        </div>
+                        <ul className="space-y-1.5 list-disc list-inside">
+                          <li><b>UP (GPIO 16):</b> Di chuyển lên trên / Giảm giá trị.</li>
+                          <li><b>DOWN (GPIO 13):</b> Di chuyển xuống dưới / Tăng giá trị.</li>
+                          <li><b>OK (GPIO 0):</b> Nhấn 1 lần để Chọn (Enter). Nhấn giữ &gt; 1.2s để Thoát (Back).</li>
+                        </ul>
+                      </div>
+
+                      <div className="liquid-card p-4">
+                        <div className="font-extrabold text-indigo-800 mb-2 text-sm">
+                          2. Chế độ 2 Phím & Con lăn (Rotary Encoder)
+                        </div>
+                        <ul className="space-y-1.5 list-disc list-inside">
+                          <li><b>Nút Next (GPIO 13):</b> Nhấn 1 lần: Tới. Nhấp đúp hoặc Giữ: Chọn (OK).</li>
+                          <li><b>Nút Prev (GPIO 16):</b> Nhấn 1 lần: Lùi. Nhấp đúp hoặc Giữ: Thoát (ESC).</li>
+                          <li><b>Rotary Encoder:</b> Xoay để cuộn menu mượt mà, nhấn nút giữa để xác nhận.</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {guideTab === 'hardware' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="liquid-card p-3.5">
+                        <div className="font-bold text-blue-800 mb-1">Vi xử lý & Bộ nhớ</div>
+                        <p>ESP32-S3 Dual-Core LX7 @ 240MHz</p>
+                        <p className="font-semibold text-emerald-800">16MB Flash • 8MB Octal-PSRAM</p>
+                      </div>
+                      <div className="liquid-card p-3.5">
+                        <div className="font-bold text-blue-800 mb-1">Màn hình ST7789 IPS</div>
+                        <p>240x240px SPI (MOSI:10, SCLK:9, CS:14, DC:8, RST:18, BL:13)</p>
+                      </div>
+                      <div className="liquid-card p-3.5">
+                        <div className="font-bold text-blue-800 mb-1">CC1101 Sub-GHz</div>
+                        <p>Dải tần 300-928MHz (SS:2, GDO0:1, MOSI:48, MISO:41, SCK:47)</p>
+                      </div>
+                      <div className="liquid-card p-3.5">
+                        <div className="font-bold text-blue-800 mb-1">NRF24L01+ & MicroSD</div>
+                        <p>NRF24 (CE:4, SS:21) • Thẻ nhớ MicroSD (CS:42)</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {guideTab === 'webui' && (
+                    <div className="liquid-card p-4 space-y-2.5">
+                      <div className="font-extrabold text-blue-800 text-sm">
+                        Cấu hình chân & màn hình qua Wi-Fi không cần nạp lại code
+                      </div>
+                      <ol className="space-y-2 list-decimal list-inside">
+                        <li>Nạp firmware <b>Bruce-Morph-s3.bin</b> từ trình duyệt này.</li>
+                        <li>Kết nối vào Wi-Fi tên <b>Morph-Config</b> (Không mật khẩu).</li>
+                        <li>Mở trình duyệt truy cập <b>http://192.168.4.1</b> để đổi chân phím, xoay màn hình, gán chân module.</li>
+                        <li>Bấm <b>Save &amp; Reboot</b> để lưu cấu hình vĩnh viễn vào bộ nhớ Flash.</li>
+                      </ol>
+                    </div>
+                  )}
+
+                  {guideTab === 'flash' && (
+                    <div className="liquid-card p-4 space-y-2">
+                      <div className="font-extrabold text-emerald-800 text-sm">
+                        Các bước nạp Firmware nhanh
+                      </div>
+                      <ol className="space-y-1.5 list-decimal list-inside">
+                        <li>Cắm cáp USB Type-C kết nối mạch với máy tính.</li>
+                        <li>Nếu mạch chưa nhận cổng: Giữ nút <b>BOOT (GPIO 0)</b> rồi cắm cáp.</li>
+                        <li>Bấm nút <b>{t.connectBtn}</b> và chọn cổng COM tương ứng.</li>
+                        <li>Bật chọn <b>{t.eraseBefore}</b> nếu nạp lần đầu, sau đó bấm <b>{t.flashBtn}</b>.</li>
+                      </ol>
+                    </div>
+                  )}
+                </div>
+
+                {/* Modal Footer */}
+                <div className="p-4 border-t border-white/60 bg-white/35 flex items-center justify-between">
+                  <span className="text-xs font-semibold text-slate-700">Morph S3 Flagship</span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setSelectedBoardId('Morph-s3');
+                        setLocalFile(null);
+                        setShowMorphGuide(false);
+                      }}
+                      className="liquid-btn-primary px-4 py-2 text-xs">
+                      {t.morphSelectNow}
+                    </button>
+                    <button
+                      onClick={() => setShowMorphGuide(false)}
+                      className="liquid-btn px-4 py-2 text-xs">
+                      {t.morphCloseBtn}
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
   </script>
 </body>
 </html>
