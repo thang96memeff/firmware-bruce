@@ -1,0 +1,117 @@
+{
+  "board_id": "nxh-gaylo-1_54",
+  "board_name": "NXH Gaylo 1.54\"",
+  "chip": "ESP32",
+  "notes": "Sơ đồ đấu nối phần cứng chuẩn cho bo mạch NXH Gaylo 1.54 inch (ESP32 4MB, LCD ST7789 240x240, 8 phím Gamepad, thẻ nhớ MicroSD SoftSPI) của Chủ tịch Thăng.",
+  "modules": [
+    {
+      "name": "1. Màn hình LCD ST7789 1.54\" (240x240)",
+      "subtitle": "ST7789 Pin ↔ ESP32 GPIO",
+      "icon": "fa-tv",
+      "pins": [
+        {
+          "pin": "VCC",
+          "esp": "3.3V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCL / SCLK (Xung nhịp)",
+          "esp": "GPIO 18"
+        },
+        {
+          "pin": "SDA / MOSI (Data In)",
+          "esp": "GPIO 23"
+        },
+        {
+          "pin": "RES / RST (Reset)",
+          "esp": "GPIO 19"
+        },
+        {
+          "pin": "DC (Data / Command)",
+          "esp": "GPIO 5"
+        },
+        {
+          "pin": "CS (Chip Select)",
+          "esp": "Nối trực tiếp GND (-1)"
+        },
+        {
+          "pin": "BLK / BL (Backlight)",
+          "esp": "Nối 3.3V (hoặc mạch cấp nguồn sẵn)"
+        }
+      ]
+    },
+    {
+      "name": "2. Cụm 8 Phím Điều Hướng & Thao Tác (Gamepad)",
+      "subtitle": "Button ↔ ESP32 GPIO",
+      "icon": "fa-gamepad",
+      "pins": [
+        {
+          "pin": "UP (Lên)",
+          "esp": "GPIO 39 (SVN)"
+        },
+        {
+          "pin": "DOWN (Xuống)",
+          "esp": "GPIO 35 (IO35)"
+        },
+        {
+          "pin": "LEFT (Trái)",
+          "esp": "GPIO 36 (SVP)"
+        },
+        {
+          "pin": "RIGHT (Phải)",
+          "esp": "GPIO 34 (IO34)"
+        },
+        {
+          "pin": "Nút A (Select / OK)",
+          "esp": "GPIO 4 (IO4)"
+        },
+        {
+          "pin": "Nút B (Back / Thoát)",
+          "esp": "GPIO 14 (TMS)"
+        },
+        {
+          "pin": "Nút START (Menu / OK)",
+          "esp": "GPIO 15 (TDO)"
+        },
+        {
+          "pin": "Nút SELECT (Option / Esc)",
+          "esp": "GPIO 13 (TCK)"
+        }
+      ]
+    },
+    {
+      "name": "3. Module Thẻ Nhớ (MicroSD SoftSPI)",
+      "subtitle": "MicroSD Pin ↔ ESP32 GPIO",
+      "icon": "fa-sd-card",
+      "pins": [
+        {
+          "pin": "VCC",
+          "esp": "3.3V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "MOSI (Data In)",
+          "esp": "GPIO 17"
+        },
+        {
+          "pin": "MISO (Data Out)",
+          "esp": "GPIO 16"
+        },
+        {
+          "pin": "SCK (Xung nhịp)",
+          "esp": "GPIO 21"
+        },
+        {
+          "pin": "CS (Chip Select)",
+          "esp": "GPIO 22"
+        }
+      ]
+    }
+  ]
+}

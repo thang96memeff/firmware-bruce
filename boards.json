@@ -1,5 +1,15 @@
 [
   {
+    "id": "nxh-gaylo-1_54",
+    "name": "NXH Gaylo 1.54",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "ESP32 4MB, LCD ST7789 1.54\" 240x240, 8 phím Gamepad (D-Pad + A/B/Start/Select), MicroSD SoftSPI.",
+    "url": "Bruce-nxh-gaylo-1_54.bin",
+    "icon": "fa-gamepad",
+    "isHero": true
+  },
+  {
     "id": "s3-mini-1_47-inch",
     "name": "ESP32-S3 Super Mini 1.47",
     "chip": "ESP32-S3",
