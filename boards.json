@@ -40,6 +40,16 @@
     "isHero": false
   },
   {
+    "id": "bruce-c5-1_69",
+    "name": "Bruce C5 Touch 1.69",
+    "chip": "ESP32-C5",
+    "category": "c5",
+    "desc": "Waveshare 1.69 inch 240x280 ST7789V2, CST816 Pro Touch UI, RISC-V Dual-Band WiFi 6, 16MB Flash + 8MB PSRAM.",
+    "url": "Bruce-bruce-c5-1_69.bin",
+    "icon": "fa-hand-pointer",
+    "isHero": false
+  },
+  {
     "id": "lilygo-c5-1_9-inch",
     "name": "LilyGO T-Display C5 (1.9",
     "chip": "ESP32-C5",
@@ -56,6 +66,16 @@
     "category": "c5",
     "desc": "ST7789 240x296, CST816S Pro Touch UI, RISC-V Dual-Band WiFi 6, 16MB Flash + 8MB PSRAM.",
     "url": "Bruce-mywatch-c5.bin",
+    "icon": "fa-stopwatch",
+    "isHero": false
+  },
+  {
+    "id": "mywatch-c5-n8r8",
+    "name": "MyWatch C5 (ESP32-C5 N8R8)",
+    "chip": "ESP32-C5",
+    "category": "c5",
+    "desc": "ST7789 240x296, CST816S Pro Touch UI, RISC-V Dual-Band WiFi 6, 8MB Flash + 8MB PSRAM.",
+    "url": "Bruce-mywatch-c5-n8r8.bin",
     "icon": "fa-stopwatch",
     "isHero": false
   },
@@ -311,10 +331,10 @@
   },
   {
     "id": "smoochiee-board",
-    "name": "Smoochiee Board",
-    "chip": "ESP32",
-    "category": "esp32",
-    "desc": "Dedicated RF pentesting hardware with 5-button D-Pad navigation.",
+    "name": "Smoochiee Board (ESP32-S3 N16R8)",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "ESP32-S3 N16R8 custom board (16MB DIO Flash + 8MB Octal PSRAM), ST7789 170x320, CC1101, NRF24, BQ25896 PMU, 5-button D-Pad.",
     "url": "Bruce-smoochiee-board.bin",
     "icon": "fa-shield-halved",
     "isHero": false
