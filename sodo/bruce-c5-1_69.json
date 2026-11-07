@@ -74,8 +74,8 @@
       "subtitle": "Expansion Header J3 (18 chân)",
       "icon": "fa-plug",
       "pins": [
-        {"pin": "UART TX (BadUSB / GPS / BW16)", "esp": "GPIO 11"},
-        {"pin": "UART RX (BadUSB / GPS / BW16)", "esp": "GPIO 12"},
+        {"pin": "UART TX (BadUSB / GPS / Ngoại vi)", "esp": "GPIO 11"},
+        {"pin": "UART RX (BadUSB / GPS / Ngoại vi)", "esp": "GPIO 12"},
         {"pin": "I2C SDA / SCL Ngoại vi", "esp": "GPIO 8 (SDA), GPIO 9 (SCL)"},
         {"pin": "GPIO Đa dụng", "esp": "GPIO 4, GPIO 23, GPIO 27"},
         {"pin": "Nguồn ra", "esp": "3.3V & GND"}
