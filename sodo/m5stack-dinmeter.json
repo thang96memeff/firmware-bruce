@@ -1,0 +1,39 @@
+{
+  "board_id": "m5stack-dinmeter",
+  "board_name": "M5Stack DinMeter (ESP32-S3)",
+  "chip": "ESP32-S3",
+  "notes": "Thiết bị công nghiệp M5Stack DinMeter ESP32-S3 dạng ray DIN, núm xoay Rotary Encoder, màn hình LCD 135x240 M5GFX, loa Buzzer, hỗ trợ cổng Grove I2C và IR/RF.",
+  "modules": [
+    {
+      "name": "1. Màn hình & Núm xoay Encoder",
+      "subtitle": "M5GFX Display & Rotary Encoder",
+      "icon": "fa-gauge",
+      "pins": [
+        {"pin": "Màn hình ST7789", "esp": "135x240 M5GFX Internal"},
+        {"pin": "Encoder Phase A", "esp": "GPIO 41"},
+        {"pin": "Encoder Phase B", "esp": "GPIO 40"},
+        {"pin": "Encoder Nút bấm (Key)", "esp": "GPIO 42"}
+      ]
+    },
+    {
+      "name": "2. Âm thanh & Hồng ngoại",
+      "subtitle": "Buzzer & IR ↔ ESP32-S3",
+      "icon": "fa-bell",
+      "pins": [
+        {"pin": "Buzzer (Còi báo)", "esp": "GPIO 3"},
+        {"pin": "IR TX (Phát hồng ngoại)", "esp": "GPIO 1"},
+        {"pin": "IR RX (Thu hồng ngoại)", "esp": "GPIO 2"}
+      ]
+    },
+    {
+      "name": "3. Cổng Grove & SPI Ngoại vi",
+      "subtitle": "I2C & SPI Expansion",
+      "icon": "fa-plug",
+      "pins": [
+        {"pin": "Grove I2C SDA / SCL", "esp": "GPIO 1 (SDA), GPIO 2 (SCL)"},
+        {"pin": "Internal I2C SDA / SCL", "esp": "GPIO 11 (SDA), GPIO 12 (SCL)"},
+        {"pin": "SPI Bus (MOSI, MISO, SCK, SS)", "esp": "MOSI 1, MISO 2, SCK 15, SS 13"}
+      ]
+    }
+  ]
+}

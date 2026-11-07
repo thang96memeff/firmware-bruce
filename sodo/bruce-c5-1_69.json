@@ -2,11 +2,11 @@
   "board_id": "bruce-c5-1_69",
   "board_name": "Bruce C5 Touch 1.69\" (ESP32-C5 Waveshare)",
   "chip": "ESP32-C5",
-  "notes": "Bo mạch Waveshare 1.69 inch IPS 240x280 cảm ứng điện dung CST816 ProTouch engine, chip ESP32-C5 RISC-V Dual-Band WiFi 6 (2.4/5GHz), 16MB Flash, nút Boot GPIO 28.",
+  "notes": "Bo mạch Waveshare ESP32-C5-Touch-LCD-1.69: Màn hình IPS 1.69 inch 240x280 cảm ứng CST816 ProTouch, MCU ESP32-C5 RISC-V Dual-Band WiFi 6 (2.4/5GHz) + BLE 5, 16MB Flash, Audio Codec ES8311 + NS4150B PA + Mic, IO Expander TCA9554, Pin Gauge BQ27220, RTC PCF85063, IMU QMI8658, Nút Boot GPIO 28.",
   "modules": [
     {
       "name": "1. Màn hình TFT",
-      "subtitle": "TFT Pin ↔ ESP32-C5 (ST7789V2 SPI)",
+      "subtitle": "TFT Pin ↔ ESP32-C5 (ST7789 SPI 240x280)",
       "icon": "fa-tv",
       "pins": [
         {"pin": "VCC", "esp": "3.3V (Nguồn bo)"},
@@ -15,86 +15,70 @@
         {"pin": "SDA (MOSI)", "esp": "GPIO 7 (SPI MOSI)"},
         {"pin": "DC", "esp": "GPIO 24"},
         {"pin": "CS", "esp": "GPIO 27"},
-        {"pin": "BLK (Đèn nền)", "esp": "GPIO 26"}
+        {"pin": "BLK (Đèn nền)", "esp": "GPIO 26 (MOSFET AO3400)"},
+        {"pin": "RST", "esp": "Tự động reset qua mạch RC"}
       ]
     },
     {
-      "name": "2. Cảm ứng & Phím",
-      "subtitle": "Touch & Button ↔ ESP32-C5",
+      "name": "2. Cảm ứng & Phím bấm",
+      "subtitle": "Touch & Buttons ↔ ESP32-C5 & TCA9554",
       "icon": "fa-hand-pointer",
       "pins": [
         {"pin": "CST816 SDA", "esp": "GPIO 8 (I2C)"},
         {"pin": "CST816 SCL", "esp": "GPIO 9 (I2C)"},
         {"pin": "CST816 INT", "esp": "GPIO 5"},
-        {"pin": "Nút nhấn Boot / OK", "esp": "GPIO 28"}
+        {"pin": "CST816 RST", "esp": "TCA9554 EXIO1 (Reset cảm ứng)"},
+        {"pin": "Nút BOOT", "esp": "GPIO 28 (Active LOW)"},
+        {"pin": "Nút PWR_KEY", "esp": "TCA9554 EXIO4 (Nút nguồn EC190708)"}
       ]
     },
     {
-      "name": "3. Module Hồng ngoại",
-      "subtitle": "IR Module ↔ ESP32-C5",
-      "icon": "fa-bolt",
+      "name": "3. Hệ thống Âm thanh (Audio & Mic)",
+      "subtitle": "ES8311 Codec + NS4150B 3W PA + Electret Mic",
+      "icon": "fa-volume-high",
       "pins": [
-        {"pin": "IR TX (Phát hồng ngoại)", "esp": "GPIO 3"},
-        {"pin": "IR RX (Thu hồng ngoại)", "esp": "GPIO 1"}
+        {"pin": "ES8311 I2C SDA", "esp": "GPIO 8 (Addr 0x18)"},
+        {"pin": "ES8311 I2C SCL", "esp": "GPIO 9"},
+        {"pin": "I2S MCLK (Master Clock)", "esp": "GPIO 0"},
+        {"pin": "I2S BCLK (Bit Clock)", "esp": "GPIO 1"},
+        {"pin": "I2S DIN (ASDOUT - Mic ADC)", "esp": "GPIO 2"},
+        {"pin": "I2S WS (LRCK - Word Select)", "esp": "GPIO 3"},
+        {"pin": "I2S DOUT (DSDIN - Loa DAC)", "esp": "GPIO 10"},
+        {"pin": "PA_CTRL (Bật/tắt âm ly NS4150B)", "esp": "TCA9554 EXIO0 (HIGH = Bật)"},
+        {"pin": "MIC1 (Electret Analog Mic)", "esp": "Tích hợp sẵn nối chân MIC1P/MIC1N ES8311"}
       ]
     },
     {
-      "name": "4. Module Thẻ nhớ",
-      "subtitle": "SD Pin ↔ ESP32-C5",
-      "icon": "fa-sd-card",
+      "name": "4. IO Expander & Quản lý Pin",
+      "subtitle": "TCA9554 + BQ27220 + ETA6098 Charger",
+      "icon": "fa-battery-full",
       "pins": [
-        {"pin": "Thẻ nhớ microSD", "esp": "N/A (Bo mạch không tích hợp khe SD)"}
+        {"pin": "TCA9554 IO Expander", "esp": "GPIO 8 (SDA), GPIO 9 (SCL) @ Addr 0x20"},
+        {"pin": "BQ27220 Fuel Gauge", "esp": "GPIO 8 (SDA), GPIO 9 (SCL) @ Addr 0x55 (Đo % pin chuẩn)"},
+        {"pin": "ETA6098 Sạc Pin (BAT_CHG)", "esp": "TCA9554 EXIO2 (STAT sạc pin)"}
       ]
     },
     {
-      "name": "5. Module BW16",
-      "subtitle": "BW16 Pin ↔ ESP32-C5 (UART)",
-      "icon": "fa-wifi",
+      "name": "5. Cảm biến IMU & Đồng hồ RTC",
+      "subtitle": "QMI8658 6-axis IMU + PCF85063 Real-Time Clock",
+      "icon": "fa-compass",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V / 5V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "PB2", "esp": "GPIO 11 (TX)"},
-        {"pin": "PB1", "esp": "GPIO 12 (RX)"}
+        {"pin": "QMI8658 IMU (I2C)", "esp": "GPIO 8 (SDA), GPIO 9 (SCL) @ Addr 0x6B"},
+        {"pin": "QMI8658 INT", "esp": "TCA9554 EXIO3 (Ngắt chuyển động)"},
+        {"pin": "PCF85063 RTC (I2C)", "esp": "GPIO 8 (SDA), GPIO 9 (SCL) @ Addr 0x51"},
+        {"pin": "PCF85063 INT", "esp": "GPIO 6 (Ngắt báo thức RTC)"}
       ]
     },
     {
-      "name": "6. Module GPS",
-      "subtitle": "GPS Pin ↔ ESP32-C5 (UART)",
-      "icon": "fa-location-crosshairs",
+      "name": "6. Cổng mở rộng Header J3 (Ngoại vi)",
+      "subtitle": "Expansion Header J3 (18 chân)",
+      "icon": "fa-plug",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V / 5V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "TX", "esp": "GPIO 12 (RX)"},
-        {"pin": "RX", "esp": "GPIO 11 (TX)"}
-      ]
-    },
-    {
-      "name": "7. Module NRF24",
-      "subtitle": "NRF24 Pin ↔ ESP32-C5 (Chân cắm ngoài)",
-      "icon": "fa-tower-broadcast",
-      "warning": "⚠️ Lưu ý: Chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
-      "pins": [
-        {"pin": "VCC", "esp": "3.3V (Lưu ý: Chỉ cấp 3.3V ⚠️)"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "CE", "esp": "GPIO 4"},
-        {"pin": "CSN", "esp": "GPIO 2"},
-        {"pin": "SCK", "esp": "GPIO 23"},
-        {"pin": "MOSI", "esp": "GPIO 7"},
-        {"pin": "MISO", "esp": "GPIO 6"}
-      ]
-    },
-    {
-      "name": "8. Module CC1101",
-      "subtitle": "CC1101 Pin ↔ ESP32-C5 (Chân cắm ngoài)",
-      "icon": "fa-radio",
-      "pins": [
-        {"pin": "VCC", "esp": "3.3V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCK", "esp": "GPIO 23"},
-        {"pin": "MOSI", "esp": "GPIO 7"},
-        {"pin": "MISO", "esp": "GPIO 6"},
-        {"pin": "CSN", "esp": "GPIO 2"},
-        {"pin": "GDO0", "esp": "GPIO 4"}
+        {"pin": "UART TX (BadUSB / GPS / BW16)", "esp": "GPIO 11"},
+        {"pin": "UART RX (BadUSB / GPS / BW16)", "esp": "GPIO 12"},
+        {"pin": "I2C SDA / SCL Ngoại vi", "esp": "GPIO 8 (SDA), GPIO 9 (SCL)"},
+        {"pin": "GPIO Đa dụng", "esp": "GPIO 4, GPIO 23, GPIO 27"},
+        {"pin": "Nguồn ra", "esp": "3.3V & GND"}
       ]
     }
   ]

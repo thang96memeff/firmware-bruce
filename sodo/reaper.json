@@ -1,0 +1,69 @@
+{
+  "board_id": "reaper",
+  "board_name": "Reaper Pentest Device (ESP32-S3)",
+  "chip": "ESP32-S3",
+  "notes": "Thiết bị bảo mật phần cứng cao cấp Reaper ESP32-S3: Màn hình ST7789 170x320, cụm 5 phím điều hướng D-Pad + ESC, tích hợp Sub-GHz CC1101, NRF24, SX1262 LoRa, NFC ST25R3916, dải 16 LED RGB WS2812, khe MicroSD và đo dung lượng pin BQ27220.",
+  "modules": [
+    {
+      "name": "1. Màn hình ST7789 (170x320)",
+      "subtitle": "ST7789 SPI ↔ ESP32-S3",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "TFT MOSI", "esp": "GPIO 18"},
+        {"pin": "TFT SCK", "esp": "GPIO 17"},
+        {"pin": "TFT CS", "esp": "GPIO 7"},
+        {"pin": "TFT DC", "esp": "GPIO 15"},
+        {"pin": "TFT RST", "esp": "GPIO 16"},
+        {"pin": "TFT BL (Đèn nền)", "esp": "GPIO 6"}
+      ]
+    },
+    {
+      "name": "2. Cụm Phím Điều Hướng D-Pad & ESC",
+      "subtitle": "Navigation Buttons",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "Phím OK (Center)", "esp": "GPIO 0"},
+        {"pin": "Phím LÊN (UP)", "esp": "GPIO 41"},
+        {"pin": "Phím XUỐNG (DOWN)", "esp": "GPIO 40"},
+        {"pin": "Phím PHẢI (RIGHT)", "esp": "GPIO 38"},
+        {"pin": "Phím TRÁI (LEFT)", "esp": "GPIO 39"},
+        {"pin": "Phím THOÁT (ESC)", "esp": "GPIO 21"}
+      ]
+    },
+    {
+      "name": "3. Module Sub-GHz CC1101",
+      "subtitle": "CC1101 ↔ ESP32-S3 (Onboard SPI)",
+      "icon": "fa-tower-broadcast",
+      "pins": [
+        {"pin": "CC1101 SCK", "esp": "GPIO 17"},
+        {"pin": "CC1101 MOSI", "esp": "GPIO 18"},
+        {"pin": "CC1101 MISO", "esp": "GPIO 8"},
+        {"pin": "CC1101 CS", "esp": "GPIO 9"},
+        {"pin": "CC1101 GDO0", "esp": "GPIO 46"}
+      ]
+    },
+    {
+      "name": "4. Module NRF24L01+",
+      "subtitle": "NRF24 ↔ ESP32-S3 (Onboard SPI)",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "NRF24 SCK", "esp": "GPIO 17"},
+        {"pin": "NRF24 MOSI", "esp": "GPIO 18"},
+        {"pin": "NRF24 MISO", "esp": "GPIO 8"},
+        {"pin": "NRF24 CSN", "esp": "GPIO 13"},
+        {"pin": "NRF24 CE", "esp": "GPIO 14"}
+      ]
+    },
+    {
+      "name": "5. Thẻ nhớ MicroSD, LoRa & NFC",
+      "subtitle": "Storage, LoRa & NFC",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "MicroSD CS", "esp": "GPIO 3"},
+        {"pin": "SX1262 LoRa CS", "esp": "GPIO 4 (IRQ: 42, Busy: 5)"},
+        {"pin": "NFC ST25R3916 CS", "esp": "GPIO 11 (IRQ: 12)"},
+        {"pin": "Dải 16 LED RGB WS2812", "esp": "GPIO 45"}
+      ]
+    }
+  ]
+}

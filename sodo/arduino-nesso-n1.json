@@ -1,0 +1,51 @@
+{
+  "board_id": "arduino-nesso-n1",
+  "board_name": "Arduino Nesso N1 (ESP32-C6)",
+  "chip": "ESP32-C6",
+  "notes": "Bo mạch Arduino Nesso N1 trang bị vi điều khiển ESP32-C6 RISC-V, màn hình LCD 135x240, tích hợp FM Radio Si4713, còi Buzzer, phát hồng ngoại IR và hỗ trợ mở rộng Sub-GHz CC1101 / NRF24.",
+  "modules": [
+    {
+      "name": "1. Màn hình LCD M5GFX (135x240)",
+      "subtitle": "TFT Pin ↔ ESP32-C6",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "TFT SCK", "esp": "GPIO 20"},
+        {"pin": "TFT MOSI", "esp": "GPIO 21"},
+        {"pin": "TFT MISO", "esp": "GPIO 22"},
+        {"pin": "TFT CS", "esp": "GPIO 17"},
+        {"pin": "TFT RST", "esp": "GPIO 16"}
+      ]
+    },
+    {
+      "name": "2. Cụm I2C & Grove",
+      "subtitle": "I2C Grove & System Bus",
+      "icon": "fa-plug",
+      "pins": [
+        {"pin": "Grove SDA / SCL", "esp": "GPIO 5 (SDA), GPIO 4 (SCL)"},
+        {"pin": "System I2C SDA / SCL", "esp": "GPIO 10 (SDA), GPIO 8 (SCL)"}
+      ]
+    },
+    {
+      "name": "3. Ngoại vi Tích hợp (FM Radio, Buzzer, IR)",
+      "subtitle": "Audio & Radio",
+      "icon": "fa-volume-high",
+      "pins": [
+        {"pin": "FM Radio Si4713", "esp": "I2C Grove (SDA 5, SCL 4)"},
+        {"pin": "Buzzer (Còi báo)", "esp": "GPIO 11"},
+        {"pin": "IR TX (Phát hồng ngoại)", "esp": "GPIO 9"}
+      ]
+    },
+    {
+      "name": "4. Cổng mở rộng SPI (CC1101 / NRF24 / SD)",
+      "subtitle": "SPI Bus ↔ ESP32-C6",
+      "icon": "fa-tower-broadcast",
+      "pins": [
+        {"pin": "SPI SCK", "esp": "GPIO 6"},
+        {"pin": "SPI MOSI", "esp": "GPIO 5"},
+        {"pin": "SPI MISO", "esp": "GPIO 4"},
+        {"pin": "SPI SS / CS", "esp": "GPIO 7"},
+        {"pin": "CC1101 GDO0 / NRF24 CE", "esp": "GPIO 2"}
+      ]
+    }
+  ]
+}

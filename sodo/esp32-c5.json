@@ -1,0 +1,47 @@
+{
+  "board_id": "esp32-c5",
+  "board_name": "ESP32-C5 Generic DevKit",
+  "chip": "ESP32-C5",
+  "notes": "Bo mạch phát triển đa năng ESP32-C5 RISC-V Dual-Band WiFi 6 (2.4/5GHz) + BLE 5.0 chuẩn Espressif DevKit, hỗ trợ kết nối màn hình SPI ngoài, BadUSB UART, thẻ MicroSD và LED RGB WS2812.",
+  "modules": [
+    {
+      "name": "1. Bus SPI Chuẩn (Màn hình / SD)",
+      "subtitle": "SPI Master Pin ↔ ESP32-C5",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "SPI SCK", "esp": "GPIO 10"},
+        {"pin": "SPI MOSI", "esp": "GPIO 8"},
+        {"pin": "SPI MISO", "esp": "GPIO 9"},
+        {"pin": "SPI SS / CS", "esp": "GPIO 6"}
+      ]
+    },
+    {
+      "name": "2. Cổng UART & LP UART",
+      "subtitle": "Serial Bus & CLI",
+      "icon": "fa-terminal",
+      "pins": [
+        {"pin": "UART TX (Default)", "esp": "GPIO 11"},
+        {"pin": "UART RX (Default)", "esp": "GPIO 12"},
+        {"pin": "LP UART TX (Low Power)", "esp": "GPIO 5"},
+        {"pin": "LP UART RX (Low Power)", "esp": "GPIO 4"}
+      ]
+    },
+    {
+      "name": "3. Bus I2C & LP I2C",
+      "subtitle": "I2C Sensor Bus",
+      "icon": "fa-plug",
+      "pins": [
+        {"pin": "I2C SDA / SCL (HP)", "esp": "GPIO 0 (SDA), GPIO 1 (SCL)"},
+        {"pin": "LP I2C SDA / SCL", "esp": "GPIO 2 (SDA), GPIO 3 (SCL)"}
+      ]
+    },
+    {
+      "name": "4. Đèn LED RGB Onboard",
+      "subtitle": "WS2812B RGB Indicator",
+      "icon": "fa-lightbulb",
+      "pins": [
+        {"pin": "RGB LED WS2812B", "esp": "GPIO 27"}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "board_id": "nm-cyd-c5",
+  "board_name": "NM-CYD-C5 / LilyGO C5 Touch",
+  "chip": "ESP32-C5",
+  "notes": "Bo mạch NM-CYD-C5 (Cheap Yellow Display ESP32-C5) & LilyGO C5 Touch, MCU RISC-V Dual-Band WiFi 6 (2.4/5GHz) + BLE 5, màn hình ST7789 240x320 cảm ứng điện trở/điện dung, khe thẻ MicroSD SPI, LED RGB WS2812B.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT",
+      "subtitle": "TFT Pin ↔ ESP32-C5 (ST7789 SPI 240x320)",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCL (SCK)", "esp": "GPIO 6"},
+        {"pin": "SDA (MOSI)", "esp": "GPIO 7"},
+        {"pin": "MISO", "esp": "GPIO 2"},
+        {"pin": "CS", "esp": "GPIO 23"},
+        {"pin": "DC", "esp": "GPIO 24"},
+        {"pin": "BLK (Đèn nền)", "esp": "GPIO 25"}
+      ]
+    },
+    {
+      "name": "2. Cảm ứng (Touch)",
+      "subtitle": "Touch Pin ↔ ESP32-C5",
+      "icon": "fa-hand-pointer",
+      "pins": [
+        {"pin": "TOUCH CS", "esp": "GPIO 1"},
+        {"pin": "TOUCH CLK", "esp": "GPIO 6 (SPI SCK)"},
+        {"pin": "TOUCH DIN", "esp": "GPIO 7 (SPI MOSI)"},
+        {"pin": "TOUCH DOUT", "esp": "GPIO 2 (SPI MISO)"}
+      ]
+    },
+    {
+      "name": "3. Thẻ nhớ MicroSD",
+      "subtitle": "MicroSD Pin ↔ ESP32-C5 (SPI)",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "SD CS", "esp": "GPIO 10"},
+        {"pin": "SD SCK", "esp": "GPIO 6"},
+        {"pin": "SD MOSI", "esp": "GPIO 7"},
+        {"pin": "SD MISO", "esp": "GPIO 2"}
+      ]
+    },
+    {
+      "name": "4. Đèn LED RGB & Nguồn",
+      "subtitle": "WS2812B RGB LED",
+      "icon": "fa-lightbulb",
+      "pins": [
+        {"pin": "RGB LED WS2812", "esp": "GPIO 27"}
+      ]
+    },
+    {
+      "name": "5. Cổng mở rộng Giao tiếp",
+      "subtitle": "UART & I2C Bus",
+      "icon": "fa-plug",
+      "pins": [
+        {"pin": "UART TX / RX", "esp": "GPIO 11 (TX), GPIO 12 (RX)"},
+        {"pin": "I2C Grove SDA / SCL", "esp": "GPIO 9 (SDA), GPIO 8 (SCL)"},
+        {"pin": "BadUSB / GPS Bus", "esp": "GPIO 5 (TX), GPIO 4 (RX)"}
+      ]
+    }
+  ]
+}

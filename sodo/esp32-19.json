@@ -1,0 +1,71 @@
+{
+  "board_id": "esp32-19",
+  "board_name": "ESP32-19 Dev Board",
+  "chip": "ESP32",
+  "notes": "Bo mạch ESP32-19 Dev Module chuẩn 4MB Flash, màn hình ST7789/ILI9341, chân cắm chuyên dụng cho MicroSD, Sub-GHz CC1101, NRF24, BadUSB CH9329 và Hồng ngoại IR.",
+  "modules": [
+    {
+      "name": "1. Module Thẻ nhớ MicroSD",
+      "subtitle": "MicroSD Pin ↔ ESP32 (SPI)",
+      "icon": "fa-sd-card",
+      "pins": [
+        {"pin": "SD SCK", "esp": "GPIO 25"},
+        {"pin": "SD MISO", "esp": "GPIO 27"},
+        {"pin": "SD MOSI", "esp": "GPIO 26"},
+        {"pin": "SD CS", "esp": "GPIO 33"}
+      ]
+    },
+    {
+      "name": "2. Module CC1101 (Sub-GHz)",
+      "subtitle": "CC1101 Pin ↔ ESP32",
+      "icon": "fa-tower-broadcast",
+      "pins": [
+        {"pin": "CC1101 SCK", "esp": "GPIO 25"},
+        {"pin": "CC1101 MISO", "esp": "GPIO 27"},
+        {"pin": "CC1101 MOSI", "esp": "GPIO 26"},
+        {"pin": "CC1101 CS", "esp": "GPIO 32"},
+        {"pin": "CC1101 GDO0", "esp": "GPIO 39"}
+      ]
+    },
+    {
+      "name": "3. Module NRF24L01+",
+      "subtitle": "NRF24 Pin ↔ ESP32",
+      "icon": "fa-wifi",
+      "pins": [
+        {"pin": "NRF24 SCK", "esp": "GPIO 25"},
+        {"pin": "NRF24 MISO", "esp": "GPIO 27"},
+        {"pin": "NRF24 MOSI", "esp": "GPIO 26"},
+        {"pin": "NRF24 CSN", "esp": "GPIO 38"},
+        {"pin": "NRF24 CE", "esp": "GPIO 37"}
+      ]
+    },
+    {
+      "name": "4. Module Hồng ngoại (IR)",
+      "subtitle": "IR TX & RX ↔ ESP32",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "IR Phát (TX LED)", "esp": "GPIO 2"},
+        {"pin": "IR Thu (RX Receiver)", "esp": "GPIO 15"}
+      ]
+    },
+    {
+      "name": "5. BadUSB (CH9329) & GPS",
+      "subtitle": "Serial UART ↔ ESP32",
+      "icon": "fa-keyboard",
+      "pins": [
+        {"pin": "UART TX (Gửi lệnh)", "esp": "GPIO 12"},
+        {"pin": "UART RX (Nhận dữ liệu)", "esp": "GPIO 13"}
+      ]
+    },
+    {
+      "name": "6. I2C Bus & Chân Tự Do",
+      "subtitle": "I2C SDA/SCL & GPIO mở rộng",
+      "icon": "fa-plug",
+      "pins": [
+        {"pin": "I2C SDA", "esp": "GPIO 21"},
+        {"pin": "I2C SCL", "esp": "GPIO 22"},
+        {"pin": "Chân mở rộng tự do", "esp": "GPIO 36, GPIO 17"}
+      ]
+    }
+  ]
+}
