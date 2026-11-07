@@ -13,7 +13,6 @@
         {"pin": "GND", "esp": "GND"},
         {"pin": "SCL (SCK)", "esp": "GPIO 6 (SPI SCK)"},
         {"pin": "SDA (MOSI)", "esp": "GPIO 7 (SPI MOSI)"},
-        {"pin": "MISO", "esp": "GPIO 2 (SPI MISO)"},
         {"pin": "RES (RST)", "esp": "Tự động reset (CHIP_PU)"},
         {"pin": "DC", "esp": "GPIO 24"},
         {"pin": "CS", "esp": "GPIO 23"},
@@ -25,8 +24,8 @@
       "subtitle": "Navigation Buttons ↔ ESP32-C5",
       "icon": "fa-gamepad",
       "pins": [
-        {"pin": "UP (Lên / Lùi)", "esp": "GPIO 0 (Active LOW, kéo trở lên)"},
-        {"pin": "SELECT (Chọn / OK / Đánh thức)", "esp": "GPIO 28 (Active LOW, hỗ trợ Wakeup)"},
+        {"pin": "UP (Lên / Lùi)", "esp": "GPIO 3 (Active LOW, kéo trở lên)"},
+        {"pin": "SELECT (Chọn / OK / Đánh thức)", "esp": "GPIO 2 (Active LOW, kèm GPIO 28 BOOT)"},
         {"pin": "DOWN (Xuống / Tới)", "esp": "GPIO 1 (Active LOW, kéo trở lên)"},
         {"pin": "THOÁT (ESC / Back)", "esp": "Nhấn đồng thời 2 phím UP + DOWN"}
       ]
@@ -37,7 +36,7 @@
       "icon": "fa-bolt",
       "pins": [
         {"pin": "LED RGB WS2812 (DIN)", "esp": "GPIO 27 (1 bóng RGB tích hợp)"},
-        {"pin": "IR TX (Phát hồng ngoại - SIG)", "esp": "GPIO 3 (TXLED)"},
+        {"pin": "IR TX (Phát hồng ngoại - SIG)", "esp": "GPIO 0 (TXLED)"},
         {"pin": "IR RX (Thu hồng ngoại - OUT)", "esp": "GPIO 26 (RXLED)"}
       ]
     },
