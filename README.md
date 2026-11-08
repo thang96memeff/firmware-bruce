@@ -40,16 +40,8 @@ Công cụ này hỗ trợ các bo mạch dựa trên chip ESP32 (thường dùn
 
 ---
 Ghé thăm Profile của mình tại: [@thang96memeff](https://github.com/thang96memeff)
-
-link bw16 firmware for flipper mode: https://github.com/gorebrau/delfyRTL
-
-
 support vietnamese and filipino
-
-
 add tetris game in other menu
-
-
 baoduscuvaomomnhi
 
 
