@@ -430,10 +430,28 @@
     "id": "bw16",
     "name": "Module BW16 (RTL8720DN Dual-Band 2.4/5GHz)",
     "chip": "RTL8720DN",
-    "category": "esp32",
-    "desc": "Module Wi-Fi 2 băng tần (2.4GHz + 5GHz) & BLE 5.0. Hỗ trợ Deauth / Beacon 5GHz kết nối với Bruce qua UART (PB1/PB2).",
-    "url": "Bruce-bw16.bin",
+    "category": "bw16",
+    "desc": "Realtek Ameba D RTL8720DN 5GHz & 2.4GHz Wi-Fi + BLE 5.0. Chuyên dụng nạp firmware BW16 từ thư mục bw16/km0_km4_image2.bin.",
+    "url": "bw16/km0_km4_image2.bin",
     "icon": "fa-wifi"
+  },
+  {
+    "id": "bw16-km4",
+    "name": "Module BW16 (km4_image2_all.bin)",
+    "chip": "RTL8720DN",
+    "category": "bw16",
+    "desc": "Phân vùng ứng dụng phụ trợ KM4 Deauther 5GHz nạp vào flash BW16 từ bw16/km4_image2_all.bin.",
+    "url": "bw16/km4_image2_all.bin",
+    "icon": "fa-network-wired"
+  },
+  {
+    "id": "bw16-km0",
+    "name": "Module BW16 (km0_boot_all.bin)",
+    "chip": "RTL8720DN",
+    "category": "bw16",
+    "desc": "Phân vùng Bootloader KM0 cho Realtek Ameba D từ bw16/km0_boot_all.bin.",
+    "url": "bw16/km0_boot_all.bin",
+    "icon": "fa-shield-halved"
   },
   {
     "id": "elecrow-24B",
