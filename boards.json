@@ -49,6 +49,15 @@
     "icon": "fa-bolt"
   },
   {
+    "id": "bruce-c5-1_47-n16r8",
+    "name": "Bruce C5 1.47\" (N16R8)",
+    "chip": "ESP32-C5",
+    "category": "c5",
+    "desc": "ST7789 1.47 inch 170x320. RISC-V 240MHz, Dual-Band WiFi 6, 16MB Flash + 8MB PSRAM, 3-Key Navigation (Xingzhi).",
+    "url": "Bruce-bruce-c5-1_47-n16r8.bin",
+    "icon": "fa-bolt"
+  },
+  {
     "id": "bruce-c5-1_69",
     "name": "Bruce C5 Touch 1.69\"",
     "chip": "ESP32-C5",

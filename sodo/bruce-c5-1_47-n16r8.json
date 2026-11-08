@@ -1,0 +1,55 @@
+{
+  "board_id": "bruce-c5-1_47-n16r8",
+  "board_name": "Bruce C5 1.47\" N16R8 (ESP32-C5 RISC-V)",
+  "chip": "ESP32-C5",
+  "notes": "Bo mạch phát triển kiến trúc RISC-V Dual-Band WiFi 6 (2.4/5GHz) + BLE 5.0, cấu hình bộ nhớ khủng 16MB Flash + 8MB PSRAM, màn hình IPS ST7789 1.47 inch 170x320 sắc nét, 3 phím điều hướng vật lý, đèn LED RGB WS2812 và mắt thu/phát hồng ngoại tích hợp.",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT LCD",
+      "subtitle": "TFT ST7789 1.47\" (170x320) ↔ ESP32-C5 SPI",
+      "icon": "fa-tv",
+      "pins": [
+        {"pin": "VCC", "esp": "3.3V (Nguồn bo)"},
+        {"pin": "GND", "esp": "GND"},
+        {"pin": "SCL (SCK)", "esp": "GPIO 6 (SPI SCK)"},
+        {"pin": "SDA (MOSI)", "esp": "GPIO 7 (SPI MOSI)"},
+        {"pin": "RES (RST)", "esp": "Tự động reset (CHIP_PU)"},
+        {"pin": "DC", "esp": "GPIO 24"},
+        {"pin": "CS", "esp": "GPIO 23"},
+        {"pin": "BLK (Đèn nền)", "esp": "GPIO 25 (PWM điều chỉnh độ sáng)"}
+      ]
+    },
+    {
+      "name": "2. Cụm Phím Điều Hướng Đa Nhiệm (ESP32_Button)",
+      "subtitle": "Multi-Click Navigation ↔ ESP32-C5",
+      "icon": "fa-gamepad",
+      "pins": [
+        {"pin": "DOWN / NEXT (Xuống / Tới)", "esp": "GPIO 1 (Click: Next, Double: OK, Giữ: Cuộn nhanh)"},
+        {"pin": "UP / PREV (Lên / Lùi)", "esp": "GPIO 0 hoặc GPIO 3 (Click: Prev, Double: ESC, Giữ: Cuộn nhanh)"},
+        {"pin": "OK / ESC (Chọn / Thoát)", "esp": "GPIO 28 - Nút BOOT trên chip (Click: OK, Giữ >0.8s: ESC)"}
+      ]
+    },
+    {
+      "name": "3. Đèn LED RGB WS2812 & Hồng Ngoại (IR)",
+      "subtitle": "RGB LED & IR Transceiver ↔ ESP32-C5",
+      "icon": "fa-bolt",
+      "pins": [
+        {"pin": "LED RGB WS2812 (DIN)", "esp": "GPIO 27 (1 bóng RGB tích hợp)"},
+        {"pin": "IR TX (Phát hồng ngoại - SIG)", "esp": "GPIO 0 (TXLED)"},
+        {"pin": "IR RX (Thu hồng ngoại - OUT)", "esp": "GPIO 26 (RXLED)"}
+      ]
+    },
+    {
+      "name": "4. Cổng Giao Tiếp Mở Rộng (UART & I2C)",
+      "subtitle": "Expansion Interfaces ↔ ESP32-C5",
+      "icon": "fa-plug",
+      "pins": [
+        {"pin": "UART TX (Serial / Log / BadUSB)", "esp": "GPIO 11"},
+        {"pin": "UART RX (Serial / Log / BadUSB)", "esp": "GPIO 12"},
+        {"pin": "I2C SDA (Grove / Cảm biến)", "esp": "GPIO 4"},
+        {"pin": "I2C SCL (Grove / Cảm biến)", "esp": "GPIO 5"},
+        {"pin": "SPI MISO (Chân phụ)", "esp": "GPIO 2 (MTMS/JTAG)"}
+      ]
+    }
+  ]
+}
