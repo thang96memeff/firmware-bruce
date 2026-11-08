@@ -51,7 +51,19 @@
       ]
     },
     {
-      "name": "5. Chuẩn Kết Nối Không Dây & Bộ Nhớ",
+      "name": "5. Giao Tiếp SPI Ngoại Vi (NRF24 / CC1101)",
+      "subtitle": "Hardware SPI Bus ↔ NRF24L01+ & CC1101 Transceivers",
+      "icon": "fa-satellite-dish",
+      "pins": [
+        {"pin": "SPI SCK", "esp": "GPIO 6 (Chung bus SPI màn hình)"},
+        {"pin": "SPI MOSI", "esp": "GPIO 7 (Chung bus SPI màn hình)"},
+        {"pin": "SPI MISO (NRF24 / CC1101)", "esp": "GPIO 2 (Chân MISO chuyên dụng ngoại vi RF, màn hình TFT_MISO vẫn để -1)"},
+        {"pin": "SPI CS / SS", "esp": "GPIO 9 (CC1101_SS_PIN / NRF24_SS_PIN)"},
+        {"pin": "CE / GDO0", "esp": "GPIO 8 (CC1101_GDO0_PIN / NRF24_CE_PIN)"}
+      ]
+    },
+    {
+      "name": "6. Chuẩn Kết Nối Không Dây & Bộ Nhớ",
       "subtitle": "Hardware Specifications & Architecture Notes",
       "icon": "fa-wifi",
       "pins": [
