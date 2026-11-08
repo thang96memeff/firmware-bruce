@@ -1,8 +1,8 @@
 {
   "board_id": "bruce-c5-1_47",
-  "board_name": "Bruce C5 1.47\" (ESP32-C5 RISC-V)",
+  "board_name": "Bruce C5 1.47\" N8 (ESP32-C5 Không PSRAM)",
   "chip": "ESP32-C5",
-  "notes": "Bo mạch phát triển kiến trúc RISC-V Dual-Band WiFi 6 (2.4/5GHz) + BLE 5.0, màn hình IPS ST7789 1.47 inch 170x320 sắc nét, 3 phím điều hướng vật lý, đèn LED RGB WS2812 và mắt thu/phát hồng ngoại tích hợp.",
+  "notes": "Bo mạch phát triển kiến trúc RISC-V Dual-Band WiFi 6 (2.4/5GHz) + BLE 5.0, 8MB Flash (Không có PSRAM), màn hình IPS ST7789 1.47 inch 170x320 sắc nét, 3 phím điều hướng vật lý chuẩn Xingzhi (DOWN=1, UP=0, OK/ESC=28), đèn LED RGB WS2812.",
   "modules": [
     {
       "name": "1. Màn hình TFT LCD",
@@ -20,13 +20,13 @@
       ]
     },
     {
-      "name": "2. Cụm Phím Điều Hướng Đa Nhiệm (ESP32_Button)",
-      "subtitle": "Multi-Click Navigation ↔ ESP32-C5",
+      "name": "2. Cụm 3 Phím Điều Hướng Vật Lý (Cơ chế Xingzhi)",
+      "subtitle": "Xingzhi 3-Button Navigation ↔ ESP32-C5",
       "icon": "fa-gamepad",
       "pins": [
-        {"pin": "DOWN / NEXT (Xuống / Tới)", "esp": "GPIO 1 (Click: Next, Double: OK, Giữ: Cuộn nhanh)"},
-        {"pin": "UP / PREV (Lên / Lùi)", "esp": "GPIO 0 hoặc GPIO 3 (Click: Prev, Double: ESC, Giữ: Cuộn nhanh)"},
-        {"pin": "OK / ESC (Chọn / Thoát)", "esp": "GPIO 28 - Nút BOOT trên chip (Click: OK, Giữ >0.8s: ESC)"}
+        {"pin": "DOWN / NEXT (Xuống / Tới)", "esp": "GPIO 1 (Click: Next, Giữ: Cuộn nhanh)"},
+        {"pin": "UP / PREV (Lên / Lùi)", "esp": "GPIO 0 (Click: Prev, Giữ: Cuộn nhanh)"},
+        {"pin": "OK / ESC (Chọn / Thoát)", "esp": "GPIO 28 - Nút BOOT trên chip (Click: OK, Giữ >1.5s: ESC / Thoát)"}
       ]
     },
     {
@@ -35,7 +35,6 @@
       "icon": "fa-bolt",
       "pins": [
         {"pin": "LED RGB WS2812 (DIN)", "esp": "GPIO 27 (1 bóng RGB tích hợp)"},
-        {"pin": "IR TX (Phát hồng ngoại - SIG)", "esp": "GPIO 0 (TXLED)"},
         {"pin": "IR RX (Thu hồng ngoại - OUT)", "esp": "GPIO 26 (RXLED)"}
       ]
     },
@@ -52,11 +51,12 @@
       ]
     },
     {
-      "name": "5. Chuẩn Kết Nối Không Dây & Thẻ Nhớ",
+      "name": "5. Chuẩn Kết Nối Không Dây & Bộ Nhớ",
       "subtitle": "Hardware Specifications & Architecture Notes",
       "icon": "fa-wifi",
       "pins": [
         {"pin": "Wi-Fi 6 & Bluetooth", "esp": "Tích hợp sẵn Dual-Band 2.4GHz + 5GHz & BLE 5.0 native trên chip, KHÔNG CẦN module BW16 ngoài"},
+        {"pin": "Bộ nhớ", "esp": "8MB SPI Flash, Không có PSRAM (No PSRAM)"},
         {"pin": "Thẻ nhớ MicroSD", "esp": "N/A (Bo mạch không tích hợp khe MicroSD để chống xung đột / hijack bus GPSPI của màn hình)"}
       ]
     }
