@@ -356,12 +356,12 @@
   },
   {
     "id": "Phantom_S024R",
-    "name": "Phantom S024R",
+    "name": "Phantom CYD Standard (2.4\")",
     "chip": "ESP32",
     "category": "esp32",
-    "desc": "2.4 inch SPI ST7789 display instrument.",
+    "desc": "Cheap Yellow Display 2.4 inch cảm ứng điện trở ILI9341 240x320, khe MicroSD & chân mở rộng CC1101 ngoài.",
     "url": "Bruce-Phantom_S024R.bin",
-    "icon": "fa-wave-square"
+    "icon": "fa-ghost"
   },
   {
     "id": "xk404",
@@ -434,5 +434,185 @@
     "desc": "Module Wi-Fi 2 băng tần (2.4GHz + 5GHz) & BLE 5.0. Hỗ trợ Deauth / Beacon 5GHz kết nối với Bruce qua UART (PB1/PB2).",
     "url": "Bruce-bw16.bin",
     "icon": "fa-wifi"
+  },
+  {
+    "id": "elecrow-24B",
+    "name": "Elecrow 2.4\" Display (24B)",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "Elecrow CrowPanel ESP32 HMI (2.4\", 2.8\", 3.5\"), cảm ứng điện trở XPT2046 HSPI, khe thẻ MicroSD VSPI.",
+    "url": "Bruce-elecrow.bin",
+    "icon": "fa-tv"
+  },
+  {
+    "id": "lilygo-t-display-S3-pro",
+    "name": "LilyGO T-Display S3 Pro",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Capacitive touch screen, camera support and LiPo charging circuit.",
+    "url": "Bruce-lilygo-t-display-S3-pro.bin",
+    "icon": "fa-mobile-screen"
+  },
+  {
+    "id": "Awok-Mini",
+    "name": "AWOK Mini Pentest",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "AWOK Mini ESP32 WROOM 4MB, WiFi Sniffer & Pentest Suite di động.",
+    "url": "Bruce-Awok-Mini.bin",
+    "icon": "fa-shield-halved"
+  },
+  {
+    "id": "Awok-Touch",
+    "name": "AWOK Touch ESP32",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "AWOK ESP32 kèm màn hình cảm ứng Touch Screen ILI9341 2.8\"/3.2\".",
+    "url": "Bruce-Awok-Touch.bin",
+    "icon": "fa-hand-pointer"
+  },
+  {
+    "id": "CYD-2432W328C_2",
+    "name": "CYD 2.4\" Capacitive (2432S024C)",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "CYD 2.4 inch Màn hình cảm ứng điện dung CST816, ST7789, MicroSD SoftSPI.",
+    "url": "Bruce-CYD-2432W328C_2.bin",
+    "icon": "fa-tv"
+  },
+  {
+    "id": "Marauder-V4-V6",
+    "name": "Marauder V4 / V6 Touch",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "ESP32 Marauder phần cứng chuẩn V4/V6, màn hình cảm ứng ILI9341.",
+    "url": "Bruce-Marauder-V4-V6.bin",
+    "icon": "fa-skull"
+  },
+  {
+    "id": "Marauder-v61",
+    "name": "Marauder v6.1 Touch",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "ESP32 Marauder v6.1 phiên bản tối ưu chân pin Touch & SD card.",
+    "url": "Bruce-Marauder-v61.bin",
+    "icon": "fa-skull"
+  },
+  {
+    "id": "Marauder-v7",
+    "name": "Marauder v7 Mini",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "ESP32 Marauder v7 Pocket Edition, tối ưu hóa kích thước bỏ túi.",
+    "url": "Bruce-Marauder-v7.bin",
+    "icon": "fa-skull"
+  },
+  {
+    "id": "WaveSentry-R1",
+    "name": "WaveSentry R1 Pentest",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "Thiết bị chuyên dụng giám sát tần số vô tuyến và phân tích gói tin RF/WiFi.",
+    "url": "Bruce-WaveSentry-R1.bin",
+    "icon": "fa-tower-broadcast"
+  },
+  {
+    "id": "elecrow-28B",
+    "name": "Elecrow 2.8\" Display (28B)",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "Elecrow ESP32 2.8 inch TFT LCD cảm ứng điện trở XPT2046, MicroSD.",
+    "url": "Bruce-elecrow-28B.bin",
+    "icon": "fa-display"
+  },
+  {
+    "id": "elecrow-35B",
+    "name": "Elecrow 3.5\" Display (35B)",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "Elecrow ESP32 3.5 inch ILI9488 TFT LCD, cảm ứng điện trở/điện dung.",
+    "url": "Bruce-elecrow-35B.bin",
+    "icon": "fa-display"
+  },
+  {
+    "id": "elecrow-35Bv2_2",
+    "name": "Elecrow 3.5\" v2.2 Display",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "Elecrow ESP32 3.5 inch phiên bản nâng cấp phần cứng v2.2.",
+    "url": "Bruce-elecrow-35Bv2_2.bin",
+    "icon": "fa-display"
+  },
+  {
+    "id": "esp32-s3-devkitc-1-psram",
+    "name": "ESP32-S3 DevKitC-1 (PSRAM)",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Espressif ESP32-S3-DevKitC-1 N8R8 (8MB Flash + 8MB Octal PSRAM).",
+    "url": "Bruce-esp32-s3-devkitc-1-psram.bin",
+    "icon": "fa-microchip"
+  },
+  {
+    "id": "lilygo-t-deck-pro",
+    "name": "LilyGO T-Deck Pro / Plus",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "T-Deck Pro bàn phím QWERTY nâng cấp, màn hình cảm ứng, GPS & LoRa SX1262.",
+    "url": "Bruce-lilygo-t-deck-pro.bin",
+    "icon": "fa-keyboard"
+  },
+  {
+    "id": "lilygo-t-display-s3-mmc",
+    "name": "LilyGO T-Display S3 (SD MMC)",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "ESP32-S3 T-Display ST7789 kèm giao tiếp thẻ nhớ SD MMC tốc độ cao.",
+    "url": "Bruce-lilygo-t-display-s3-mmc.bin",
+    "icon": "fa-sd-card"
+  },
+  {
+    "id": "lilygo-t-display-s3-touch-mmc",
+    "name": "LilyGO T-Display S3 Touch MMC",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "ESP32-S3 Cảm ứng CST816 kèm khe thẻ nhớ SD MMC 4-bit.",
+    "url": "Bruce-lilygo-t-display-s3-touch-mmc.bin",
+    "icon": "fa-hand-pointer"
+  },
+  {
+    "id": "lilygo-t-hmi",
+    "name": "LilyGO T-HMI 2.8\" Touch",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "ESP32-S3 HMI màn hình 2.8 inch ST7789V cảm ứng điện dung FT6336U.",
+    "url": "Bruce-lilygo-t-hmi.bin",
+    "icon": "fa-desktop"
+  },
+  {
+    "id": "lilygo-t-lora-pager",
+    "name": "LilyGO T-LoRa Pager",
+    "chip": "ESP32-S3",
+    "category": "s3",
+    "desc": "Máy nhắn tin LoRa SX1262 cầm tay, bàn phím số, màn hình hiển thị.",
+    "url": "Bruce-lilygo-t-lora-pager.bin",
+    "icon": "fa-pager"
+  },
+  {
+    "id": "m5stack-core16mb",
+    "name": "M5Stack Core Gray/Basic (16MB)",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "M5Stack Core Basic / Gray nâng cấp 16MB Flash, ILI9342C LCD 320x240.",
+    "url": "Bruce-m5stack-core16mb.bin",
+    "icon": "fa-cube"
+  },
+  {
+    "id": "m5stack-core4mb",
+    "name": "M5Stack Core Basic (4MB)",
+    "chip": "ESP32",
+    "category": "esp32",
+    "desc": "M5Stack Core Basic bản tiêu chuẩn 4MB Flash (Không PSRAM), ILI9342C LCD.",
+    "url": "Bruce-m5stack-core4mb.bin",
+    "icon": "fa-cube"
   }
 ]
