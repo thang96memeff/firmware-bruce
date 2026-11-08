@@ -20,14 +20,13 @@
       ]
     },
     {
-      "name": "2. Cụm 3 Phím Điều Hướng Vật Lý",
-      "subtitle": "Navigation Buttons ↔ ESP32-C5",
+      "name": "2. Cụm Phím Điều Hướng Đa Nhiệm (ESP32_Button)",
+      "subtitle": "Multi-Click Navigation ↔ ESP32-C5",
       "icon": "fa-gamepad",
       "pins": [
-        {"pin": "UP (Lên / Lùi)", "esp": "GPIO 3 (Active LOW, kéo trở lên)"},
-        {"pin": "SELECT (Chọn / OK / Đánh thức)", "esp": "GPIO 2 (Active LOW, kèm GPIO 28 BOOT)"},
-        {"pin": "DOWN (Xuống / Tới)", "esp": "GPIO 1 (Active LOW, kéo trở lên)"},
-        {"pin": "THOÁT (ESC / Back)", "esp": "Nhấn đồng thời 2 phím UP + DOWN"}
+        {"pin": "DOWN / NEXT (Xuống / Tới)", "esp": "GPIO 1 (Click: Next, Double: OK, Giữ: Cuộn nhanh)"},
+        {"pin": "UP / PREV (Lên / Lùi)", "esp": "GPIO 0 hoặc GPIO 3 (Click: Prev, Double: ESC, Giữ: Cuộn nhanh)"},
+        {"pin": "OK / ESC (Chọn / Thoát)", "esp": "GPIO 28 - Nút BOOT trên chip (Click: OK, Giữ >0.8s: ESC)"}
       ]
     },
     {
