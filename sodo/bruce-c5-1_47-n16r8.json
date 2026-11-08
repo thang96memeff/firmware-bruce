@@ -57,7 +57,7 @@
       "pins": [
         {"pin": "SPI SCK", "esp": "GPIO 6 (Chung bus SPI màn hình)"},
         {"pin": "SPI MOSI", "esp": "GPIO 7 (Chung bus SPI màn hình)"},
-        {"pin": "SPI MISO (NRF24 / CC1101)", "esp": "GPIO 2 (Chân MISO chuyên dụng ngoại vi RF, màn hình TFT_MISO vẫn để -1)"},
+        {"pin": "SPI MISO (NRF24 / CC1101)", "esp": "GPIO 2 (Chung bus phần cứng GPSPI2 với màn hình, cấu hình TFT_MISO=2 để mở đường nhận dữ liệu RF)"},
         {"pin": "SPI CS / SS", "esp": "GPIO 9 (CC1101_SS_PIN / NRF24_SS_PIN)"},
         {"pin": "CE / GDO0", "esp": "GPIO 8 (CC1101_GDO0_PIN / NRF24_CE_PIN)"}
       ]
