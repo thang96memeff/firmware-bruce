@@ -112,6 +112,45 @@
           "esp": "GPIO 22"
         }
       ]
+    },
+    {
+      "name": "4. Module Thu/Phát NRF24L01 (2.4GHz)",
+      "subtitle": "NRF24 Pin ↔ ESP32 GPIO",
+      "icon": "fa-wifi",
+      "pins": [
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Nên hàn tụ 10µF - 100µF giữa VCC và GND)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "CE (Chip Enable)",
+          "esp": "GPIO 2"
+        },
+        {
+          "pin": "CSN / SS (Chip Select)",
+          "esp": "GPIO 12"
+        },
+        {
+          "pin": "SCK (Xung nhịp)",
+          "esp": "GPIO 21 (Chung SCK với thẻ nhớ)"
+        },
+        {
+          "pin": "MOSI (Data In)",
+          "esp": "GPIO 17 (Chung MOSI với thẻ nhớ)"
+        },
+        {
+          "pin": "MISO (Data Out)",
+          "esp": "GPIO 33 (Chân MISO riêng)"
+        },
+        {
+          "pin": "IRQ (Ngắt)",
+          "esp": "Không kết nối (NC)"
+        }
+      ]
     }
   ]
 }
