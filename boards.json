@@ -428,10 +428,10 @@
   },
   {
     "id": "bw16",
-    "name": "Module BW16 (RTL8720DN Dual-Band 2.4/5GHz)",
+    "name": "Module BW16 (RTL8720DN Dual-Band 2.4/5GHz v1.3)",
     "chip": "RTL8720DN",
     "category": "bw16",
-    "desc": "Realtek Ameba D RTL8720DN 5GHz & 2.4GHz Wi-Fi + BLE 5.0. Chuyên dụng nạp firmware BW16 từ thư mục bw16/km0_km4_image2.bin.",
+    "desc": "Firmware BW16 v1.3 Dual-Band 2.4G/5G (Khóa bản quyền Flash NVM + Co-Processor Portal + Đa băng tần kép). Khuyên dùng tải gói nạp 1-Click BW16_v1.3.zip ở trang chủ.",
     "url": "bw16/km0_km4_image2.bin",
     "icon": "fa-wifi"
   },
