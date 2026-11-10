@@ -9,14 +9,38 @@
       "subtitle": "TFT ST7789 ↔ ESP32-C5 SPI",
       "icon": "fa-tv",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V (Nguồn bo)"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCL (SCK)", "esp": "GPIO 6 (SPI SCK)"},
-        {"pin": "SDA (MOSI)", "esp": "GPIO 7 (SPI MOSI)"},
-        {"pin": "RES (RST)", "esp": "GPIO 10"},
-        {"pin": "DC", "esp": "GPIO 24"},
-        {"pin": "CS", "esp": "GPIO 23"},
-        {"pin": "BLK (Đèn nền)", "esp": "GPIO 25"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Nguồn bo)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCL (SCK)",
+          "esp": "GPIO 6 (SPI SCK)"
+        },
+        {
+          "pin": "SDA (MOSI)",
+          "esp": "GPIO 7 (SPI MOSI)"
+        },
+        {
+          "pin": "RES (RST)",
+          "esp": "GPIO 10"
+        },
+        {
+          "pin": "DC",
+          "esp": "GPIO 24"
+        },
+        {
+          "pin": "CS",
+          "esp": "GPIO 23"
+        },
+        {
+          "pin": "BLK (Đèn nền)",
+          "esp": "GPIO 25"
+        }
       ]
     },
     {
@@ -24,11 +48,26 @@
       "subtitle": "Capacitive Touch CST816S & WS2812",
       "icon": "fa-hand-pointer",
       "pins": [
-        {"pin": "CST816S SDA", "esp": "GPIO 8 (I2C SDA)"},
-        {"pin": "CST816S SCL", "esp": "GPIO 9 (I2C SCL)"},
-        {"pin": "CST816S INT", "esp": "GPIO 2"},
-        {"pin": "CST816S RST", "esp": "GPIO 14"},
-        {"pin": "LED RGB WS2812", "esp": "GPIO 27"}
+        {
+          "pin": "CST816S SDA",
+          "esp": "GPIO 8 (I2C SDA)"
+        },
+        {
+          "pin": "CST816S SCL",
+          "esp": "GPIO 9 (I2C SCL)"
+        },
+        {
+          "pin": "CST816S INT",
+          "esp": "GPIO 2"
+        },
+        {
+          "pin": "CST816S RST",
+          "esp": "GPIO 14"
+        },
+        {
+          "pin": "LED RGB WS2812",
+          "esp": "GPIO 27"
+        }
       ]
     },
     {
@@ -36,8 +75,14 @@
       "subtitle": "IR Transceiver ↔ ESP32-C5",
       "icon": "fa-bolt",
       "pins": [
-        {"pin": "IR TX (Phát hồng ngoại - SIG)", "esp": "GPIO 3 (TXLED)"},
-        {"pin": "IR RX (Thu hồng ngoại - OUT)", "esp": "GPIO 26 (RXLED)"}
+        {
+          "pin": "IR TX (Phát hồng ngoại - SIG)",
+          "esp": "GPIO 3 (TXLED)"
+        },
+        {
+          "pin": "IR RX (Thu hồng ngoại - OUT)",
+          "esp": "GPIO 26 (RXLED)"
+        }
       ]
     },
     {
@@ -45,9 +90,18 @@
       "subtitle": "Expansion Interfaces & Wireless",
       "icon": "fa-wifi",
       "pins": [
-        {"pin": "Wi-Fi 6 & Bluetooth", "esp": "Dual-Band 2.4GHz + 5GHz & BLE 5.0 native trên chip, KHÔNG CẦN module BW16 ngoài"},
-        {"pin": "UART TX / RX", "esp": "GPIO 5 (TX), GPIO 4 (RX)"},
-        {"pin": "Thẻ nhớ microSD", "esp": "N/A (Disable để bảo vệ bus GPSPI phần cứng của màn hình)"}
+        {
+          "pin": "Wi-Fi 6 & Bluetooth",
+          "esp": "Dual-Band 2.4GHz + 5GHz & BLE 5.0 native trên chip, KHÔNG CẦN module BW16 ngoài"
+        },
+        {
+          "pin": "UART TX / RX",
+          "esp": "GPIO 5, GPIO 4"
+        },
+        {
+          "pin": "Thẻ nhớ microSD",
+          "esp": "N/A (Disable để bảo vệ bus GPSPI phần cứng của màn hình)"
+        }
       ]
     }
   ]

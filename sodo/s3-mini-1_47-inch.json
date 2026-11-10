@@ -35,11 +35,11 @@
         },
         {
           "pin": "CS",
-          "esp": "Chân RX (GPIO 44)"
+          "esp": "GPIO 44"
         },
         {
           "pin": "BLK",
-          "esp": "Chân TX (GPIO 43)"
+          "esp": "GPIO 43"
         }
       ]
     },
@@ -123,11 +123,11 @@
         },
         {
           "pin": "PB2",
-          "esp": "GPIO 4 (TX)"
+          "esp": "GPIO 4"
         },
         {
           "pin": "PB1",
-          "esp": "GPIO 5 (RX)"
+          "esp": "GPIO 5"
         }
       ]
     },
@@ -146,11 +146,11 @@
         },
         {
           "pin": "TX",
-          "esp": "GPIO 5 (RX)"
+          "esp": "GPIO 5"
         },
         {
           "pin": "RX",
-          "esp": "GPIO 4 (TX)"
+          "esp": "GPIO 4"
         }
       ]
     },

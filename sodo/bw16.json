@@ -11,8 +11,8 @@
       "pins": [
         {"pin": "VCC", "esp": "Cấp 5V vào chân VIN (khuyên dùng) hoặc 3.3V"},
         {"pin": "GND", "esp": "GND (Bắt buộc nối chung Mass với bo ESP32 chủ)"},
-        {"pin": "PB1 (BW16 TX1)", "esp": "Nối chéo sang RX của bo ESP32 chủ"},
-        {"pin": "PB2 (BW16 RX1)", "esp": "Nối chéo sang TX của bo ESP32 chủ"}
+        {"pin": "PB1", "esp": "Cắm vào GPIO nhận của ESP32 (Xem sơ đồ từng bo mạch, TUYỆT ĐỐI KHÔNG cắm chân TX/RX nạp USB)"},
+        {"pin": "PB2", "esp": "Cắm vào GPIO truyền của ESP32 (Xem sơ đồ từng bo mạch, TUYỆT ĐỐI KHÔNG cắm chân TX/RX nạp USB)"}
       ]
     },
     {

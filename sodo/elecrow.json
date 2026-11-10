@@ -9,12 +9,30 @@
       "subtitle": "TFT Display ↔ ESP32 (HSPI)",
       "icon": "fa-tv",
       "pins": [
-        {"pin": "TFT MOSI", "esp": "GPIO 13"},
-        {"pin": "TFT MISO", "esp": "GPIO 12"},
-        {"pin": "TFT SCLK", "esp": "GPIO 14"},
-        {"pin": "TFT CS", "esp": "GPIO 15"},
-        {"pin": "TFT DC", "esp": "GPIO 2"},
-        {"pin": "TFT BL (Đèn nền)", "esp": "GPIO 27"}
+        {
+          "pin": "TFT MOSI",
+          "esp": "GPIO 13"
+        },
+        {
+          "pin": "TFT MISO",
+          "esp": "GPIO 12"
+        },
+        {
+          "pin": "TFT SCLK",
+          "esp": "GPIO 14"
+        },
+        {
+          "pin": "TFT CS",
+          "esp": "GPIO 15"
+        },
+        {
+          "pin": "TFT DC",
+          "esp": "GPIO 2"
+        },
+        {
+          "pin": "TFT BL (Đèn nền)",
+          "esp": "GPIO 27"
+        }
       ]
     },
     {
@@ -22,9 +40,18 @@
       "subtitle": "Touch Controller (HSPI Shared)",
       "icon": "fa-hand-pointer",
       "pins": [
-        {"pin": "Touch CS", "esp": "GPIO 33"},
-        {"pin": "Touch IRQ (Ngắt chạm)", "esp": "GPIO 36"},
-        {"pin": "Touch SPI (SCK/MISO/MOSI)", "esp": "Dùng chung HSPI (GPIO 14, 12, 13)"}
+        {
+          "pin": "Touch CS",
+          "esp": "GPIO 33"
+        },
+        {
+          "pin": "Touch IRQ (Ngắt chạm)",
+          "esp": "GPIO 36"
+        },
+        {
+          "pin": "Touch SPI (SCK/MISO/MOSI)",
+          "esp": "Dùng chung HSPI (GPIO 14, 12, 13)"
+        }
       ]
     },
     {
@@ -32,10 +59,22 @@
       "subtitle": "MicroSD ↔ ESP32 (VSPI)",
       "icon": "fa-sd-card",
       "pins": [
-        {"pin": "SD CS", "esp": "GPIO 5"},
-        {"pin": "SD SCK", "esp": "GPIO 18"},
-        {"pin": "SD MISO", "esp": "GPIO 19"},
-        {"pin": "SD MOSI", "esp": "GPIO 23"}
+        {
+          "pin": "SD CS",
+          "esp": "GPIO 5"
+        },
+        {
+          "pin": "SD SCK",
+          "esp": "GPIO 18"
+        },
+        {
+          "pin": "SD MISO",
+          "esp": "GPIO 19"
+        },
+        {
+          "pin": "SD MOSI",
+          "esp": "GPIO 23"
+        }
       ]
     },
     {
@@ -43,8 +82,14 @@
       "subtitle": "I2C Bus & UART",
       "icon": "fa-plug",
       "pins": [
-        {"pin": "I2C SDA / SCL", "esp": "GPIO 21 (SDA), GPIO 22 (SCL)"},
-        {"pin": "UART TX / RX", "esp": "GPIO 1 (TX), GPIO 3 (RX)"}
+        {
+          "pin": "I2C SDA / SCL",
+          "esp": "GPIO 21 (SDA), GPIO 22 (SCL)"
+        },
+        {
+          "pin": "UART TX / RX",
+          "esp": "GPIO 1, GPIO 3"
+        }
       ]
     }
   ]

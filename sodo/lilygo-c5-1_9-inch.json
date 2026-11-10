@@ -9,14 +9,38 @@
       "subtitle": "TFT ST7789 1.9\" (170x320) ↔ ESP32-C5 SPI",
       "icon": "fa-tv",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V (Nguồn bo)"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCL (SCK)", "esp": "GPIO 7 (SPI SCK)"},
-        {"pin": "SDA (MOSI)", "esp": "GPIO 9 (SPI MOSI)"},
-        {"pin": "RES (RST)", "esp": "GPIO 23"},
-        {"pin": "DC", "esp": "GPIO 8"},
-        {"pin": "CS", "esp": "GPIO 26"},
-        {"pin": "BLK (Đèn nền)", "esp": "GPIO 25 (Điều chỉnh độ sáng)"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Nguồn bo)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCL (SCK)",
+          "esp": "GPIO 7 (SPI SCK)"
+        },
+        {
+          "pin": "SDA (MOSI)",
+          "esp": "GPIO 9 (SPI MOSI)"
+        },
+        {
+          "pin": "RES (RST)",
+          "esp": "GPIO 23"
+        },
+        {
+          "pin": "DC",
+          "esp": "GPIO 8"
+        },
+        {
+          "pin": "CS",
+          "esp": "GPIO 26"
+        },
+        {
+          "pin": "BLK (Đèn nền)",
+          "esp": "GPIO 25 (Điều chỉnh độ sáng)"
+        }
       ]
     },
     {
@@ -24,12 +48,30 @@
       "subtitle": "Buttons & Power Management IC",
       "icon": "fa-gamepad",
       "pins": [
-        {"pin": "UP", "esp": "GPIO 28 (Active LOW)"},
-        {"pin": "DOWN", "esp": "GPIO 0 (Active LOW)"},
-        {"pin": "OK / SELECT", "esp": "GPIO 27 (Active LOW)"},
-        {"pin": "AXP2602 PMU SDA", "esp": "GPIO 2 (I2C SDA)"},
-        {"pin": "AXP2602 PMU SCL", "esp": "GPIO 3 (I2C SCL)"},
-        {"pin": "AXP2602 PMU IRQ", "esp": "GPIO 10 (Ngắt quản lý nguồn)"}
+        {
+          "pin": "UP",
+          "esp": "GPIO 28 (Active LOW)"
+        },
+        {
+          "pin": "DOWN",
+          "esp": "GPIO 0 (Active LOW)"
+        },
+        {
+          "pin": "OK / SELECT",
+          "esp": "GPIO 27 (Active LOW)"
+        },
+        {
+          "pin": "AXP2602 PMU SDA",
+          "esp": "GPIO 2 (I2C SDA)"
+        },
+        {
+          "pin": "AXP2602 PMU SCL",
+          "esp": "GPIO 3 (I2C SCL)"
+        },
+        {
+          "pin": "AXP2602 PMU IRQ",
+          "esp": "GPIO 10 (Ngắt quản lý nguồn)"
+        }
       ]
     },
     {
@@ -37,8 +79,14 @@
       "subtitle": "IR Transceiver ↔ ESP32-C5",
       "icon": "fa-bolt",
       "pins": [
-        {"pin": "IR TX (Phát hồng ngoại - SIG)", "esp": "GPIO 14 (TXLED)"},
-        {"pin": "IR RX (Thu hồng ngoại - OUT)", "esp": "GPIO 13 (RXLED)"}
+        {
+          "pin": "IR TX (Phát hồng ngoại - SIG)",
+          "esp": "GPIO 14 (TXLED)"
+        },
+        {
+          "pin": "IR RX (Thu hồng ngoại - OUT)",
+          "esp": "GPIO 13 (RXLED)"
+        }
       ]
     },
     {
@@ -46,9 +94,18 @@
       "subtitle": "Expansion Interfaces & Wireless",
       "icon": "fa-wifi",
       "pins": [
-        {"pin": "Wi-Fi 6 & Bluetooth", "esp": "Dual-Band 2.4GHz + 5GHz & BLE 5.0 native trên chip, KHÔNG CẦN module BW16 ngoài"},
-        {"pin": "Cổng Serial (UART)", "esp": "GPIO 11 (TX), GPIO 12 (RX)"},
-        {"pin": "Thẻ nhớ microSD", "esp": "N/A (Bo mạch không tích hợp khay thẻ MicroSD)"}
+        {
+          "pin": "Wi-Fi 6 & Bluetooth",
+          "esp": "Dual-Band 2.4GHz + 5GHz & BLE 5.0 native trên chip, KHÔNG CẦN module BW16 ngoài"
+        },
+        {
+          "pin": "Cổng Serial (UART)",
+          "esp": "GPIO 11, GPIO 12"
+        },
+        {
+          "pin": "Thẻ nhớ microSD",
+          "esp": "N/A (Bo mạch không tích hợp khay thẻ MicroSD)"
+        }
       ]
     }
   ]

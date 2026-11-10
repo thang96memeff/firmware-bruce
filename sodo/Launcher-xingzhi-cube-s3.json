@@ -123,11 +123,11 @@
         },
         {
           "pin": "PB2",
-          "esp": "GPIO 1 (Chân TX)"
+          "esp": "GPIO 1"
         },
         {
           "pin": "PB1",
-          "esp": "GPIO 2 (Chân RX)"
+          "esp": "GPIO 2"
         }
       ]
     },
@@ -146,11 +146,11 @@
         },
         {
           "pin": "TX",
-          "esp": "GPIO 2 (RX)"
+          "esp": "GPIO 2"
         },
         {
           "pin": "RX",
-          "esp": "GPIO 1 (TX)"
+          "esp": "GPIO 1"
         }
       ]
     },

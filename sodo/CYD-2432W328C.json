@@ -135,11 +135,11 @@
         },
         {
           "pin": "PB2",
-          "esp": "GPIO 22 (TX)"
+          "esp": "GPIO 22"
         },
         {
           "pin": "PB1",
-          "esp": "GPIO 27 (RX)"
+          "esp": "GPIO 27"
         }
       ]
     },
@@ -158,11 +158,11 @@
         },
         {
           "pin": "TX",
-          "esp": "GPIO 27 (RX)"
+          "esp": "GPIO 27"
         },
         {
           "pin": "RX",
-          "esp": "GPIO 22 (TX)"
+          "esp": "GPIO 22"
         }
       ]
     },

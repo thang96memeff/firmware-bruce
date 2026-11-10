@@ -9,14 +9,38 @@
       "subtitle": "TFT Pin ↔ ESP32-C5 (ST7789 SPI 240x320)",
       "icon": "fa-tv",
       "pins": [
-        {"pin": "VCC", "esp": "3.3V"},
-        {"pin": "GND", "esp": "GND"},
-        {"pin": "SCL (SCK)", "esp": "GPIO 6"},
-        {"pin": "SDA (MOSI)", "esp": "GPIO 7"},
-        {"pin": "MISO", "esp": "GPIO 2"},
-        {"pin": "CS", "esp": "GPIO 23"},
-        {"pin": "DC", "esp": "GPIO 24"},
-        {"pin": "BLK (Đèn nền)", "esp": "GPIO 25"}
+        {
+          "pin": "VCC",
+          "esp": "3.3V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCL (SCK)",
+          "esp": "GPIO 6"
+        },
+        {
+          "pin": "SDA (MOSI)",
+          "esp": "GPIO 7"
+        },
+        {
+          "pin": "MISO",
+          "esp": "GPIO 2"
+        },
+        {
+          "pin": "CS",
+          "esp": "GPIO 23"
+        },
+        {
+          "pin": "DC",
+          "esp": "GPIO 24"
+        },
+        {
+          "pin": "BLK (Đèn nền)",
+          "esp": "GPIO 25"
+        }
       ]
     },
     {
@@ -24,10 +48,22 @@
       "subtitle": "Touch Pin ↔ ESP32-C5",
       "icon": "fa-hand-pointer",
       "pins": [
-        {"pin": "TOUCH CS", "esp": "GPIO 1"},
-        {"pin": "TOUCH CLK", "esp": "GPIO 6 (SPI SCK)"},
-        {"pin": "TOUCH DIN", "esp": "GPIO 7 (SPI MOSI)"},
-        {"pin": "TOUCH DOUT", "esp": "GPIO 2 (SPI MISO)"}
+        {
+          "pin": "TOUCH CS",
+          "esp": "GPIO 1"
+        },
+        {
+          "pin": "TOUCH CLK",
+          "esp": "GPIO 6 (SPI SCK)"
+        },
+        {
+          "pin": "TOUCH DIN",
+          "esp": "GPIO 7 (SPI MOSI)"
+        },
+        {
+          "pin": "TOUCH DOUT",
+          "esp": "GPIO 2 (SPI MISO)"
+        }
       ]
     },
     {
@@ -35,10 +71,22 @@
       "subtitle": "MicroSD Pin ↔ ESP32-C5 (SPI)",
       "icon": "fa-sd-card",
       "pins": [
-        {"pin": "SD CS", "esp": "GPIO 10"},
-        {"pin": "SD SCK", "esp": "GPIO 6"},
-        {"pin": "SD MOSI", "esp": "GPIO 7"},
-        {"pin": "SD MISO", "esp": "GPIO 2"}
+        {
+          "pin": "SD CS",
+          "esp": "GPIO 10"
+        },
+        {
+          "pin": "SD SCK",
+          "esp": "GPIO 6"
+        },
+        {
+          "pin": "SD MOSI",
+          "esp": "GPIO 7"
+        },
+        {
+          "pin": "SD MISO",
+          "esp": "GPIO 2"
+        }
       ]
     },
     {
@@ -46,7 +94,10 @@
       "subtitle": "WS2812B RGB LED",
       "icon": "fa-lightbulb",
       "pins": [
-        {"pin": "RGB LED WS2812", "esp": "GPIO 27"}
+        {
+          "pin": "RGB LED WS2812",
+          "esp": "GPIO 27"
+        }
       ]
     },
     {
@@ -54,9 +105,18 @@
       "subtitle": "UART & I2C Bus",
       "icon": "fa-plug",
       "pins": [
-        {"pin": "UART TX / RX", "esp": "GPIO 11 (TX), GPIO 12 (RX)"},
-        {"pin": "I2C Grove SDA / SCL", "esp": "GPIO 9 (SDA), GPIO 8 (SCL)"},
-        {"pin": "BadUSB / GPS Bus", "esp": "GPIO 5 (TX), GPIO 4 (RX)"}
+        {
+          "pin": "UART TX / RX",
+          "esp": "GPIO 11, GPIO 12"
+        },
+        {
+          "pin": "I2C Grove SDA / SCL",
+          "esp": "GPIO 9 (SDA), GPIO 8 (SCL)"
+        },
+        {
+          "pin": "BadUSB / GPS Bus",
+          "esp": "GPIO 5, GPIO 4"
+        }
       ]
     }
   ]

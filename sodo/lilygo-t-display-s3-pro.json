@@ -127,11 +127,11 @@
         },
         {
           "pin": "PB2",
-          "esp": "GPIO 44 (TX)"
+          "esp": "GPIO 44"
         },
         {
           "pin": "PB1",
-          "esp": "GPIO 43 (RX)"
+          "esp": "GPIO 43"
         }
       ]
     },
@@ -150,11 +150,11 @@
         },
         {
           "pin": "TX",
-          "esp": "GPIO 43 (RX)"
+          "esp": "GPIO 43"
         },
         {
           "pin": "RX",
-          "esp": "GPIO 44 (TX)"
+          "esp": "GPIO 44"
         }
       ]
     },
