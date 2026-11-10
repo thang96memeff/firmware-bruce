@@ -1,0 +1,232 @@
+{
+  "board_id": "xingzhicube-fix-spi",
+  "board_name": "Xingzhi Cube Fix SPI",
+  "chip": "ESP32-S3",
+  "notes": "Xingzhi Cube ESP32-S3 bản cải tiến chuẩn hóa toàn diện bus SPI 2 và phân tách chân độc lập: Đường SPI 2 FSPI MOSI chuyển sang GPIO 11 (Native FSPI MOSI gốc) giải quyết triệt để xung đột GPIO 48 với LED WS2812 RGB / driver RMT; Chân NRF24 CE (GPIO 4) và CSN (GPIO 21) tách riêng biệt hoàn toàn; Chân GPIO 1 và GPIO 2 bảo lưu độc quyền cho module đồng xử lý BW16 (UART PB2-TX1, PB1-RX2).",
+  "modules": [
+    {
+      "name": "1. Màn hình TFT (SPI 1)",
+      "subtitle": "TFT Pin ↔ ESP32-S3",
+      "icon": "fa-tv",
+      "pins": [
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Onboard)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCL (SCLK)",
+          "esp": "GPIO 9"
+        },
+        {
+          "pin": "SDA (MOSI)",
+          "esp": "GPIO 10"
+        },
+        {
+          "pin": "RES (RST)",
+          "esp": "GPIO 18"
+        },
+        {
+          "pin": "DC",
+          "esp": "GPIO 8"
+        },
+        {
+          "pin": "CS",
+          "esp": "GPIO 14"
+        },
+        {
+          "pin": "BLK (Backlight)",
+          "esp": "GPIO 13"
+        }
+      ]
+    },
+    {
+      "name": "2. Nút nhấn điều khiển",
+      "subtitle": "Button ↔ ESP32-S3 GPIO",
+      "icon": "fa-gamepad",
+      "pins": [
+        {
+          "pin": "UP BUTTON",
+          "esp": "GPIO 39"
+        },
+        {
+          "pin": "DOWN BUTTON",
+          "esp": "GPIO 40"
+        },
+        {
+          "pin": "OK BUTTON (Boot)",
+          "esp": "GPIO 0"
+        }
+      ]
+    },
+    {
+      "name": "3. Module Hồng ngoại (IR)",
+      "subtitle": "IR Module ↔ ESP32-S3",
+      "icon": "fa-bolt",
+      "pins": [
+        {
+          "pin": "IR TX (Phát hồng ngoại) - Chân SIG",
+          "esp": "GPIO 12 (Onboard IR LED)"
+        },
+        {
+          "pin": "IR RX (Thu hồng ngoại) - Chân OUT",
+          "esp": "GPIO 3 (Onboard IR Receiver)"
+        }
+      ]
+    },
+    {
+      "name": "4. Đường bus SPI 2 & Thẻ nhớ MicroSD",
+      "subtitle": "Đường SPI 2 (FSPI) ↔ ESP32-S3",
+      "icon": "fa-sd-card",
+      "warning": "✅ ĐƯỜNG SPI 2 ĐÃ FIX: Chuyển MOSI từ GPIO 48 sang GPIO 11 (Native FSPI MOSI phần cứng gốc) để loại bỏ xung đột với driver LED WS2812 RGB / RMT!",
+      "pins": [
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Khe MicroSD onboard)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCK (SPI 2 Bus SCK)",
+          "esp": "GPIO 47"
+        },
+        {
+          "pin": "MOSI (SPI 2 Bus MOSI)",
+          "esp": "GPIO 11 (⭐ ĐÃ FIX: Native FSPI MOSI, thay thế GPIO 48)"
+        },
+        {
+          "pin": "MISO (SPI 2 Bus MISO)",
+          "esp": "GPIO 41"
+        },
+        {
+          "pin": "CS (MicroSD Chip Select)",
+          "esp": "GPIO 42"
+        }
+      ]
+    },
+    {
+      "name": "5. Module NRF24L01 (CE & CS Riêng Biệt)",
+      "subtitle": "NRF24 Pin ↔ ESP32-S3 (Bus SPI 2)",
+      "icon": "fa-tower-broadcast",
+      "warning": "⭐ ĐÃ TÁCH RIÊNG: Chân CE (GPIO 4) và CSN (GPIO 21) tách biệt hoàn toàn. Lưu ý chỉ cấp 3.3V, cấp 5V sẽ gây cháy hỏng module NRF24!",
+      "pins": [
+        {
+          "pin": "VCC",
+          "esp": "3.3V (Lưu ý: Tuyệt đối chỉ cấp 3.3V ⚠️)"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "CE (Chân kích hoạt)",
+          "esp": "GPIO 4 (⭐ Chân kích hoạt riêng biệt)"
+        },
+        {
+          "pin": "CSN (Chip Select)",
+          "esp": "GPIO 21 (⭐ Chân chọn chip SPI riêng biệt)"
+        },
+        {
+          "pin": "SCK (Đường SPI 2)",
+          "esp": "GPIO 47"
+        },
+        {
+          "pin": "MOSI (Đường SPI 2)",
+          "esp": "GPIO 11 (⭐ ĐÃ FIX: Native FSPI MOSI)"
+        },
+        {
+          "pin": "MISO (Đường SPI 2)",
+          "esp": "GPIO 41"
+        }
+      ]
+    },
+    {
+      "name": "6. Module Đồng xử lý BW16 (Băng tần kép)",
+      "subtitle": "BW16 Pin ↔ ESP32-S3 (UART Độc Lập)",
+      "icon": "fa-wifi",
+      "warning": "⭐ BẢO LƯU ĐỘC QUYỀN: GPIO 1 và GPIO 2 dành riêng cho module BW16 (hỗ trợ quét & kích hoạt 2.4GHz + 5GHz và SoftAP Web Captive), các module khác tuyệt đối không cắm vào 2 chân này!",
+      "pins": [
+        {
+          "pin": "VCC",
+          "esp": "3.3V / 5V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "PB2 (BW16 UART RX)",
+          "esp": "GPIO 1 (⭐ ESP32-S3 Serial TX - DÀNH RIÊNG BW16)"
+        },
+        {
+          "pin": "PB1 (BW16 UART TX)",
+          "esp": "GPIO 2 (⭐ ESP32-S3 Serial RX - DÀNH RIÊNG BW16)"
+        }
+      ]
+    },
+    {
+      "name": "7. Module CC1101 (Bus SPI 2 + Cổng Grove)",
+      "subtitle": "CC1101 Pin ↔ ESP32-S3",
+      "icon": "fa-radio",
+      "warning": "✅ Chân điều khiển CSN và GDO0 chuyển sang cổng Grove để không bao giờ chiếm chân GPIO 1 và GPIO 2 của BW16!",
+      "pins": [
+        {
+          "pin": "VCC",
+          "esp": "3.3V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "SCK (Đường SPI 2)",
+          "esp": "GPIO 47"
+        },
+        {
+          "pin": "MOSI (Đường SPI 2)",
+          "esp": "GPIO 11 (⭐ ĐÃ FIX: Native FSPI MOSI)"
+        },
+        {
+          "pin": "MISO (Đường SPI 2)",
+          "esp": "GPIO 41"
+        },
+        {
+          "pin": "CSN (Chip Select)",
+          "esp": "GPIO 6 (Grove SCL - Đã chuyển khỏi GPIO 2)"
+        },
+        {
+          "pin": "GDO0 (Chân ngắt/data)",
+          "esp": "GPIO 5 (Grove SDA - Đã chuyển khỏi GPIO 1)"
+        }
+      ]
+    },
+    {
+      "name": "8. Module GPS (Cổng Grove)",
+      "subtitle": "GPS Pin ↔ ESP32-S3 (Grove SoftSerial)",
+      "icon": "fa-location-crosshairs",
+      "pins": [
+        {
+          "pin": "VCC",
+          "esp": "3.3V / 5V"
+        },
+        {
+          "pin": "GND",
+          "esp": "GND"
+        },
+        {
+          "pin": "TX",
+          "esp": "GPIO 5 (Grove SDA / SoftSerial RX)"
+        },
+        {
+          "pin": "RX",
+          "esp": "GPIO 6 (Grove SCL / SoftSerial TX)"
+        }
+      ]
+    }
+  ]
+}
